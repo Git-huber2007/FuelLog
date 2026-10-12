@@ -1,4 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -22,3 +23,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 }
 
 export const useSession = () => useContext(SessionContext);
+
+/** Signs out and drops every cached answer, so nothing from this account is left for the next person on the device. */
+export function useSignOut() {
+  const qc = useQueryClient();
+  return async () => {
+    await supabase.auth.signOut();
+    qc.clear();
+  };
+}

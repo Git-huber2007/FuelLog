@@ -1,18 +1,12 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { ProfileForm } from '../components/profile/ProfileForm';
 import { useProfile } from '../hooks/useProfile';
-import { useSession } from '../hooks/useSession';
-import { supabase } from '../lib/supabase';
+import { useSession, useSignOut } from '../hooks/useSession';
 
 export default function Profile() {
-  const qc = useQueryClient();
   const { session } = useSession();
   const profile = useProfile().data!.profile; // OnboardedRoute only renders this page once the profile has loaded
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    qc.clear(); // nothing from this account stays cached for the next person on this device
-  }
+  const signOut = useSignOut();
 
   return (
     <>
