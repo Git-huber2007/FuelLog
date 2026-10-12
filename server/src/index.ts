@@ -1,0 +1,77 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import cors from 'cors';
+import express from 'express';
+import helmet from 'helmet';
+import { env, isProd } from './env';
+import { auth } from './middleware/auth';
+import { errorHandler, notFound } from './middleware/errors';
+import { userRateLimit } from './middleware/rateLimit';
+import { aiRouter } from './routes/ai';
+import { daysRouter } from './routes/days';
+import { exportRouter } from './routes/export';
+import { foodsRouter } from './routes/foods';
+import { photosRouter } from './routes/photos';
+import { profileRouter } from './routes/profile';
+import { progressRouter } from './routes/progress';
+import { savedMealsRouter } from './routes/savedMeals';
+import { workoutRouter } from './routes/workout';
+
+const app = express();
+app.set('trust proxy', 1); // one hop: the host's HTTPS proxy
+app.disable('x-powered-by');
+
+const supabaseOrigin = new URL(env.SUPABASE_URL).origin;
+app.use(helmet({
+  hsts: isProd,
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // React sets style attributes for bar widths and chart geometry
+      imgSrc: ["'self'", 'data:', 'blob:', supabaseOrigin, 'https://cdn.jsdelivr.net'], // jsDelivr serves the exercise-library photos
+      connectSrc: ["'self'", supabaseOrigin, supabaseOrigin.replace(/^http/, 'ws')],
+      mediaSrc: ["'self'", 'blob:'],
+      workerSrc: ["'self'"],
+      manifestSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+}));
+if (!isProd) app.use(cors({ origin: env.CLIENT_ORIGIN })); // production is same-origin
+app.use(express.json({ limit: '6mb' }));
+
+// Method, path, status, duration and user id only: never bodies, tokens or health data.
+app.use('/api', (req, res, next) => {
+  const started = Date.now();
+  res.on('finish', () => {
+    console.log(`${req.method} ${req.baseUrl}${req.path} ${res.statusCode} ${Date.now() - started}ms user=${req.userId ?? '-'}`);
+  });
+  next();
+});
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true });
+});
+
+app.use('/api', auth, userRateLimit, profileRouter, foodsRouter, daysRouter, workoutRouter, savedMealsRouter, progressRouter, photosRouter, aiRouter, exportRouter, notFound);
+
+// Serves the built client when it is there (single-service deploy). With the client on Vercel it is not built here, and this is skipped.
+const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
+if (isProd && existsSync(clientDist)) {
+  app.use(express.static(clientDist, { index: false, maxAge: '1h' }));
+  app.get('*', (_req, res) => {
+    res.set('Cache-Control', 'no-cache').sendFile(path.join(clientDist, 'index.html'));
+  });
+}
+
+app.use(errorHandler);
+
+app.listen(env.PORT, () => {
+  console.log(`FuelLog API listening on port ${env.PORT} (${env.NODE_ENV})${env.GEMINI_API_KEY ? '' : ', AI disabled: GEMINI_API_KEY is empty'}`);
+});

@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+  --bg: 246 246 244;
+  --card: 255 255 255;
+  --text: 23 23 23;
+  --muted: 82 82 91;
+  --line: 212 212 208;
+  --accent: 21 128 61;
+  --on-accent: 255 255 255;
+  --kcal: 22 163 74;
+  --protein: 185 28 28;
+  --carbs: 29 78 216;
+  --fat: 202 138 4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: 17 17 19;
+    --card: 28 28 31;
+    --text: 244 244 245;
+    --muted: 168 168 178;
+    --line: 58 58 64;
+    --accent: 74 222 128;
+    --on-accent: 5 46 22;
+    --kcal: 74 222 128;
+    --protein: 248 113 113;
+    --carbs: 96 165 250;
+    --fat: 250 204 21;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-text antialiased;
+    overflow-x: hidden;
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+  h1, h2, h3 {
+    @apply font-semibold tracking-tight;
+    text-wrap: balance;
+  }
+  p, li, dd, figcaption {
+    text-wrap: pretty;
+  }
+  img {
+    /* a neutral hairline keeps photo edges from bleeding into the card */
+    outline: 1px solid rgb(var(--text) / 0.1);
+    outline-offset: -1px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-card p-4;
+    /* two soft layers read as depth without a hard edge, in both themes */
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.12);
+  }
+  .btn {
+    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-xl border border-line bg-card px-4 text-base font-medium text-text transition-[transform,background-color,opacity] duration-150 ease-out active:scale-[0.96] disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-xl bg-accent px-4 text-base font-semibold text-onaccent shadow-sm transition-[transform,background-color,opacity] duration-150 ease-out active:scale-[0.96] disabled:opacity-50;
+  }
+  .input {
+    @apply min-h-[44px] w-full min-w-0 rounded-xl border border-line bg-bg px-3 text-base text-text placeholder:text-muted;
+  }
+  .label {
+    @apply mb-1 block text-sm text-muted;
+  }
+  .chip {
+    @apply inline-flex min-h-[44px] max-w-full items-center rounded-full border border-line bg-bg px-4 text-sm text-text transition-[transform,background-color,opacity] duration-150 ease-out active:scale-[0.96] disabled:opacity-50;
+  }
+  .pressable {
+    @apply transition-transform duration-150 ease-out active:scale-[0.96];
+  }
+  .field-error {
+    @apply mt-1 text-sm text-protein;
+  }
+}
+
+/* One-shot entrances: opacity plus a small rise. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.toast-in {
+  animation: rise-in 200ms ease-out;
+}
+dialog[open] {
+  animation: rise-in 220ms ease-out;
+}
+dialog[open]::backdrop {
+  animation: fade-in 220ms ease-out;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

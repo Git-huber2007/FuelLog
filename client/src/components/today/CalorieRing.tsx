@@ -1,0 +1,19 @@
+const R = 52;
+const CIRCUMFERENCE = 2 * Math.PI * R;
+
+export function CalorieRing({ eaten, target }: { eaten: number; target: number }) {
+  const left = Math.round(target - eaten);
+  const over = left < 0;
+  const filled = Math.min(1, eaten / target);
+  return (
+    <svg viewBox="0 0 120 120" className="h-36 w-36 shrink-0" role="img"
+      aria-label={`${Math.abs(left)} kcal ${over ? 'over' : 'left'}. Eaten ${Math.round(eaten)} of ${target} kcal.`}>
+      <circle cx="60" cy="60" r={R} fill="none" strokeWidth="10" className="stroke-line" />
+      <circle cx="60" cy="60" r={R} fill="none" strokeWidth="10" strokeLinecap="round" transform="rotate(-90 60 60)"
+        className={`transition-[stroke-dashoffset] duration-500 ${over ? 'stroke-protein' : 'stroke-kcal'}`}
+        strokeDasharray={CIRCUMFERENCE} strokeDashoffset={CIRCUMFERENCE * (1 - filled)} />
+      <text x="60" y="60" textAnchor="middle" className="fill-text text-[24px] font-semibold">{Math.abs(left)}</text>
+      <text x="60" y="78" textAnchor="middle" className="fill-muted text-[10px]">kcal {over ? 'over' : 'left'}</text>
+    </svg>
+  );
+}

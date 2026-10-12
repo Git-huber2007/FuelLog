@@ -1,0 +1,56 @@
+import { CheckInput, type DayResponse } from '@fuellog/shared';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { dayKey } from '../../hooks/useDay';
+import { useDebouncedMutation } from '../../hooks/useDebouncedMutation';
+import { api } from '../../lib/apiClient';
+import { numberOrNull } from '../../lib/entries';
+import { NumberField } from '../ui/NumberField';
+import { WaterCounter } from './WaterCounter';
+
+const EMPTY: CheckInput = { water_ml: 0, sleep_hours: null, creatine: false, protein_shake: false };
+
+/** Water, sleep and supplements. Mount with key={date} so each day starts from its own saved values. */
+export function DailyCheckCard({ date, initial, waterTargetMl }: { date: string; initial: CheckInput | null; waterTargetMl: number }) {
+  const qc = useQueryClient();
+  const [check, setCheck] = useState<CheckInput>(initial ?? EMPTY);
+  const [sleep, setSleep] = useState(initial?.sleep_hours?.toString() ?? '');
+  const [sleepError, setSleepError] = useState<string>();
+  const { run, status } = useDebouncedMutation(async (value: CheckInput) => {
+    const saved = await api<CheckInput>(`/days/${date}/check`, { method: 'PUT', body: value });
+    qc.setQueryData<DayResponse>(dayKey(date), (day) => day && { ...day, check: saved });
+    qc.invalidateQueries({ queryKey: ['progress'] });
+  });
+
+  function update(patch: Partial<CheckInput>) {
+    const next = { ...check, ...patch };
+    setCheck(next);
+    run(next);
+  }
+
+  function changeSleep(text: string) {
+    setSleep(text);
+    const parsed = CheckInput.shape.sleep_hours.safeParse(numberOrNull(text));
+    setSleepError(parsed.success ? undefined : 'Enter 0 to 16 hours');
+    if (parsed.success) update({ sleep_hours: parsed.data });
+  }
+
+  return (
+    <section className="card space-y-4" aria-labelledby="check-title">
+      <div className="flex items-center justify-between">
+        <h2 id="check-title" className="text-base">Daily check</h2>
+        <span className="text-sm text-muted" role="status">{status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : ''}</span>
+      </div>
+      <WaterCounter ml={check.water_ml} targetMl={waterTargetMl} onChange={(water_ml) => update({ water_ml })} />
+      <NumberField label="Sleep last night" suffix="hours" value={sleep} onChange={changeSleep} error={sleepError} placeholder="7.5" />
+      <div className="grid grid-cols-2 gap-2">
+        {([['creatine', 'Creatine'], ['protein_shake', 'Protein shake']] as const).map(([key, label]) => (
+          <label key={key} className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl border border-line px-3">
+            <input type="checkbox" className="h-5 w-5 accent-[rgb(var(--accent))]" checked={check[key]} onChange={(e) => update({ [key]: e.target.checked })} />
+            {label}
+          </label>
+        ))}
+      </div>
+    </section>
+  );
+}
