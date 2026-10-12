@@ -91,6 +91,7 @@ describe('Server Route Tests', () => {
 
   afterEach(async () => {
     setClientFactory(); // restore default client factory
+    server.closeAllConnections();
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
