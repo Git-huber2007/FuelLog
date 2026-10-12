@@ -129,8 +129,11 @@ language plpgsql as $$ begin new.updated_at = now(); return new; end $$;
 create trigger profiles_touch before update on public.profiles
   for each row execute function public.touch_updated_at();
 
-insert into storage.buckets (id, name, public) values ('progress-photos', 'progress-photos', false)
-on conflict (id) do nothing;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('progress-photos', 'progress-photos', false, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set
+  file_size_limit = 5242880,
+  allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
 
 -- Row level security
 

@@ -32,6 +32,29 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
           { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
+        shortcuts: [
+          {
+            name: 'Log Food',
+            short_name: 'Food',
+            description: "Log today's calories and macros",
+            url: '/',
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }],
+          },
+          {
+            name: 'Workout',
+            short_name: 'Workout',
+            description: "View and track today's workout sets",
+            url: '/workout',
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }],
+          },
+          {
+            name: 'Progress',
+            short_name: 'Progress',
+            description: 'Check weight and measurements trends',
+            url: '/progress',
+            icons: [{ src: 'icon-192.png', sizes: '192x192' }],
+          },
+        ],
       },
       workbox: {
         // Cache the app shell only. API calls always go to the network.
@@ -40,4 +63,19 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@zxing')) return 'vendor-zxing';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('@tanstack')) return 'vendor-query';
+            if (id.includes('react') || id.includes('scheduler')) return 'vendor-react';
+          }
+        },
+      },
+    },
+  },
 });
+

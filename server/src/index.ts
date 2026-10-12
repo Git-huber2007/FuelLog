@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import { env, isProd } from './env';
 import { auth } from './middleware/auth';
 import { errorHandler, notFound } from './middleware/errors';
-import { userRateLimit } from './middleware/rateLimit';
+import { ipRateLimit, userRateLimit } from './middleware/rateLimit';
 import { aiRouter } from './routes/ai';
 import { daysRouter } from './routes/days';
 import { exportRouter } from './routes/export';
@@ -47,7 +47,7 @@ if (!isProd) app.use(cors({ origin: env.CLIENT_ORIGIN })); // production is same
 app.use(express.json({ limit: '6mb' }));
 
 // Method, path, status, duration and user id only: never bodies, tokens or health data.
-app.use('/api', (req, res, next) => {
+app.use('/api', ipRateLimit, (req, res, next) => {
   const started = Date.now();
   res.on('finish', () => {
     console.log(`${req.method} ${req.baseUrl}${req.path} ${res.statusCode} ${Date.now() - started}ms user=${req.userId ?? '-'}`);

@@ -9,7 +9,7 @@
     "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w client && npm run build -w server",
     "start": "npm start -w server",
-    "test": "npm test -w shared",
+    "test": "npm test -w shared && npm test -w server",
     "lint": "eslint ."
   },
   "dependencies": {
