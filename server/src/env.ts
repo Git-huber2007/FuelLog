@@ -1,9 +1,14 @@
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
 try {
-  process.loadEnvFile(); // server/.env in development; hosts inject real environment variables
+  process.loadEnvFile(fileURLToPath(new URL('../.env', import.meta.url)));
 } catch {
-  // no .env file, which is normal in production
+  try {
+    process.loadEnvFile(); // fallback to current working directory or cloud environment variables
+  } catch {
+    // no .env file, which is normal in production
+  }
 }
 
 const Env = z.object({
@@ -13,7 +18,7 @@ const Env = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string().min(1),
   GEMINI_API_KEY: z.string().default(''),
-  GEMINI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  GEMINI_MODEL: z.string().min(1).default('gemini-3.8-flash'),
   AI_DAILY_LIMIT: z.coerce.number().int().positive().default(40),
 });
 

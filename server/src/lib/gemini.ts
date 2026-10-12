@@ -28,12 +28,13 @@ export async function generateJson<T>(opts: {
           temperature: 0.2,
           maxOutputTokens: 2048,
           abortSignal: AbortSignal.timeout(20_000),
-          // 2.5 Flash thinks by default and thinking tokens count against maxOutputTokens, which truncates the JSON.
-          ...(MODEL.includes('2.5-flash') ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+          // Flash models think by default and thinking tokens count against maxOutputTokens, which truncates the JSON.
+          ...(MODEL.includes('flash') ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
         },
       });
       text = res.text;
-    } catch {
+    } catch (err) {
+      console.error('Gemini generateContent error:', err);
       throw new HttpError(502, 'ai_unavailable', 'The AI service did not answer. Try again in a moment, or log it manually.');
     }
     try {
