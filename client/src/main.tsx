@@ -8,6 +8,7 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { ToastProvider } from './components/ui/Toast';
 import { SessionProvider } from './hooks/useSession';
 import { ApiError } from './lib/apiClient';
+import '@fontsource-variable/geist';
 import './index.css';
 
 registerSW({ immediate: true });

@@ -12,7 +12,7 @@ export function WeekSummaryCard({ summary }: { summary: ProgressResponse['summar
       <h2 id="week-title" className="text-base">Last 7 days</h2>
       <dl className="mt-3 grid grid-cols-2 gap-3">
         {stats.map(([label, value]) => (
-          <div key={label} className="rounded-xl bg-bg p-3">
+          <div key={label} className="rounded-2xl bg-bg p-3.5">
             <dt className="text-sm text-muted">{label}</dt>
             <dd className="text-lg font-semibold tabular-nums">{value}</dd>
           </div>

@@ -14,7 +14,7 @@ export function MeasurementDeltas({ deltas }: { deltas: ProgressResponse['measur
       {keys.map((key) => {
         const d = deltas[key]!;
         return (
-          <div key={key} className="rounded-xl bg-bg p-3">
+          <div key={key} className="rounded-2xl bg-bg p-3.5">
             <dt className="text-sm text-muted">{LABELS[key]}</dt>
             <dd className="font-semibold tabular-nums">{d.latest} cm</dd>
             <dd className="text-sm tabular-nums text-muted">{d.delta === 0 ? 'No change' : `${d.delta > 0 ? '+' : '−'}${Math.abs(d.delta)} cm`}</dd>

@@ -45,7 +45,7 @@ export function DailyCheckCard({ date, initial, waterTargetMl }: { date: string;
       <NumberField label="Sleep last night" suffix="hours" value={sleep} onChange={changeSleep} error={sleepError} placeholder="7.5" />
       <div className="grid grid-cols-2 gap-2">
         {([['creatine', 'Creatine'], ['protein_shake', 'Protein shake']] as const).map(([key, label]) => (
-          <label key={key} className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl border border-line px-3">
+          <label key={key} className="flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-2xl border border-line px-3 text-sm">
             <input type="checkbox" className="h-5 w-5 accent-[rgb(var(--accent))]" checked={check[key]} onChange={(e) => update({ [key]: e.target.checked })} />
             {label}
           </label>

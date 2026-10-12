@@ -3,14 +3,15 @@ import { DateSwitcher } from './DateSwitcher';
 
 const TITLES: Record<string, string> = { '/': 'Today', '/workout': 'Workout', '/progress': 'Progress', '/profile': 'Profile' };
 
+/** A floating glass bar, set in from the edges, that stays in view while the page scrolls. */
 export function StickyHeader() {
   const { pathname } = useLocation();
   const dated = pathname === '/' || pathname === '/workout';
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-bg/85 px-4 backdrop-blur-md pb-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-[calc(0.5rem+env(safe-area-inset-top))]">
-      <div className="flex min-h-[44px] items-center justify-between gap-2">
+    <header className="sticky top-0 z-20 px-3 pt-[calc(0.75rem+env(safe-area-inset-top))] md:px-6">
+      <div className="glass flex min-h-[56px] items-center justify-between gap-2 rounded-full py-1.5 pl-5 pr-1.5">
         <h1 className="text-lg">{TITLES[pathname] ?? 'FuelLog'}</h1>
-        {dated && <DateSwitcher />}
+        {dated ? <DateSwitcher /> : <span className="pr-4 text-sm font-semibold text-accent">FuelLog</span>}
       </div>
     </header>
   );

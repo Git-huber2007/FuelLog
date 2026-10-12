@@ -7,38 +7,46 @@ const FEATURES: [title: string, detail: string][] = [
   ['See your progress', 'Weight trend, weekly summary, measurements and private progress photos.'],
 ];
 
-/** The frame around sign in, sign up and password reset: what FuelLog is, the form, then what you get. */
+/**
+ * The frame around sign in, sign up and password reset.
+ * Phone: the pitch, the form, then what you get. Large screens: pitch and features on the left, the form on the right.
+ */
 export function AuthPage({ title, children, footer }: { title: string; children: ReactNode; footer: ReactNode }) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col justify-center gap-6 px-4 py-8">
-      <header>
-        <p className="flex items-center gap-2 text-lg font-semibold text-accent">
-          <img src="/icon-192.png" alt="" width={32} height={32} className="h-8 w-8 rounded-lg" />
+    <main className="stagger mx-auto grid min-h-dvh w-full max-w-[520px] content-center gap-8 px-4 py-10 lg:max-w-[1080px] lg:grid-cols-2 lg:gap-x-20 lg:px-8">
+      <header className="lg:self-end">
+        <p className="flex items-center gap-2.5 text-lg font-semibold">
+          <img src="/icon-192.png" alt="" width={36} height={36} className="h-9 w-9 rounded-xl" />
           FuelLog
         </p>
-        <p className="mt-3 text-2xl font-semibold tracking-tight">Eat for your goal. Train with a plan.</p>
-        <p className="mt-1 text-muted">A calorie, macro and gym tracker built for people who have just started lifting.</p>
+        <p className="eyebrow mt-8">Calories · Macros · Training</p>
+        <p className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tight lg:text-6xl">Eat for your goal. Train with a plan.</p>
+        <p className="mt-4 text-lg text-muted">A calorie, macro and gym tracker built for people who have just started lifting.</p>
       </header>
 
-      <section className="card" aria-labelledby="auth-title">
-        <h1 id="auth-title" className="mb-4 text-xl">{title}</h1>
-        {children}
-      </section>
-      <div className="space-y-2 text-center text-sm text-muted">{footer}</div>
+      <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+        <div className="bezel">
+          <section className="card rounded-[1.75rem] p-6" aria-labelledby="auth-title">
+            <h1 id="auth-title" className="mb-5 text-2xl">{title}</h1>
+            {children}
+          </section>
+        </div>
+        <div className="mt-4 space-y-1 text-center text-sm text-muted">{footer}</div>
+      </div>
 
-      <section aria-label="What you get">
+      <section aria-label="What you get" className="lg:self-start">
         <ul className="grid gap-3 sm:grid-cols-2">
           {FEATURES.map(([name, detail]) => (
-            <li key={name} className="rounded-2xl border border-line p-3">
+            <li key={name} className="rounded-3xl border border-line p-4">
               <p className="font-medium">{name}</p>
-              <p className="mt-0.5 text-sm text-muted">{detail}</p>
+              <p className="mt-1 text-sm text-muted">{detail}</p>
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-center text-sm text-muted">Estimates only, not medical advice.</p>
+        <p className="mt-5 text-sm text-muted">Estimates only, not medical advice.</p>
       </section>
     </main>
   );
 }
 
-export const authLink = 'inline-flex min-h-[44px] items-center font-medium text-accent underline';
+export const authLink = 'inline-flex min-h-[44px] items-center font-medium text-accent underline underline-offset-4';

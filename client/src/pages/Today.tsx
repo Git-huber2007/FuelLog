@@ -34,8 +34,9 @@ export default function Today() {
 
   return (
     <>
-      <section className="card space-y-3" aria-label="Calories and macros">
-        <div className="flex items-center gap-4">
+      <div className="bezel">
+      <section className="card space-y-4 rounded-[1.75rem]" aria-label="Calories and macros">
+        <div className="flex items-center gap-5">
           <CalorieRing eaten={totals.kcal} target={targets.kcal} />
           <MacroBars totals={totals} targets={targets} />
         </div>
@@ -45,6 +46,7 @@ export default function Today() {
         </div>
         <NudgeLine text={line} />
       </section>
+      </div>
       <AddFoodCard key={`add-${date}`} date={date} />
       <EatenList date={date} logs={logs} />
       <DailyCheckCard key={`check-${date}`} date={date} initial={check} waterTargetMl={targets.water_ml} />

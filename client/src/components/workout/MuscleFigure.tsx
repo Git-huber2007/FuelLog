@@ -30,7 +30,7 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
   const own = view === 'front' ? FRONT : BACK;
   const worked = ORDER[view].filter((m) => highlighted.includes(m));
   return (
-    <svg viewBox="0 0 120 240" className="h-48 w-auto" role="img"
+    <svg viewBox="0 0 120 240" className="h-56 w-auto" role="img"
       aria-label={`${view === 'front' ? 'Front' : 'Back'} of the body. ${worked.length ? `Working: ${worked.map((m) => MUSCLE_LABELS[m]).join(', ')}.` : 'Nothing highlighted.'}`}>
       {/* Silhouette: head, neck, torso, forearms, hips */}
       <g className="fill-line">

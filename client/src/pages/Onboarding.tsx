@@ -12,11 +12,11 @@ export default function Onboarding() {
   const signOut = useSignOut();
   if (profile.data?.profile.onboarded) return <Navigate to="/" replace />;
   return (
-    <main className="mx-auto w-full max-w-[520px] space-y-4 px-4 py-8">
+    <main className="stagger mx-auto w-full max-w-[560px] space-y-5 px-4 py-10">
       <div>
-        <p className="text-sm font-semibold text-accent">FuelLog</p>
-        <h1 className="text-2xl">Set up your targets</h1>
-        <p className="mt-1 text-muted">Five details are all it takes. Your targets update as you type and re-tune weekly from your weight.</p>
+        <p className="eyebrow">Step 1 of 1</p>
+        <h1 className="mt-4 text-4xl">Set up your targets</h1>
+        <p className="mt-3 text-lg text-muted">Five details are all it takes. Your targets update as you type and re-tune weekly from your weight.</p>
       </div>
       {profile.isPending && <LoadingSkeleton cards={1} />}
       {profile.isError && <ErrorState error={profile.error} onRetry={() => profile.refetch()} />}
