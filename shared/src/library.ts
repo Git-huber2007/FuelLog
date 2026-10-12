@@ -4,6 +4,7 @@ import { EXERCISE_KEYS, EXERCISE_NAMES, type Exercise } from './split';
 
 export const LEVELS = ['beginner', 'intermediate', 'expert'] as const;
 export type Level = (typeof LEVELS)[number];
+export const LEVEL_LABELS: Record<Level, string> = { beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Advanced' };
 
 export const EXERCISE_TYPES = ['strength', 'cardio', 'stretching', 'plyometrics'] as const;
 export type ExerciseType = (typeof EXERCISE_TYPES)[number];

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { isKnownExercise } from './library';
+import { isKnownExercise, LEVELS } from './library';
+import { PROGRAM_KEYS } from './split';
 
 export const DateParam = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((d) => {
   const [year, month, day] = d.split('-').map(Number);
@@ -13,6 +14,9 @@ export const ProfileInput = z.object({
   height_cm: z.number().min(120).max(230),
   weight_kg: z.number().min(30).max(250),
   goal: z.enum(['cut', 'maintain', 'gain']),
+  // Optional so a profile saved by an older cached copy of the app keeps its stored level and program.
+  level: z.enum(LEVELS).optional(),
+  program: z.enum(PROGRAM_KEYS).optional(),
 });
 const Macro = z.number().min(0).max(1000);
 export const FoodInput = z.object({
@@ -48,6 +52,8 @@ export const SetInput      = z.object({
   set_number: z.number().int().min(1).max(10),
   weight_kg: z.number().min(0).max(500),
   reps: z.number().int().min(0).max(200),
+  // Cardio only: treadmill or hill gradient in percent, negative for a decline.
+  incline_pct: z.number().min(-15).max(40).nullable().optional(),
 }).refine(s => isKnownExercise(s.exercise_key), { message: 'Unknown exercise', path: ['exercise_key'] });
 export const SavedMealBody = z.object({ name: z.string().trim().min(1).max(40), date: DateParam });
 export const ParseTextBody = z.object({ text: z.string().trim().min(2).max(500), date: DateParam, meal: Meal });

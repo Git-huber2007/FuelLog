@@ -18,7 +18,7 @@ daysRouter.get('/days/:date', date, h(async (req, res) => {
     sb.from('daily_checks').select('water_ml,sleep_hours,creatine,protein_shake').eq('log_date', d).maybeSingle(),
     sb.from('weight_logs').select('weight_kg').eq('log_date', d).maybeSingle(),
     sb.from('measurements').select('log_date,waist_cm,chest_cm,arm_cm').eq('log_date', d).maybeSingle(),
-    sb.from('workout_sets').select('log_date,exercise_key,set_number,weight_kg,reps').eq('log_date', d),
+    sb.from('workout_sets').select('log_date,exercise_key,set_number,weight_kg,reps,incline_pct').eq('log_date', d),
     loadProfile(sb, req.userId),
     sb.from('foods').select('name,kcal,protein_g').gte('protein_g', 8).gt('kcal', 0).limit(200),
   ]);
@@ -76,7 +76,7 @@ daysRouter.put('/days/:date/measurements', date, validate({ body: MeasureInput }
 
 daysRouter.put('/days/:date/sets', date, validate({ body: SetInput }), notFuture, h(async (req, res) => {
   const row = { ...req.body, user_id: req.userId, log_date: req.params.date };
-  res.json(unwrap(await req.sb.from('workout_sets').upsert(row).select('log_date,exercise_key,set_number,weight_kg,reps').single()));
+  res.json(unwrap(await req.sb.from('workout_sets').upsert(row).select('log_date,exercise_key,set_number,weight_kg,reps,incline_pct').single()));
 }));
 
 // Takes an exercise off a day by removing its sets. Adding one is a PUT of an empty first set.

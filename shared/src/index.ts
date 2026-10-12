@@ -5,3 +5,4 @@ export * from './split';
 export * from './library';
 export * from './dates';
 export * from './api';
+export * from './burn';

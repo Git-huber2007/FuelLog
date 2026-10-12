@@ -111,8 +111,67 @@ export const SPLIT: readonly SplitDay[] = [
   },
 ];
 
-export const splitFor = (iso: string): SplitDay => SPLIT[weekdayOf(iso)];
-
 const ALL_EXERCISES = SPLIT.flatMap((d) => d.exercises);
 export const EXERCISE_KEYS: ReadonlySet<string> = new Set(ALL_EXERCISES.map((e) => e.key));
 export const EXERCISE_NAMES: ReadonlyMap<string, string> = new Map(ALL_EXERCISES.map((e) => [e.key, e.name]));
+
+// The shorter programs reuse the six-day exercises under the same keys, so photos, history and overload hints carry over when a user switches.
+const BY_KEY = new Map(ALL_EXERCISES.map((e) => [e.key, e]));
+const day = (title: string, muscles: MuscleGroup[], ...keys: string[]): SplitDay => ({ title, muscles, exercises: keys.map((k) => BY_KEY.get(k)!) });
+const REST = SPLIT[0];
+const LEGS = ['sat-squat-or-leg-press', 'sat-romanian-deadlift', 'sat-walking-lunge', 'sat-leg-extension', 'sat-leg-curl', 'sat-calf-raise'];
+
+export const PROGRAM_KEYS = ['full_body', 'upper_lower', 'six_day'] as const;
+export type ProgramKey = (typeof PROGRAM_KEYS)[number];
+
+export interface Program {
+  name: string;
+  summary: string;
+  /** Indexed by weekday: 0 = Sunday … 6 = Saturday. */
+  days: readonly SplitDay[];
+}
+
+export const PROGRAMS: Record<ProgramKey, Program> = {
+  full_body: {
+    name: 'Full body · 3 days',
+    summary: 'Monday, Wednesday, Friday. Every muscle three times a week with a rest day between sessions.',
+    days: [
+      REST,
+      day('Full body A', ['quads', 'chest', 'back', 'shoulders', 'core'],
+        'sat-squat-or-leg-press', 'mon-bench-press', 'tue-lat-pulldown', 'mon-shoulder-press', 'wed-plank'),
+      REST,
+      day('Full body B', ['hamstrings', 'chest', 'back', 'shoulders', 'biceps', 'core'],
+        'sat-romanian-deadlift', 'mon-incline-dumbbell-press', 'tue-seated-cable-row', 'mon-lateral-raise', 'tue-dumbbell-curl', 'wed-cable-crunch'),
+      REST,
+      day('Full body C', ['quads', 'shoulders', 'back', 'triceps', 'hamstrings', 'calves'],
+        'sat-walking-lunge', 'thu-overhead-press', 'fri-barbell-or-dumbbell-row', 'mon-triceps-pushdown', 'sat-leg-curl', 'sat-calf-raise'),
+      REST,
+    ],
+  },
+  upper_lower: {
+    name: 'Upper / lower · 4 days',
+    summary: 'Monday and Thursday upper body, Tuesday and Friday lower body. Each muscle twice a week.',
+    days: [
+      REST,
+      day('Upper body A', ['chest', 'back', 'shoulders', 'triceps', 'biceps'],
+        'mon-bench-press', 'tue-seated-cable-row', 'mon-shoulder-press', 'tue-lat-pulldown', 'mon-lateral-raise', 'mon-triceps-pushdown', 'tue-dumbbell-curl'),
+      day('Lower body A', ['quads', 'hamstrings', 'calves', 'core'], ...LEGS, 'wed-plank'),
+      REST,
+      day('Upper body B', ['shoulders', 'back', 'chest', 'biceps', 'triceps'],
+        'thu-overhead-press', 'fri-barbell-or-dumbbell-row', 'thu-incline-bench-or-machine-press', 'fri-assisted-pull-up-or-pulldown', 'thu-chest-fly', 'wed-ez-bar-curl', 'wed-rope-pushdown'),
+      day('Lower body B', ['quads', 'hamstrings', 'calves', 'core'], ...LEGS, 'wed-hanging-knee-raise'),
+      REST,
+    ],
+  },
+  six_day: {
+    name: 'Push / pull / arms / legs · 6 days',
+    summary: 'Monday to Saturday, one focus a day. The most volume, for people who already train regularly.',
+    days: SPLIT,
+  },
+};
+
+/** The program suggested for a training level. The user can still pick any of them. */
+export const recommendedProgram = (level: 'beginner' | 'intermediate' | 'expert'): ProgramKey =>
+  level === 'beginner' ? 'full_body' : level === 'intermediate' ? 'upper_lower' : 'six_day';
+
+export const splitFor = (iso: string, program: ProgramKey = 'six_day'): SplitDay => PROGRAMS[program].days[weekdayOf(iso)];

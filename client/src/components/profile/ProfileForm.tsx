@@ -1,4 +1,4 @@
-import { ProfileInput, type Profile } from '@fuellog/shared';
+import { LEVEL_LABELS, LEVELS, ProfileInput, PROGRAM_KEYS, PROGRAMS, recommendedProgram, type Level, type Profile, type ProgramKey } from '@fuellog/shared';
 import { useId, useRef, useState, type FormEvent } from 'react';
 import { useSaveProfile } from '../../hooks/useProfile';
 import { numberOrNull } from '../../lib/entries';
@@ -26,8 +26,18 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
   const [height, setHeight] = useState(profile.height_cm?.toString() ?? '');
   const [weight, setWeight] = useState(profile.weight_kg?.toString() ?? '');
   const [submitted, setSubmitted] = useState(false);
+  const [level, setLevel] = useState<Level>(profile.level ?? 'beginner');
+  // A new user gets the program suggested for their level until they choose one themselves; an existing user keeps theirs.
+  const [program, setProgram] = useState<ProgramKey>(profile.onboarded && profile.program ? profile.program : recommendedProgram(level));
+  const [programChosen, setProgramChosen] = useState(profile.onboarded);
+  const suggested = recommendedProgram(level);
 
-  const parsed = ProfileInput.safeParse({ sex, goal, age: numberOrNull(age), height_cm: numberOrNull(height), weight_kg: numberOrNull(weight) });
+  function changeLevel(next: Level) {
+    setLevel(next);
+    if (!programChosen) setProgram(recommendedProgram(next));
+  }
+
+  const parsed = ProfileInput.safeParse({ sex, goal, level, program, age: numberOrNull(age), height_cm: numberOrNull(height), weight_kg: numberOrNull(weight) });
   const invalid = parsed.success ? {} : parsed.error.flatten().fieldErrors;
   const error = (field: keyof typeof RANGES | 'sex') => (submitted && invalid[field] ? (field === 'sex' ? 'Choose one' : RANGES[field]) : undefined);
 
@@ -49,6 +59,31 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
 
   return (
     <form ref={formRef} onSubmit={submit} noValidate className="space-y-4">
+      <div>
+        <label htmlFor={`${id}-level`} className="label">Training level</label>
+        <select id={`${id}-level`} className="input" value={level} onChange={(e) => changeLevel(e.target.value as Level)}>
+          {LEVELS.map((l) => <option key={l} value={l}>{LEVEL_LABELS[l]}</option>)}
+        </select>
+      </div>
+      <div>
+        <label htmlFor={`${id}-program`} className="label">Weekly program</label>
+        <select
+          id={`${id}-program`}
+          className="input"
+          value={program}
+          aria-describedby={`${id}-program-help`}
+          onChange={(e) => {
+            setProgram(e.target.value as ProgramKey);
+            setProgramChosen(true);
+          }}
+        >
+          {PROGRAM_KEYS.map((key) => <option key={key} value={key}>{PROGRAMS[key].name}{key === suggested ? ' (recommended)' : ''}</option>)}
+        </select>
+        <p id={`${id}-program-help`} className="mt-1.5 text-sm text-muted">
+          {PROGRAMS[program].summary}
+          {program !== suggested && ` For ${LEVEL_LABELS[level].toLowerCase()} level we recommend ${PROGRAMS[suggested].name}.`}
+        </p>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor={`${id}-sex`} className="label">Sex</label>

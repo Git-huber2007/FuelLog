@@ -1,4 +1,4 @@
-import { EXERCISE_TYPES, exercisePhotos, LEVELS, LIBRARY, LIBRARY_MUSCLES, type ExerciseType, type Level, type LibraryExercise } from '@fuellog/shared';
+import { EXERCISE_TYPES, exercisePhotos, LEVEL_LABELS, LEVELS, LIBRARY, LIBRARY_MUSCLES, type ExerciseType, type Level, type LibraryExercise } from '@fuellog/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { api } from '../../lib/apiClient';
@@ -7,7 +7,6 @@ import { EmptyState } from '../ui/EmptyState';
 const LEVEL_KEY = 'fuellog.level';
 const SHOWN = 40;
 const TYPE_LABELS: Record<ExerciseType, string> = { strength: 'Strength', cardio: 'Cardio', stretching: 'Stretching', plyometrics: 'Plyometrics' };
-const LEVEL_LABELS: Record<Level, string> = { beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Advanced' };
 
 const savedLevel = (): Level | 'all' => {
   let value: string | null = null;

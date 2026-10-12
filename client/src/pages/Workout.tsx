@@ -1,3 +1,4 @@
+import { weekdayOf } from '@fuellog/shared';
 import { useState } from 'react';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
@@ -23,7 +24,7 @@ export default function Workout() {
   return (
     <>
       {workout.isError && <p role="alert" className="field-error">Could not refresh this workout. Showing the last loaded version.</p>}
-      {restDay ? <RestDayCard /> : <WorkoutHeader title={title} muscles={muscles} />}
+      {restDay ? <RestDayCard sunday={weekdayOf(date) === 0} /> : <WorkoutHeader title={title} muscles={muscles} />}
       {exercises.length > 0 && <RestTimer />}
       {exercises.map((exercise) => <ExerciseCard key={`${date}-${exercise.key}`} date={date} exercise={exercise} />)}
       <section className="card space-y-3" aria-labelledby="more-title">

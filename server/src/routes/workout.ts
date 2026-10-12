@@ -2,15 +2,19 @@ import { Router } from 'express';
 import { asExercise, DateParams, libraryExercise, overloadHint, splitFor, type Exercise, type WorkoutResponse, type WorkoutSet } from '@fuellog/shared';
 import { h, unwrap } from '../middleware/errors';
 import { validate } from '../middleware/validate';
+import { loadProfile } from './profile';
 
 export const workoutRouter = Router();
-const COLUMNS = 'log_date,exercise_key,set_number,weight_kg,reps';
+const COLUMNS = 'log_date,exercise_key,set_number,weight_kg,reps,incline_pct';
 
 workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (req, res) => {
   const { date } = req.params;
-  const plan = splitFor(date);
+  const [profile, today] = await Promise.all([
+    loadProfile(req.sb, req.userId),
+    req.sb.from('workout_sets').select(COLUMNS).eq('log_date', date).order('set_number').then(unwrap<WorkoutSet[]>),
+  ]);
+  const plan = splitFor(date, profile.program);
   const planKeys = new Set(plan.exercises.map((e) => e.key));
-  const today = await req.sb.from('workout_sets').select(COLUMNS).eq('log_date', date).order('set_number').then(unwrap<WorkoutSet[]>);
 
   // An exercise the user added from the library is on this day because it has a set row here, even an empty one.
   const extras = [...new Set(today.map((s) => s.exercise_key))]

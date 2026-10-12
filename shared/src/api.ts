@@ -1,7 +1,8 @@
 // Shapes of database rows and API responses, shared so the client and server cannot drift apart.
 import type { Advice } from './advice';
 import type { CheckInput, CoachResult, Goal, LogSource, Meal, MeasureInput, Sex } from './schemas';
-import type { Exercise, MuscleGroup } from './split';
+import type { Level } from './library';
+import type { Exercise, MuscleGroup, ProgramKey } from './split';
 import type { MacroTotals, Targets } from './targets';
 
 export interface Profile {
@@ -11,6 +12,8 @@ export interface Profile {
   height_cm: number | null;
   weight_kg: number | null;
   goal: Goal;
+  level: Level;
+  program: ProgramKey;
   kcal_adjust: number;
   last_adjusted_on: string | null;
   onboarded: boolean;
@@ -48,6 +51,8 @@ export interface WorkoutSet {
   set_number: number;
   weight_kg: number;
   reps: number;
+  /** Cardio only: gradient in percent, negative for a decline. */
+  incline_pct: number | null;
 }
 
 export type Measurements = MeasureInput & { log_date: string };

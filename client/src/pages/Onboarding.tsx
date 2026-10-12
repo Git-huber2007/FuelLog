@@ -16,7 +16,7 @@ export default function Onboarding() {
       <div>
         <p className="eyebrow">Step 1 of 1</p>
         <h1 className="mt-4 text-4xl">Set up your targets</h1>
-        <p className="mt-3 text-lg text-muted">Five details are all it takes. Your targets update as you type and re-tune weekly from your weight.</p>
+        <p className="mt-3 text-lg text-muted">Pick your training level first and we suggest a weekly program. Then five details set your targets, which re-tune weekly from your weight.</p>
       </div>
       {profile.isPending && <LoadingSkeleton cards={1} />}
       {profile.isError && <ErrorState error={profile.error} onRetry={() => profile.refetch()} />}

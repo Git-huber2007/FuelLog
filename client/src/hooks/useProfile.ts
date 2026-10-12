@@ -13,6 +13,7 @@ export function useSaveProfile() {
       // Targets depend on the profile, so everything showing a target is stale.
       qc.invalidateQueries({ queryKey: ['day'] });
       qc.invalidateQueries({ queryKey: ['progress'] });
+      qc.invalidateQueries({ queryKey: ['workout'] }); // the weekly program is part of the profile
     },
   });
 }
