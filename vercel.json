@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://fuellog.onrender.com/api/:path*"
+      "destination": "https://fuellog-4uka.onrender.com/api/:path*"
     },
     {
       "source": "/((?!api/).*)",

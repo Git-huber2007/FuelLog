@@ -46,7 +46,7 @@ The browser only ever talks to the Vercel address. `vercel.json` forwards `/api/
 1. **Supabase.** Create the project and run the two migrations (steps 1 to 3 of the next section).
 2. **GitHub.** Push this folder to a repository. `.env` files are ignored and must stay out of it.
 3. **Render (API).** **New → Blueprint**, pick the repository. `render.yaml` builds only the server. Enter `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `GEMINI_API_KEY`. When it is live, open `https://YOUR-SERVICE.onrender.com/api/health` and expect `{"ok":true}`.
-4. **Point Vercel at Render.** If Render gave you an address other than `https://fuellog.onrender.com`, change the `destination` of the first rewrite in `vercel.json` to it, and push. If your Supabase project is not `ppbdkynhmkcxivhjyzlh`, change the two Supabase addresses in the `Content-Security-Policy` line as well.
+4. **Point Vercel at Render.** If Render gave you an address other than `https://fuellog-4uka.onrender.com`, change the `destination` of the first rewrite in `vercel.json` to it, and push. If your Supabase project is not `ppbdkynhmkcxivhjyzlh`, change the two Supabase addresses in the `Content-Security-Policy` line as well.
 5. **Vercel (client).** **Add New → Project**, import the same repository, leave **Root Directory** as the repository root. `vercel.json` supplies the build settings. Add three environment variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_API_URL` set to `/api`. Deploy.
 6. **Supabase emails.** **Authentication → URL Configuration**: set **Site URL** to the Vercel address and add `https://YOUR-APP.vercel.app/**` under **Redirect URLs**.
 7. Create your account on the Vercel address, then turn off **Allow new users to sign up** in Supabase.
