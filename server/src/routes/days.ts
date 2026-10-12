@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
-  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, IdParams, MeasureInput, SetInput, WeightInput,
-  type DayResponse, type FoodLog, type LogSource, type RecentFood,
+  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, IdParams, libraryExercise, MeasureInput, SetInput, WeightInput,
+  type DayResponse, type FoodLog, type LogSource, type RecentFood, type WorkoutSet,
 } from '@fuellog/shared';
 import { h, HttpError, unwrap } from '../middleware/errors';
 import { notFuture, validate } from '../middleware/validate';
@@ -10,12 +10,16 @@ import { loadProfile, requireTargets } from './profile';
 export const daysRouter = Router();
 const date = validate({ params: DateParams });
 
+// Reads every column and picks the public ones, so the day still loads on a database where the steps migration has not been run yet.
+const checkOf = (row: (CheckInput & { steps?: number }) | null): CheckInput | null =>
+  row && { water_ml: row.water_ml, sleep_hours: row.sleep_hours, creatine: row.creatine, protein_shake: row.protein_shake, steps: row.steps ?? 0 };
+
 daysRouter.get('/days/:date', date, h(async (req, res) => {
   const { sb } = req;
   const d = req.params.date;
   const [logs, check, weight, measurements, sets, profile, proteinFoods] = await Promise.all([
     sb.from('food_logs').select('*').eq('log_date', d).order('created_at'),
-    sb.from('daily_checks').select('water_ml,sleep_hours,creatine,protein_shake').eq('log_date', d).maybeSingle(),
+    sb.from('daily_checks').select('*').eq('log_date', d).maybeSingle(),
     sb.from('weight_logs').select('weight_kg').eq('log_date', d).maybeSingle(),
     sb.from('measurements').select('log_date,waist_cm,chest_cm,arm_cm').eq('log_date', d).maybeSingle(),
     sb.from('workout_sets').select('log_date,exercise_key,set_number,weight_kg,reps,incline_pct').eq('log_date', d),
@@ -25,11 +29,11 @@ daysRouter.get('/days/:date', date, h(async (req, res) => {
   const body: DayResponse = {
     date: d,
     logs: unwrap(logs),
-    check: unwrap(check),
+    check: checkOf(unwrap(check)),
     weight_kg: unwrap(weight)?.weight_kg ?? null,
     measurements: unwrap(measurements),
-    sets: unwrap(sets),
-    targets: requireTargets(profile, dayDeltaFor(d)),
+    sets: unwrap<WorkoutSet[]>(sets).map((s) => ({ ...s, cardio: libraryExercise(s.exercise_key)?.type === 'cardio' })),
+    targets: requireTargets(profile, dayDeltaFor(d, profile.program)),
     proteinFoods: unwrap(proteinFoods),
   };
   res.json(body);
@@ -59,7 +63,7 @@ daysRouter.post('/days/:date/copy-previous', date, notFuture, h(async (req, res)
 
 daysRouter.put('/days/:date/check', date, validate({ body: CheckInput }), notFuture, h(async (req, res) => {
   const row = { ...req.body, user_id: req.userId, log_date: req.params.date };
-  res.json(unwrap(await req.sb.from('daily_checks').upsert(row).select('water_ml,sleep_hours,creatine,protein_shake').single()));
+  res.json(checkOf(unwrap(await req.sb.from('daily_checks').upsert(row).select('*').single())));
 }));
 
 daysRouter.put('/days/:date/weight', date, validate({ body: WeightInput }), notFuture, h(async (req, res) => {

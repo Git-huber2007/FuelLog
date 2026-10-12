@@ -40,6 +40,8 @@ export const CheckInput    = z.object({
   water_ml: z.number().int().min(0).max(10000),
   sleep_hours: z.number().min(0).max(16).nullable(),
   creatine: z.boolean(), protein_shake: z.boolean(),
+  // Optional so a save from an older cached copy of the app leaves the stored count alone.
+  steps: z.number().int().min(0).max(100000).optional(),
 });
 export const WeightInput   = z.object({ weight_kg: z.number().min(30).max(250) });
 export const MeasureInput  = z.object({

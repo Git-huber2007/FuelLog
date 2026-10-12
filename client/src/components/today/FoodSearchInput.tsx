@@ -41,7 +41,7 @@ export function FoodSearchInput({ onPick, onCreate }: { onPick: (food: Food) => 
                 <button type="button" className="flex min-h-[44px] min-w-0 flex-1 items-center justify-between gap-3 px-3 py-2 text-left"
                   onClick={() => { onPick(food); setText(''); }}>
                   <span className="min-w-0">
-                    <span className="block truncate" title={food.name}>{food.name}</span>
+                    <span className="block line-clamp-2" title={food.name}>{food.name}</span>
                     <span className="block text-sm text-muted">{food.serving_label} · {food.protein_g} g protein</span>
                   </span>
                   <span className="shrink-0 text-sm tabular-nums text-muted">{Math.round(food.kcal)} kcal</span>

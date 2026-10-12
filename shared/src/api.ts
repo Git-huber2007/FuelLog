@@ -53,6 +53,8 @@ export interface WorkoutSet {
   reps: number;
   /** Cardio only: gradient in percent, negative for a decline. */
   incline_pct: number | null;
+  /** True for cardio exercises from the library. */
+  cardio?: boolean;
 }
 
 export type Measurements = MeasureInput & { log_date: string };
@@ -82,6 +84,8 @@ export interface WorkoutResponse {
   title: string;
   muscles: MuscleGroup[];
   exercises: WorkoutExercise[];
+  program: ProgramKey;
+  programName: string;
 }
 
 /** One serving of a recently logged food, ready to log again. */
@@ -114,6 +118,7 @@ export interface ProgressResponse {
     workouts: number;
     avgSleep: number | null;
     avgWater: number | null;
+    avgSteps: number | null;
   };
   measurements: Record<keyof MeasureInput, MeasureDelta | null>;
   streak: number;

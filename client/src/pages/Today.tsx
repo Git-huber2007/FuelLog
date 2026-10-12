@@ -1,4 +1,4 @@
-import { nudge, sumMacros } from '@fuellog/shared';
+import { nudge, stepsKcal, sumMacros, workoutKcal } from '@fuellog/shared';
 import { AddFoodCard } from '../components/today/AddFoodCard';
 import { CalorieRing } from '../components/today/CalorieRing';
 import { DailyCheckCard } from '../components/today/DailyCheckCard';
@@ -9,6 +9,7 @@ import { StreakBadge } from '../components/today/StreakBadge';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { useDay } from '../hooks/useDay';
+import { useProfile } from '../hooks/useProfile';
 import { useProgress } from '../hooks/useProgress';
 import { useSelectedDate } from '../hooks/useSelectedDate';
 
@@ -16,12 +17,17 @@ export default function Today() {
   const { date, isToday } = useSelectedDate();
   const day = useDay(date);
   const progress = useProgress();
+  const profile = useProfile();
 
   if (day.isPending) return <LoadingSkeleton />;
   if (day.isError) return <ErrorState error={day.error} onRetry={() => day.refetch()} />;
 
   const { targets, logs, check } = day.data;
   const totals = sumMacros(logs);
+  const bodyKg = profile.data?.profile.weight_kg ?? day.data.weight_kg;
+  const workoutBurn = bodyKg ? workoutKcal(day.data.sets.map((s) => ({ cardio: s.cardio, logged: [s] })), bodyKg) : 0;
+  const walkingBurn = bodyKg && check?.steps ? stepsKcal(check.steps, bodyKg) : 0;
+  const totalBurn = workoutBurn + walkingBurn;
   const line = nudge({
     isToday,
     hour: new Date().getHours(),
@@ -44,12 +50,17 @@ export default function Today() {
           <span className="tabular-nums">{Math.round(totals.kcal)} of {targets.kcal} kcal eaten</span>
           <StreakBadge days={progress.data?.streak} />
         </div>
+        {totalBurn > 0 && (
+          <p className="text-sm text-muted">
+            Burned today: about {totalBurn} kcal (workout {workoutBurn}, walking {walkingBurn})
+          </p>
+        )}
         <NudgeLine text={line} />
       </section>
       </div>
       <AddFoodCard key={`add-${date}`} date={date} />
       <EatenList date={date} logs={logs} />
-      <DailyCheckCard key={`check-${date}`} date={date} initial={check} waterTargetMl={targets.water_ml} />
+      <DailyCheckCard key={`check-${date}`} date={date} initial={check} waterTargetMl={targets.water_ml} bodyKg={profile.data?.profile.weight_kg ?? null} />
     </>
   );
 }

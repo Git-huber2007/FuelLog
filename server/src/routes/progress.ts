@@ -20,8 +20,8 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
     loadWeights(sb, today),
     sb.from('food_logs').select('log_date,kcal,protein_g').gte('log_date', from14).lte('log_date', today)
       .then(unwrap<{ log_date: string; kcal: number; protein_g: number }[]>),
-    sb.from('daily_checks').select('sleep_hours,water_ml').gte('log_date', from7).lte('log_date', today)
-      .then(unwrap<{ sleep_hours: number | null; water_ml: number }[]>),
+    sb.from('daily_checks').select('sleep_hours,water_ml,steps').gte('log_date', from7).lte('log_date', today)
+      .then(unwrap<{ sleep_hours: number | null; water_ml: number; steps?: number | null }[]>),
     sb.from('workout_sets').select('log_date').gte('log_date', from7).lte('log_date', today).gt('reps', 0)
       .then(unwrap<{ log_date: string }[]>),
     sb.from('measurements').select('log_date,waist_cm,chest_cm,arm_cm').order('log_date').then(unwrap<Measurements[]>),
@@ -39,7 +39,7 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
   }
   const days = Array.from({ length: 14 }, (_, i) => {
     const date = addDays(from14, i);
-    return { date, eaten: byDay.get(date), targets: requireTargets(profile, dayDeltaFor(date)) };
+    return { date, eaten: byDay.get(date), targets: requireTargets(profile, dayDeltaFor(date, profile.program)) };
   });
   const week = days.slice(7).filter((d) => d.eaten);
 
@@ -64,6 +64,7 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
       workouts: new Set(sets.map((s) => s.log_date)).size,
       avgSleep: round(mean(checks.map((c) => c.sleep_hours).filter((v): v is number => v !== null)), 1),
       avgWater: round(mean(checks.map((c) => c.water_ml))),
+      avgSteps: round(mean(checks.map((c) => c.steps).filter((v): v is number => typeof v === 'number' && v > 0))),
     },
     measurements: { waist_cm: delta('waist_cm'), chest_cm: delta('chest_cm'), arm_cm: delta('arm_cm') },
     streak: streak(logDates.map((l) => l.log_date), today),

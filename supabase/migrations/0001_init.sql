@@ -204,7 +204,6 @@ drop policy if exists ai_usage_insert on public.ai_usage;
 create policy ai_usage_insert on public.ai_usage for insert to authenticated with check (user_id = auth.uid());
 
 drop policy if exists ai_usage_update on public.ai_usage;
-create policy ai_usage_update on public.ai_usage for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid() and failed = true);
 
 drop policy if exists photos_select on storage.objects;
 create policy photos_select on storage.objects for select to authenticated

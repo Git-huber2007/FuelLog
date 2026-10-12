@@ -6,6 +6,7 @@ export function WeekSummaryCard({ summary }: { summary: ProgressResponse['summar
     ['Protein target hit', summary.daysLogged ? `${summary.proteinHitDays} of ${summary.daysLogged} days` : '–'],
     ['Workouts logged', String(summary.workouts)],
     ['Average sleep', summary.avgSleep === null ? '–' : `${summary.avgSleep} h`],
+    ['Average steps', summary.avgSteps === null ? '–' : `${summary.avgSteps.toLocaleString()} steps`],
   ];
   return (
     <section className="card" aria-labelledby="week-title">

@@ -17,8 +17,9 @@ export async function generateJson<T>(opts: {
   ai ??= new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
   const deadline = Date.now() + 25_000;
   let retriedTransient = false;
+  let badAnswerRetries = 0;
 
-  for (let attempt = 1; ; attempt++) {
+  for (;;) {
     const remaining = deadline - Date.now();
     if (remaining <= 500) {
       throw new HttpError(502, 'ai_unavailable', 'The AI service did not answer. Try again in a moment, or log it manually.');
@@ -57,7 +58,8 @@ export async function generateJson<T>(opts: {
     try {
       return opts.validate.parse(JSON.parse(text ?? ''));
     } catch {
-      if (attempt === 2 || deadline - Date.now() <= 2_000) {
+      badAnswerRetries++;
+      if (badAnswerRetries > 1 || deadline - Date.now() <= 2_000) {
         throw new HttpError(502, 'ai_bad_response', 'The AI gave an answer we could not use. Try rewording it, or log it manually.');
       }
     }

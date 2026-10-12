@@ -1,6 +1,7 @@
 import { EXERCISE_TYPES, exercisePhotos, LEVEL_LABELS, LEVELS, LIBRARY, LIBRARY_MUSCLES, type ExerciseType, type Level, type LibraryExercise } from '@fuellog/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useProfile } from '../../hooks/useProfile';
 import { api } from '../../lib/apiClient';
 import { EmptyState } from '../ui/EmptyState';
 
@@ -8,14 +9,14 @@ const LEVEL_KEY = 'fuellog.level';
 const SHOWN = 40;
 const TYPE_LABELS: Record<ExerciseType, string> = { strength: 'Strength', cardio: 'Cardio', stretching: 'Stretching', plyometrics: 'Plyometrics' };
 
-const savedLevel = (): Level | 'all' => {
+const savedLevel = (fallback: Level = 'beginner'): Level | 'all' => {
   let value: string | null = null;
   try {
     value = localStorage.getItem(LEVEL_KEY);
   } catch {
-    // storage is blocked in some private windows; fall back to beginner
+    // storage is blocked in some private windows; fall back to profile level
   }
-  return LEVELS.includes(value as Level) ? (value as Level) : value === 'all' ? 'all' : 'beginner';
+  return LEVELS.includes(value as Level) ? (value as Level) : value === 'all' ? 'all' : fallback;
 };
 
 interface Props {
@@ -29,10 +30,11 @@ interface Props {
 export function ExercisePicker({ date, onDay, onClose }: Props) {
   const id = useId();
   const qc = useQueryClient();
+  const profile = useProfile();
   const dialog = useRef<HTMLDialogElement>(null);
   const [type, setType] = useState<ExerciseType | 'all'>('all');
   const [muscle, setMuscle] = useState('all');
-  const [level, setLevel] = useState<Level | 'all'>(savedLevel); // the chosen level is remembered on this device
+  const [level, setLevel] = useState<Level | 'all'>(() => savedLevel(profile.data?.profile.level)); // the chosen level is remembered on this device
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -122,7 +124,7 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
                     <li key={exercise.id} className="flex items-center gap-3 rounded-2xl border border-line p-2">
                       <img src={exercisePhotos(exercise.id)[0]} alt="" loading="lazy" width={72} height={48} className="h-12 w-[72px] shrink-0 rounded-lg bg-line object-cover" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium" title={exercise.name}>{exercise.name}</p>
+                        <p className="line-clamp-2 font-medium" title={exercise.name}>{exercise.name}</p>
                         <p className="truncate text-sm text-muted" title={`${exercise.type === 'cardio' ? 'Cardio' : exercise.muscle} · ${LEVEL_LABELS[exercise.level]}`}>
                           {exercise.type === 'cardio' ? 'Cardio' : exercise.muscle} · {LEVEL_LABELS[exercise.level]}
                         </p>

@@ -17,10 +17,11 @@ export function useDebouncedMutation<T extends object>(
 ) {
   const toast = useToast();
   const [status, setStatus] = useState<SaveStatus>('idle');
+  const [waiting, setWaiting] = useState(false);
   const timer = useRef<number>();
   const pending = useRef<T>();
   const lastFailed = useRef<T>();
-  const inFlight = useRef(false);
+  const inFlightCount = useRef(0);
   const keepalivePending = useRef(false);
   const saveRef = useRef(save);
   saveRef.current = save;
@@ -29,35 +30,41 @@ export function useDebouncedMutation<T extends object>(
     window.clearTimeout(timer.current);
     if (opts?.keepalive) keepalivePending.current = true;
 
-    if (inFlight.current) return;
+    if (inFlightCount.current > 0 && !opts?.keepalive) return;
     if (pending.current === undefined) return;
 
     const value = pending.current;
     pending.current = undefined;
-    const keepalive = keepalivePending.current;
+    const keepalive = !!opts?.keepalive || keepalivePending.current;
     keepalivePending.current = false;
 
-    inFlight.current = true;
+    inFlightCount.current += 1;
     setStatus('saving');
 
     saveRef.current(value, { keepalive }).then(
       () => {
-        inFlight.current = false;
-        if (pending.current !== undefined) {
-          flush();
-        } else {
-          lastFailed.current = undefined;
-          setStatus('saved');
+        inFlightCount.current -= 1;
+        if (inFlightCount.current === 0) {
+          if (pending.current !== undefined) {
+            flush();
+          } else {
+            setWaiting(false);
+            lastFailed.current = undefined;
+            setStatus('saved');
+          }
         }
       },
       (error: Error) => {
-        inFlight.current = false;
-        if (pending.current !== undefined) {
-          flush();
-        } else {
-          lastFailed.current = value;
-          setStatus('error');
-          toast(error.message, 'error');
+        inFlightCount.current -= 1;
+        if (inFlightCount.current === 0) {
+          if (pending.current !== undefined) {
+            flush();
+          } else {
+            setWaiting(false);
+            lastFailed.current = value;
+            setStatus('error');
+            toast(error.message, 'error');
+          }
         }
       },
     );
@@ -65,6 +72,7 @@ export function useDebouncedMutation<T extends object>(
 
   const run = useCallback((value: T) => {
     pending.current = value;
+    setWaiting(true);
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => flush(), delay);
   }, [flush, delay]);
@@ -72,6 +80,7 @@ export function useDebouncedMutation<T extends object>(
   const retry = useCallback(() => {
     if (lastFailed.current !== undefined) {
       pending.current = lastFailed.current;
+      setWaiting(true);
       flush();
     }
   }, [flush]);
@@ -91,5 +100,5 @@ export function useDebouncedMutation<T extends object>(
     };
   }, [flush]);
 
-  return { run, status, retry, flush };
+  return { run, status, retry, flush, waiting };
 }

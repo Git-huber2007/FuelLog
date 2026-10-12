@@ -1,4 +1,4 @@
-import { exercisePhotos, type WorkoutExercise } from '@fuellog/shared';
+import { exercisePhotos, supportsIncline, type WorkoutExercise } from '@fuellog/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { api } from '../../lib/apiClient';
@@ -11,6 +11,7 @@ import { SetRow } from './SetRow';
 export function ExerciseCard({ date, exercise }: { date: string; exercise: WorkoutExercise }) {
   const qc = useQueryClient();
   const toast = useToast();
+  const incline = !!(exercise.cardio && supportsIncline(exercise.name));
   // Timed holds such as the plank count seconds; cardio counts kilometres and minutes.
   const units = exercise.cardio ? (['km', 'min'] as const) : (['kg', exercise.prescription.endsWith(' s') ? 'seconds' : 'reps'] as const);
   const removed = useRef(false);
@@ -41,20 +42,20 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
       <ExerciseDemo name={exercise.name} photos={exercisePhotos(exercise.key)} />
       <LastSessionLine last={exercise.last} cardio={exercise.cardio} />
       <OverloadHint show={exercise.overload} />
-      <div className={`grid items-center gap-2 text-xs font-medium text-muted ${exercise.cardio ? 'grid-cols-[1fr_1fr_1fr_1.5rem]' : exercise.sets === 1 ? 'grid-cols-[1fr_1fr_1.5rem]' : 'grid-cols-[2.5rem_1fr_1fr_1.5rem]'}`} aria-hidden="true">
+      <div className={`grid items-center gap-2 text-xs font-medium text-muted ${incline ? 'grid-cols-[1fr_1fr_1fr_1.5rem]' : exercise.sets === 1 ? 'grid-cols-[1fr_1fr_1.5rem]' : 'grid-cols-[2.5rem_1fr_1fr_1.5rem]'}`} aria-hidden="true">
         {exercise.sets !== 1 && <span></span>}
         <span className="px-1">{units[0]}</span>
         <span className="px-1">{units[1]}</span>
-        {exercise.cardio && <span className="px-1">incline %</span>}
+        {incline && <span className="px-1">incline %</span>}
         <span></span>
       </div>
       <ul className="space-y-2">
         {Array.from({ length: exercise.sets }, (_, i) => (
-          <SetRow key={i} date={date} exerciseKey={exercise.key} setNumber={i + 1} units={units} single={exercise.sets === 1} incline={exercise.cardio} removed={removed}
+          <SetRow key={i} date={date} exerciseKey={exercise.key} setNumber={i + 1} units={units} single={exercise.sets === 1} incline={incline} removed={removed}
             initial={exercise.logged.find((s) => s.set_number === i + 1)} />
         ))}
       </ul>
-      {exercise.cardio && <p className="text-sm text-muted">Incline is the gradient in percent. Use a minus sign for a decline, for example -3.</p>}
+      {incline && <p className="text-sm text-muted">Incline is the gradient in percent. Use a minus sign for a decline, for example -3.</p>}
       {exercise.extra && (
         <button type="button" className="btn w-full text-muted" disabled={remove.isPending} onClick={() => remove.mutate()}>
           {remove.isPending ? 'Removing…' : 'Remove from this workout'}

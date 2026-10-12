@@ -14,7 +14,7 @@ export function EatenListItem({ log, onDelete }: { log: FoodLog; onDelete: () =>
   return (
     <li className="flex items-center gap-2 py-1">
       <div className="min-w-0 flex-1">
-        <p className="truncate" title={log.name}>{log.name}</p>
+        <p className="line-clamp-2" title={log.name}>{log.name}</p>
         <p className="text-sm tabular-nums text-muted">
           {log.servings !== 1 && `${log.servings} × · `}{Math.round(log.kcal)} kcal · {Math.round(log.protein_g)} g protein
         </p>

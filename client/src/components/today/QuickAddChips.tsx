@@ -22,7 +22,7 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
                 add.mutate([{ ...food, food_id: food.food_id ?? undefined, meal, servings: 1 }]);
                 toast(`Added ${food.name}`);
               }}>
-              <span className="truncate" title={food.name}>{food.name}</span>
+              <span className="line-clamp-2" title={food.name}>{food.name}</span>
             </button>
           </li>
         ))}

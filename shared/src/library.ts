@@ -47,3 +47,11 @@ const PHOTO_BASE = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@f00c92c
 /** Start and finish photos. The fixed split's photos ship with the app; library photos come from the CDN. */
 export const exercisePhotos = (key: string): [start: string, finish: string] =>
   EXERCISE_KEYS.has(key) ? [`/exercises/${key}-0.jpg`, `/exercises/${key}-1.jpg`] : [`${PHOTO_BASE}/${key}/0.jpg`, `${PHOTO_BASE}/${key}/1.jpg`];
+
+const INCLINE_KEYWORDS = ['treadmill', 'walking', 'running', 'hiking', 'stair', 'step', 'elliptical'];
+
+/** True for cardio exercises that support incline / gradient. */
+export const supportsIncline = (name: string): boolean => {
+  const lower = name.toLowerCase();
+  return INCLINE_KEYWORDS.some((kw) => lower.includes(kw));
+};

@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   addDays, adjustmentAdvice, asExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, EXERCISE_KEYS, exercisePhotos, LIBRARY, libraryExercise, nudge,
-  overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, SetInput, SPLIT, splitFor, streak, weekdayOf, workoutKcal, type Weigh,
+  overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, SetInput, SPLIT, splitFor, stepsKcal, streak, supportsIncline, weekdayOf, workoutKcal, type Weigh,
 } from '../index';
 
 const me = { sex: 'male', age: 22, height_cm: 175, weight_kg: 75, goal: 'maintain' } as const;
@@ -15,6 +15,23 @@ describe('targets', () => {
     expect(computeTargets(me, dayDeltaFor('2026-10-12')).kcal).toBe(2460); // Monday
     expect(computeTargets(me, dayDeltaFor('2026-10-17')).kcal).toBe(2460); // Saturday
     expect(computeTargets(me, dayDeltaFor('2026-10-11')).kcal).toBe(2250); // Sunday
+  });
+  it('adjusts day delta by chosen program and keeps weekly sum net zero', () => {
+    const dates = ['2026-10-11', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17']; // Sun..Sat
+    // six_day: Sunday rest (-180), 6 training days (+30 each)
+    const sixDeltas = dates.map((d) => dayDeltaFor(d, 'six_day'));
+    expect(sixDeltas).toEqual([-180, 30, 30, 30, 30, 30, 30]);
+    expect(sixDeltas.reduce((a, b) => a + b, 0)).toBe(0);
+
+    // upper_lower: 4 training days (Mon, Tue, Thu, Fri = +45), 3 rest days (Sun, Wed, Sat = -60)
+    const ulDeltas = dates.map((d) => dayDeltaFor(d, 'upper_lower'));
+    expect(ulDeltas).toEqual([-60, 45, 45, -60, 45, 45, -60]);
+    expect(ulDeltas.reduce((a, b) => a + b, 0)).toBe(0);
+
+    // full_body: 3 training days (Mon, Wed, Fri = +60), 4 rest days (Sun, Tue, Thu, Sat = -45)
+    const fbDeltas = dates.map((d) => dayDeltaFor(d, 'full_body'));
+    expect(fbDeltas).toEqual([-45, 60, -45, 60, -45, 60, -45]);
+    expect(fbDeltas.reduce((a, b) => a + b, 0)).toBe(0);
   });
   it('never drops below 1500 kcal', () => {
     const small = { sex: 'female', age: 60, height_cm: 150, weight_kg: 40, goal: 'cut', kcal_adjust: -600 } as const;
@@ -149,6 +166,8 @@ describe('split', () => {
   it('estimates calories burned from sets, distance, time and incline', () => {
     const set = (weight_kg: number, reps: number, incline_pct: number | null = null) => ({ weight_kg, reps, incline_pct });
     expect(workoutKcal([], 70)).toBe(0);
+    expect(stepsKcal(10000, 70)).toBe(399);
+    expect(stepsKcal(0, 70)).toBe(0);
     expect(workoutKcal([{ logged: [set(60, 10), set(60, 0)] }], 70)).toBe(13); // one finished set; the empty one counts for nothing
     const flat = workoutKcal([{ cardio: true, logged: [set(5, 30)] }], 70); // 10 km/h for 30 minutes
     expect(flat).toBeGreaterThan(330);
@@ -187,5 +206,26 @@ describe('split', () => {
     const set = { set_number: 1, weight_kg: 40, reps: 10 };
     expect(SetInput.safeParse({ ...set, exercise_key: 'mon-bench-press' }).success).toBe(true);
     expect(SetInput.safeParse({ ...set, exercise_key: 'mon-moon-walk' }).success).toBe(false);
+  });
+  it('matches incline-supported cardio exercises by keywords', () => {
+    // Exercises that support incline
+    expect(supportsIncline('Running, Treadmill')).toBe(true);
+    expect(supportsIncline('Walking, Treadmill')).toBe(true);
+    expect(supportsIncline('Jogging, Treadmill')).toBe(true);
+    expect(supportsIncline('Trail Running/Walking')).toBe(true);
+    expect(supportsIncline('Elliptical Trainer')).toBe(true);
+    expect(supportsIncline('Stairmaster')).toBe(true);
+    expect(supportsIncline('Step Mill')).toBe(true);
+    expect(supportsIncline('Mountain Hiking')).toBe(true);
+
+    // Exercises that should NOT match incline
+    expect(supportsIncline('Rowing, Stationary')).toBe(false);
+    expect(supportsIncline('Bicycling')).toBe(false);
+    expect(supportsIncline('Bicycling, Stationary')).toBe(false);
+    expect(supportsIncline('Recumbent Bike')).toBe(false);
+    expect(supportsIncline('Rope Jumping')).toBe(false);
+    expect(supportsIncline('Skating')).toBe(false);
+    expect(supportsIncline('Prowler Sprint')).toBe(false);
+    expect(supportsIncline('Bench press')).toBe(false);
   });
 });

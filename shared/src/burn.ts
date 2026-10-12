@@ -15,6 +15,12 @@ function vo2(speed: number, grade: number): number {
 }
 
 /**
+ * Estimated energy burned by walking a number of steps, in kcal: about 0.04 kcal a step at 70 kg.
+ * shortcut: ignores stride length and pace, so brisk walkers and runners burn more than shown; replace with device data if the app ever reads a pedometer.
+ */
+export const stepsKcal = (steps: number, bodyKg: number): number => Math.round(steps * bodyKg * 0.00057);
+
+/**
  * Estimated energy burned by the sets logged in one workout, in kcal.
  * shortcut: lifting is a flat 3.5 MET for three minutes a set and all cardio uses the walking and running equations,
  * so cycling, rowing and very heavy lifting are rough; use heart-rate data if the app ever reads a wearable.

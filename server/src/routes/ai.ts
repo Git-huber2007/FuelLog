@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   addDays, AiItems, CoachResult, exerciseName, ParsePhotoBody, ParseTextBody, type AiParseResponse, type FoodLog, type Meal,
 } from '@fuellog/shared';
-import { assertAiQuota, clearAiUse, recordAiUse } from '../lib/aiUsage';
+import { assertAiQuota, recordAiUse } from '../lib/aiUsage';
 import { aiEnabled, generateJson } from '../lib/gemini';
 import { h, HttpError, unwrap } from '../middleware/errors';
 import { notFuture, validate } from '../middleware/validate';
@@ -57,42 +57,34 @@ async function logEstimates(req: Request, items: AiItems['items'], meal: Meal, d
 
 export const aiRouter = Router();
 
-aiRouter.use('/ai', (req, _res, next) => {
+aiRouter.use('/ai', (_req, _res, next) => {
   if (!aiEnabled()) return next(new HttpError(503, 'ai_not_configured', 'AI features are switched off on this server. Everything else works as normal.'));
-  assertAiQuota(req.sb).then(() => next(), next);
+  next();
 });
 
 aiRouter.post('/ai/parse-text', validate({ body: ParseTextBody }), notFuture, h(async (req, res) => {
   const { text: mealText, date, meal } = req.body;
-  const usageId = await recordAiUse(req.sb, req.userId, 'parse_text');
-  try {
-    const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: parseTextPrompt(mealText) }], responseSchema: ITEMS_SCHEMA, validate: ClampedItems });
-    const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_text'), note: result.note };
-    res.json(body);
-  } catch (err) {
-    await clearAiUse(req.sb, usageId).catch(() => {});
-    throw err;
-  }
+  await recordAiUse(req.sb, req.userId, 'parse_text');
+  await assertAiQuota(req.sb);
+  const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: parseTextPrompt(mealText) }], responseSchema: ITEMS_SCHEMA, validate: ClampedItems });
+  const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_text'), note: result.note };
+  res.json(body);
 }));
 
 aiRouter.post('/ai/parse-photo', validate({ body: ParsePhotoBody }), notFuture, h(async (req, res) => {
   const { imageBase64, mimeType, date, meal } = req.body;
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(imageBase64)) throw new HttpError(400, 'validation', 'That photo could not be read. Try taking it again.');
   if ((imageBase64.length * 3) / 4 > MAX_PHOTO_BYTES) throw new HttpError(400, 'too_large', 'That photo is over 4 MB. Try a smaller one.');
-  const usageId = await recordAiUse(req.sb, req.userId, 'parse_photo');
-  try {
-    const result = await generateJson({
-      system: SYSTEM_PROMPT,
-      parts: [{ inlineData: { mimeType, data: imageBase64 } }, { text: PARSE_PHOTO_PROMPT }],
-      responseSchema: ITEMS_SCHEMA,
-      validate: ClampedItems,
-    });
-    const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_photo'), note: result.note };
-    res.json(body);
-  } catch (err) {
-    await clearAiUse(req.sb, usageId).catch(() => {});
-    throw err;
-  }
+  await recordAiUse(req.sb, req.userId, 'parse_photo');
+  await assertAiQuota(req.sb);
+  const result = await generateJson({
+    system: SYSTEM_PROMPT,
+    parts: [{ inlineData: { mimeType, data: imageBase64 } }, { text: PARSE_PHOTO_PROMPT }],
+    responseSchema: ITEMS_SCHEMA,
+    validate: ClampedItems,
+  });
+  const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_photo'), note: result.note };
+  res.json(body);
 }));
 
 type SetRow = { log_date: string; exercise_key: string; weight_kg: number; reps: number };
@@ -120,6 +112,8 @@ function exerciseTrends(sets: SetRow[], weekStart: string) {
 }
 
 aiRouter.post('/ai/weekly-coach', h(async (req, res) => {
+  await recordAiUse(req.sb, req.userId, 'weekly_coach');
+  await assertAiQuota(req.sb);
   const weekStart = addDays(req.today, -6);
   const [{ profile, progress }, sets] = await Promise.all([
     buildProgress(req.sb, req.userId, req.today),
@@ -139,17 +133,12 @@ aiRouter.post('/ai/weekly-coach', h(async (req, res) => {
     workouts_logged: summary.workouts,
     avg_sleep_hours: summary.avgSleep,
     avg_water_ml: summary.avgWater,
+    avg_steps: summary.avgSteps,
     weight_change_7d_kg: advice.rate === null ? null : Math.round(advice.rate * 100) / 100,
     adjustment_advice: advice.message,
     exercises_with_progress: trends.progressed,
     exercises_stalled: trends.stalled,
   };
-  const usageId = await recordAiUse(req.sb, req.userId, 'weekly_coach');
-  try {
-    const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: weeklyCoachPrompt(data) }], responseSchema: COACH_SCHEMA, validate: ClampedCoach });
-    res.json(result);
-  } catch (err) {
-    await clearAiUse(req.sb, usageId).catch(() => {});
-    throw err;
-  }
+  const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: weeklyCoachPrompt(data) }], responseSchema: COACH_SCHEMA, validate: ClampedCoach });
+  res.json(result);
 }));

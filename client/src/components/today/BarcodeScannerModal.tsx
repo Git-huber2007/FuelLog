@@ -45,25 +45,25 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
     dialog.current?.showModal();
   }, []);
 
-  const lookup = useCallback(async (raw: string): Promise<boolean> => {
+  const lookup = useCallback(async (raw: string): Promise<'ok' | 'invalid' | 'failed'> => {
     const code = BarcodeParam.safeParse(raw.trim());
     if (!code.success) {
       setMessage('A barcode is 8 to 14 digits.');
-      return false;
+      return 'invalid';
     }
-    if (busy.current) return false;
+    if (busy.current) return 'failed';
     busy.current = true;
     setMessage('Looking it up…');
     try {
       onFood(await api<Food>(`/foods/barcode/${code.data}`));
-      return true;
+      return 'ok';
     } catch (error) {
       if (error instanceof ApiError && error.code === 'barcode_not_found') {
         onUnknown();
-        return true;
+        return 'ok';
       }
       setMessage((error as Error).message);
-      return false;
+      return 'failed';
     } finally {
       busy.current = false;
     }
@@ -75,13 +75,19 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
     if (!live || !el) return;
     let stopped = false;
     let stop = () => {};
-    // The camera sees the same barcode many times a second; retry if lookup failed.
+    // The camera sees the same barcode many times a second; retry only after ~3 seconds if lookup failed.
     let lastSeen = '';
+    let retryTimer: number | undefined;
     const seen = async (code: string) => {
       if (code === lastSeen) return;
       lastSeen = code;
-      const ok = await lookup(code);
-      if (!ok) lastSeen = '';
+      window.clearTimeout(retryTimer);
+      const res = await lookup(code);
+      if (res === 'failed') {
+        retryTimer = window.setTimeout(() => {
+          if (lastSeen === code) lastSeen = '';
+        }, 3000);
+      }
     };
     const fail = () => {
       if (stopped) return;
@@ -123,6 +129,7 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
     }
     return () => {
       stopped = true;
+      window.clearTimeout(retryTimer);
       stop();
     };
   }, [live, lookup]);

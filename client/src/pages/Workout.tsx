@@ -1,4 +1,4 @@
-import { weekdayOf, workoutKcal } from '@fuellog/shared';
+import { dayDeltaFor, weekdayOf, workoutKcal } from '@fuellog/shared';
 import { useState } from 'react';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
@@ -21,14 +21,19 @@ export default function Workout() {
   // A failed background refresh keeps the last good data on screen; only a first load with nothing to show is an error page.
   if (!workout.data) return <ErrorState error={workout.error!} onRetry={() => workout.refetch()} />;
 
-  const { title, muscles, exercises } = workout.data;
+  const { title, muscles, exercises, program, programName } = workout.data;
   const restDay = muscles.length === 0;
+  const delta = dayDeltaFor(date, program);
   const setsDone = exercises.reduce((n, e) => n + e.logged.filter((s) => s.reps > 0).length, 0);
   const bodyKg = profile.data?.profile.weight_kg;
   return (
     <>
       {workout.isError && <p role="alert" className="field-error">Could not refresh this workout. Showing the last loaded version.</p>}
-      {restDay ? <RestDayCard sunday={weekdayOf(date) === 0} /> : <WorkoutHeader title={title} muscles={muscles} />}
+      {restDay ? (
+        <RestDayCard programName={programName} delta={delta} sunday={weekdayOf(date) === 0} />
+      ) : (
+        <WorkoutHeader title={title} muscles={muscles} programName={programName} />
+      )}
       {exercises.length > 0 && <RestTimer />}
       {exercises.map((exercise) => <ExerciseCard key={`${date}-${exercise.key}`} date={date} exercise={exercise} />)}
       {setsDone > 0 && bodyKg && (

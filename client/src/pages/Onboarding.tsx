@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { ProfileForm } from '../components/profile/ProfileForm';
 import { ErrorState } from '../components/ui/EmptyState';
@@ -10,6 +11,10 @@ export default function Onboarding() {
   const profile = useProfile();
   const { session } = useSession();
   const signOut = useSignOut();
+
+  useEffect(() => {
+    document.title = 'Onboarding · FuelLog';
+  }, []);
   if (profile.data?.profile.onboarded) return <Navigate to="/" replace />;
   return (
     <main className="stagger mx-auto w-full max-w-[560px] space-y-5 px-4 py-10">

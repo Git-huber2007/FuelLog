@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { asExercise, DateParams, libraryExercise, overloadHint, splitFor, type Exercise, type WorkoutResponse, type WorkoutSet } from '@fuellog/shared';
+import { asExercise, DateParams, libraryExercise, overloadHint, PROGRAMS, splitFor, type Exercise, type WorkoutResponse, type WorkoutSet } from '@fuellog/shared';
 import { h, unwrap } from '../middleware/errors';
 import { validate } from '../middleware/validate';
 import { loadProfile } from './profile';
@@ -38,6 +38,8 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
     date,
     title: plan.title,
     muscles: plan.muscles,
+    program: profile.program,
+    programName: PROGRAMS[profile.program].name,
     exercises: exercises.map((exercise) => {
       const mine = done.filter((s) => s.exercise_key === exercise.key);
       const lastSets = mine.filter((s) => s.log_date === mine[0].log_date);

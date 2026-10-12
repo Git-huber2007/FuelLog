@@ -66,7 +66,7 @@ export function AddFoodCard({ date }: { date: string }) {
         <div className="space-y-3 rounded-xl border border-line p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate font-medium">{picked.name}</p>
+              <p className="line-clamp-2 font-medium" title={picked.name}>{picked.name}</p>
               <p className="text-sm text-muted">{picked.serving_label} per serving</p>
             </div>
             <p className="shrink-0 text-right text-sm tabular-nums">

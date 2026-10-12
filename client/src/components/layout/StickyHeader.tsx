@@ -8,10 +8,15 @@ const TITLES: Record<string, string> = { '/': 'Today', '/workout': 'Workout', '/
 export function StickyHeader() {
   const { pathname } = useLocation();
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const isFirstRender = useRef(true);
   const title = TITLES[pathname] ?? 'FuelLog';
 
   useEffect(() => {
     document.title = `${title} · FuelLog`;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     headingRef.current?.focus();
   }, [pathname, title]);
 
