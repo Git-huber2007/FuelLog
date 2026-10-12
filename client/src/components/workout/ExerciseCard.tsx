@@ -41,6 +41,12 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
       <ExerciseDemo name={exercise.name} photos={exercisePhotos(exercise.key)} />
       <LastSessionLine last={exercise.last} cardio={exercise.cardio} />
       <OverloadHint show={exercise.overload} />
+      <div className={`grid items-center gap-2 text-xs font-medium text-muted ${exercise.sets === 1 ? 'grid-cols-[1fr_1fr_1.5rem]' : 'grid-cols-[2.5rem_1fr_1fr_1.5rem]'}`} aria-hidden="true">
+        {exercise.sets !== 1 && <span></span>}
+        <span className="px-1">{units[0]}</span>
+        <span className="px-1">{units[1]}</span>
+        <span></span>
+      </div>
       <ul className="space-y-2">
         {Array.from({ length: exercise.sets }, (_, i) => (
           <SetRow key={i} date={date} exerciseKey={exercise.key} setNumber={i + 1} units={units} single={exercise.sets === 1} removed={removed}

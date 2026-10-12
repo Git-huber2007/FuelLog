@@ -27,7 +27,7 @@ export function NumberField({ label, value, onChange, inputMode = 'decimal', suf
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
       />
-      {error && <p id={`${id}-error`} className="field-error">{error}</p>}
+      {error && <p id={`${id}-error`} role="alert" className="field-error">{error}</p>}
     </div>
   );
 }

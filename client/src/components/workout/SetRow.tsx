@@ -25,9 +25,9 @@ export function SetRow({ date, exerciseKey, setNumber, initial, units, single, r
   const [weight, setWeight] = useState(initial?.weight_kg ? String(initial.weight_kg) : '');
   const [reps, setReps] = useState(initial?.reps ? String(initial.reps) : '');
   const [invalid, setInvalid] = useState(false);
-  const { run, status } = useDebouncedMutation(async (value: SetInput) => {
+  const { run, status } = useDebouncedMutation(async (value: SetInput, opts) => {
     if (removed?.current) return;
-    await api(`/days/${date}/sets`, { method: 'PUT', body: value });
+    await api(`/days/${date}/sets`, { method: 'PUT', body: value, keepalive: opts?.keepalive });
     qc.invalidateQueries({ queryKey: ['progress'] });
   });
 

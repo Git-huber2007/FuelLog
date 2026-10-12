@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   addDays, AiItems, CoachResult, exerciseName, ParsePhotoBody, ParseTextBody, type AiParseResponse, type FoodLog, type Meal,
 } from '@fuellog/shared';
-import { assertAiQuota, recordAiUse } from '../lib/aiUsage';
+import { assertAiQuota, clearAiUse, recordAiUse } from '../lib/aiUsage';
 import { aiEnabled, generateJson } from '../lib/gemini';
 import { h, HttpError, unwrap } from '../middleware/errors';
 import { notFuture, validate } from '../middleware/validate';
@@ -64,25 +64,35 @@ aiRouter.use('/ai', (req, _res, next) => {
 
 aiRouter.post('/ai/parse-text', validate({ body: ParseTextBody }), notFuture, h(async (req, res) => {
   const { text: mealText, date, meal } = req.body;
-  const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: parseTextPrompt(mealText) }], responseSchema: ITEMS_SCHEMA, validate: ClampedItems });
-  await recordAiUse(req.sb, req.userId, 'parse_text');
-  const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_text'), note: result.note };
-  res.json(body);
+  const usageId = await recordAiUse(req.sb, req.userId, 'parse_text');
+  try {
+    const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: parseTextPrompt(mealText) }], responseSchema: ITEMS_SCHEMA, validate: ClampedItems });
+    const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_text'), note: result.note };
+    res.json(body);
+  } catch (err) {
+    await clearAiUse(req.sb, usageId).catch(() => {});
+    throw err;
+  }
 }));
 
 aiRouter.post('/ai/parse-photo', validate({ body: ParsePhotoBody }), notFuture, h(async (req, res) => {
   const { imageBase64, mimeType, date, meal } = req.body;
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(imageBase64)) throw new HttpError(400, 'validation', 'That photo could not be read. Try taking it again.');
   if ((imageBase64.length * 3) / 4 > MAX_PHOTO_BYTES) throw new HttpError(400, 'too_large', 'That photo is over 4 MB. Try a smaller one.');
-  const result = await generateJson({
-    system: SYSTEM_PROMPT,
-    parts: [{ inlineData: { mimeType, data: imageBase64 } }, { text: PARSE_PHOTO_PROMPT }],
-    responseSchema: ITEMS_SCHEMA,
-    validate: ClampedItems,
-  });
-  await recordAiUse(req.sb, req.userId, 'parse_photo');
-  const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_photo'), note: result.note };
-  res.json(body);
+  const usageId = await recordAiUse(req.sb, req.userId, 'parse_photo');
+  try {
+    const result = await generateJson({
+      system: SYSTEM_PROMPT,
+      parts: [{ inlineData: { mimeType, data: imageBase64 } }, { text: PARSE_PHOTO_PROMPT }],
+      responseSchema: ITEMS_SCHEMA,
+      validate: ClampedItems,
+    });
+    const body: AiParseResponse = { entries: await logEstimates(req, result.items, meal, date, 'ai_photo'), note: result.note };
+    res.json(body);
+  } catch (err) {
+    await clearAiUse(req.sb, usageId).catch(() => {});
+    throw err;
+  }
 }));
 
 type SetRow = { log_date: string; exercise_key: string; weight_kg: number; reps: number };
@@ -134,7 +144,12 @@ aiRouter.post('/ai/weekly-coach', h(async (req, res) => {
     exercises_with_progress: trends.progressed,
     exercises_stalled: trends.stalled,
   };
-  const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: weeklyCoachPrompt(data) }], responseSchema: COACH_SCHEMA, validate: ClampedCoach });
-  await recordAiUse(req.sb, req.userId, 'weekly_coach');
-  res.json(result);
+  const usageId = await recordAiUse(req.sb, req.userId, 'weekly_coach');
+  try {
+    const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: weeklyCoachPrompt(data) }], responseSchema: COACH_SCHEMA, validate: ClampedCoach });
+    res.json(result);
+  } catch (err) {
+    await clearAiUse(req.sb, usageId).catch(() => {});
+    throw err;
+  }
 }));

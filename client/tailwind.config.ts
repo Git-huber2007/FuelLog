@@ -13,6 +13,7 @@ export default {
         text: token('text'),
         muted: token('muted'),
         line: token('line'),
+        'input-line': token('input-line'),
         accent: token('accent'),
         onaccent: token('on-accent'),
         // Macro colours, taken from bumper plates.

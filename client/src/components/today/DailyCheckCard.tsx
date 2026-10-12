@@ -1,6 +1,6 @@
 import { CheckInput, type DayResponse } from '@fuellog/shared';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { dayKey } from '../../hooks/useDay';
 import { useDebouncedMutation } from '../../hooks/useDebouncedMutation';
 import { api } from '../../lib/apiClient';
@@ -16,11 +16,20 @@ export function DailyCheckCard({ date, initial, waterTargetMl }: { date: string;
   const [check, setCheck] = useState<CheckInput>(initial ?? EMPTY);
   const [sleep, setSleep] = useState(initial?.sleep_hours?.toString() ?? '');
   const [sleepError, setSleepError] = useState<string>();
-  const { run, status } = useDebouncedMutation(async (value: CheckInput) => {
-    const saved = await api<CheckInput>(`/days/${date}/check`, { method: 'PUT', body: value });
+  const { run, status, retry } = useDebouncedMutation(async (value: CheckInput, opts) => {
+    const saved = await api<CheckInput>(`/days/${date}/check`, { method: 'PUT', body: value, keepalive: opts?.keepalive });
     qc.setQueryData<DayResponse>(dayKey(date), (day) => day && { ...day, check: saved });
     qc.invalidateQueries({ queryKey: ['progress'] });
   });
+
+  useEffect(() => {
+    if (status === 'idle' || status === 'saved') {
+      const current = initial ?? EMPTY;
+      setCheck(current);
+      setSleep(current.sleep_hours?.toString() ?? '');
+      setSleepError(undefined);
+    }
+  }, [initial, status]);
 
   function update(patch: Partial<CheckInput>) {
     const next = { ...check, ...patch };
@@ -39,7 +48,14 @@ export function DailyCheckCard({ date, initial, waterTargetMl }: { date: string;
     <section className="card space-y-4" aria-labelledby="check-title">
       <div className="flex items-center justify-between">
         <h2 id="check-title" className="text-base">Daily check</h2>
-        <span className="text-sm text-muted" role="status">{status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : ''}</span>
+        <div className="flex items-center gap-2">
+          <span className={`text-sm ${status === 'error' ? 'text-protein' : 'text-muted'}`} role="status">
+            {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : status === 'error' ? 'Not saved' : ''}
+          </span>
+          {status === 'error' && (
+            <button type="button" className="btn px-2 py-0.5 text-xs" onClick={retry}>Retry</button>
+          )}
+        </div>
       </div>
       <WaterCounter ml={check.water_ml} targetMl={waterTargetMl} onChange={(water_ml) => update({ water_ml })} />
       <NumberField label="Sleep last night" suffix="hours" value={sleep} onChange={changeSleep} error={sleepError} placeholder="7.5" />

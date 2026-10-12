@@ -1,5 +1,5 @@
 import { Credentials } from '@fuellog/shared';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '../../hooks/useSession';
 import { supabase } from '../../lib/supabase';
@@ -14,6 +14,7 @@ export function ResetPasswordForm() {
   const { session } = useSession();
   const navigate = useNavigate();
   const toast = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
@@ -23,7 +24,11 @@ export function ResetPasswordForm() {
   async function requestLink(e: FormEvent) {
     e.preventDefault();
     const parsed = Credentials.shape.email.safeParse(email);
-    if (!parsed.success) return setError(parsed.error.issues[0].message);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
+      setTimeout(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(), 0);
+      return;
+    }
     setBusy(true);
     const result = await supabase.auth.resetPasswordForEmail(parsed.data, { redirectTo: `${window.location.origin}/reset-password` });
     setBusy(false);
@@ -34,7 +39,11 @@ export function ResetPasswordForm() {
   async function savePassword(e: FormEvent) {
     e.preventDefault();
     const parsed = Credentials.shape.password.safeParse(password);
-    if (!parsed.success) return setError(parsed.error.issues[0].message);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
+      setTimeout(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(), 0);
+      return;
+    }
     setBusy(true);
     const result = await supabase.auth.updateUser({ password: parsed.data });
     setBusy(false);
@@ -45,7 +54,7 @@ export function ResetPasswordForm() {
 
   if (session) {
     return (
-      <form onSubmit={savePassword} noValidate className="space-y-4">
+      <form ref={formRef} onSubmit={savePassword} noValidate className="space-y-4">
         <CredentialFields password={{ value: password, onChange: setPassword, error, isNew: true }} />
         <button className="btn-primary w-full" disabled={busy}>{busy ? 'Saving…' : 'Save new password'}</button>
       </form>
@@ -53,7 +62,7 @@ export function ResetPasswordForm() {
   }
   if (sent) return <p role="status">If {email} has an account, a reset link is on its way. Open it on this device.</p>;
   return (
-    <form onSubmit={requestLink} noValidate className="space-y-4">
+    <form ref={formRef} onSubmit={requestLink} noValidate className="space-y-4">
       <CredentialFields email={{ value: email, onChange: setEmail, error }} />
       <button className="btn-primary w-full" disabled={busy}>{busy ? 'Sending…' : 'Email me a reset link'}</button>
     </form>

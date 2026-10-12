@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import type { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { errorHandler, HttpError, notFound, unwrap } from '../middleware/errors';
+import { getClientIp } from '../middleware/rateLimit';
 
 function createMockRes() {
   const state: { statusCode: number; body: unknown } = { statusCode: 0, body: null };
@@ -75,5 +76,28 @@ describe('Server error handling and unwrap utilities', () => {
     assert.equal(state.statusCode, 400);
     const body = state.body as { error?: { code?: string } };
     assert.equal(body?.error?.code, 'validation');
+  });
+
+  it('getClientIp extracts first IP from x-vercel-forwarded-for header', () => {
+    const req = {
+      headers: { 'x-vercel-forwarded-for': '203.0.113.195, 70.41.3.18' },
+      ip: '10.0.0.1',
+    } as unknown as Request;
+    assert.equal(getClientIp(req), '203.0.113.195');
+  });
+
+  it('getClientIp falls back to req.ip when header is absent', () => {
+    const req = {
+      headers: {},
+      ip: '198.51.100.22',
+    } as unknown as Request;
+    assert.equal(getClientIp(req), '198.51.100.22');
+  });
+
+  it('getClientIp falls back to unknown when no IP is available', () => {
+    const req = {
+      headers: {},
+    } as unknown as Request;
+    assert.equal(getClientIp(req), 'unknown');
   });
 });

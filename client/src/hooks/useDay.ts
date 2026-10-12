@@ -21,6 +21,7 @@ function useOptimisticDay<V>(date: string, mutationFn: (value: V) => Promise<unk
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
+    mutationKey: ['optimistic-day', date],
     mutationFn,
     onMutate: async (value: V) => {
       await qc.cancelQueries({ queryKey: dayKey(date) });
@@ -32,7 +33,11 @@ function useOptimisticDay<V>(date: string, mutationFn: (value: V) => Promise<unk
       if (context?.previous) qc.setQueryData(dayKey(date), context.previous);
       toast(error.message, 'error');
     },
-    onSettled: () => invalidateLogs(qc, date),
+    onSettled: () => {
+      if (qc.isMutating({ mutationKey: ['optimistic-day', date] }) <= 1) {
+        invalidateLogs(qc, date);
+      }
+    },
   });
 }
 

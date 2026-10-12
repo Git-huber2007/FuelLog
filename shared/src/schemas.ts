@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { isKnownExercise } from './library';
 
-export const DateParam   = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(d => !Number.isNaN(Date.parse(d)));
+export const DateParam = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((d) => {
+  const [year, month, day] = d.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+});
 export const Meal        = z.enum(['breakfast', 'lunch', 'dinner', 'snack']);
 export const ProfileInput = z.object({
   sex: z.enum(['male', 'female']),

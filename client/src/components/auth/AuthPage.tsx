@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 const FEATURES: [title: string, detail: string][] = [
   ['Log food in seconds', 'Recent foods, saved meals, barcode scan, or just type what you ate.'],
@@ -12,6 +12,13 @@ const FEATURES: [title: string, detail: string][] = [
  * Phone: the pitch, the form, then what you get. Large screens: pitch and features on the left, the form on the right.
  */
 export function AuthPage({ title, children, footer }: { title: string; children: ReactNode; footer: ReactNode }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    document.title = `${title} · FuelLog`;
+    headingRef.current?.focus();
+  }, [title]);
+
   return (
     <main className="stagger mx-auto grid min-h-dvh w-full max-w-[520px] content-center gap-8 px-4 py-10 lg:max-w-[1080px] lg:grid-cols-2 lg:gap-x-20 lg:px-8">
       <header className="lg:self-end">
@@ -27,7 +34,7 @@ export function AuthPage({ title, children, footer }: { title: string; children:
       <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
         <div className="bezel">
           <section className="card rounded-[1.75rem] p-6" aria-labelledby="auth-title">
-            <h1 id="auth-title" className="mb-5 text-2xl">{title}</h1>
+            <h1 ref={headingRef} id="auth-title" tabIndex={-1} className="mb-5 text-2xl outline-none">{title}</h1>
             {children}
           </section>
         </div>

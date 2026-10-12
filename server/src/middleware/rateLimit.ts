@@ -1,4 +1,14 @@
+import type { Request } from 'express';
 import rateLimit from 'express-rate-limit';
+
+// shortcut: x-vercel-forwarded-for can be forged by someone calling Render directly to dodge this limit, per-user limit still applies after sign-in
+export function getClientIp(req: Request): string {
+  const forwarded = req.headers['x-vercel-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.length > 0) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.ip || 'unknown';
+}
 
 /** Global IP rate limiter: 300 requests per 5 minutes per IP. Runs before auth to protect against DoS and token brute-forcing. */
 export const ipRateLimit = rateLimit({
@@ -6,6 +16,7 @@ export const ipRateLimit = rateLimit({
   limit: 300,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  keyGenerator: (req) => getClientIp(req),
   handler: (_req, res) => {
     res.status(429).json({ error: { code: 'rate_limited', message: 'Too many requests from this IP. Wait a few minutes and try again.' } });
   },

@@ -1,6 +1,6 @@
 import { defaultMeal, type AiParseResponse, type Food, type Meal } from '@fuellog/shared';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { invalidateLogs, useAddFood } from '../../hooks/useDay';
 import { useProfile } from '../../hooks/useProfile';
 import { entryFromFood } from '../../lib/entries';
@@ -22,12 +22,18 @@ export function AddFoodCard({ date }: { date: string }) {
   const toast = useToast();
   const aiEnabled = useProfile().data?.aiEnabled ?? false;
   const add = useAddFood(date);
+  const scanBtnRef = useRef<HTMLButtonElement>(null);
   const [meal, setMeal] = useState<Meal>(() => defaultMeal(new Date()));
   const [picked, setPicked] = useState<Food | null>(null);
   const [servings, setServings] = useState(1);
   const [panel, setPanel] = useState<Panel>({ kind: 'search' });
   const [scanning, setScanning] = useState(false);
   const [aiNote, setAiNote] = useState<string>();
+
+  const closeScanner = () => {
+    setScanning(false);
+    scanBtnRef.current?.focus();
+  };
 
   const pick = (food: Food) => {
     setPicked(food);
@@ -38,6 +44,7 @@ export function AddFoodCard({ date }: { date: string }) {
   function logPicked() {
     if (!picked) return;
     add.mutate([entryFromFood(picked, servings, meal)]);
+    toast(`Added ${picked.name}`);
     setPicked(null);
   }
 
@@ -86,7 +93,7 @@ export function AddFoodCard({ date }: { date: string }) {
       {panel.kind === 'ai' && aiEnabled && <AiTextForm date={date} meal={meal} onResult={onAiResult} />}
 
       <div className="flex flex-wrap gap-2">
-        <button type="button" className="btn" onClick={() => setScanning(true)}>Scan barcode</button>
+        <button ref={scanBtnRef} type="button" className="btn" onClick={() => setScanning(true)}>Scan barcode</button>
         <button type="button" className="btn" onClick={() => setPanel(panel.kind === 'custom' ? { kind: 'search' } : { kind: 'custom', name: '' })}>Custom food</button>
         {aiEnabled && (
           <>
@@ -104,7 +111,7 @@ export function AddFoodCard({ date }: { date: string }) {
 
       {scanning && (
         <BarcodeScannerModal
-          onClose={() => setScanning(false)}
+          onClose={closeScanner}
           onFood={(food) => { setScanning(false); pick(food); }}
           onUnknown={() => {
             setScanning(false);

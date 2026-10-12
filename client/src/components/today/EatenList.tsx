@@ -30,7 +30,7 @@ export function EatenList({ date, logs }: { date: string; logs: FoodLog[] }) {
         );
       })}
       {logs.length > 0 && <SaveMealForm date={date} />}
-      <CopyYesterdayButton date={date} />
+      {logs.length === 0 && <CopyYesterdayButton date={date} />}
     </section>
   );
 }

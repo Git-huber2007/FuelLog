@@ -47,6 +47,8 @@ daysRouter.delete('/food-logs/:id', validate({ params: IdParams }), h(async (req
 }));
 
 daysRouter.post('/days/:date/copy-previous', date, notFuture, h(async (req, res) => {
+  const existing: Array<{ id: string }> = unwrap(await req.sb.from('food_logs').select('id').eq('log_date', req.params.date).limit(1));
+  if (existing.length) throw new HttpError(400, 'already_logged', 'This day already has food logged.');
   const previous: FoodLog[] = unwrap(await req.sb.from('food_logs').select('*').eq('log_date', addDays(req.params.date, -1)).order('created_at'));
   if (!previous.length) throw new HttpError(404, 'nothing_to_copy', 'Nothing was logged the day before.');
   const rows = previous.map(({ meal, food_id, name, servings, kcal, protein_g, carbs_g, fat_g, fibre_g, source }) => ({

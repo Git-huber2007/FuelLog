@@ -10,12 +10,13 @@ export class ApiError extends Error {
 }
 
 /** Calls the FuelLog API as the signed-in user. A body makes it a POST unless a method is given. */
-export async function api<T>(path: string, opts: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: unknown } = {}): Promise<T> {
+export async function api<T>(path: string, opts: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: unknown; keepalive?: boolean } = {}): Promise<T> {
   const { data } = await supabase.auth.getSession();
   let res: Response;
   try {
     res = await fetch(BASE + path, {
       method: opts.method ?? (opts.body === undefined ? 'GET' : 'POST'),
+      keepalive: opts.keepalive,
       headers: {
         Authorization: `Bearer ${data.session?.access_token ?? ''}`,
         'X-Local-Date': todayISO(),

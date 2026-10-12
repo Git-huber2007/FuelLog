@@ -21,19 +21,38 @@ export function WeightChart({ weights }: { weights: ProgressResponse['weights'] 
   const today = todayISO();
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img"
-      aria-label={`Weight over ${weights.length} weigh-ins. Latest ${last.weight_kg} kg, 7-day average ${last.avg7} kg.`}>
-      {[min, (min + max) / 2, max].map((kg) => (
-        <g key={kg}>
-          <line x1={PAD.left} x2={W - PAD.right} y1={y(kg)} y2={y(kg)} className="stroke-line" strokeWidth="1" />
-          <text x={PAD.left - 6} y={y(kg) + 4} textAnchor="end" className="fill-muted text-[10px]">{kg}</text>
-        </g>
-      ))}
-      <polyline fill="none" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="stroke-accent"
-        points={weights.map((w) => `${x(w.log_date)},${y(w.avg7)}`).join(' ')} />
-      {weights.map((w) => <circle key={w.log_date} cx={x(w.log_date)} cy={y(w.weight_kg)} r="3" className="fill-muted" />)}
-      <text x={PAD.left} y={H - 6} className="fill-muted text-[10px]">{formatDayLabel(first.log_date, today)}</text>
-      <text x={W - PAD.right} y={H - 6} textAnchor="end" className="fill-muted text-[10px]">{formatDayLabel(last.log_date, today)}</text>
-    </svg>
+    <div>
+      <div className="sr-only">
+        <table>
+          <caption>Weigh-ins and 7-day average</caption>
+          <thead>
+            <tr><th scope="col">Date</th><th scope="col">Weight (kg)</th><th scope="col">7-day average (kg)</th></tr>
+          </thead>
+          <tbody>
+            {weights.map((w) => (
+              <tr key={w.log_date}>
+                <td>{w.log_date}</td>
+                <td>{w.weight_kg}</td>
+                <td>{w.avg7}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-h-[170px]" role="img"
+        aria-label={`Weight over ${weights.length} weigh-ins. Latest ${last.weight_kg} kg, 7-day average ${last.avg7} kg.`}>
+        {[min, (min + max) / 2, max].map((kg) => (
+          <g key={kg}>
+            <line x1={PAD.left} x2={W - PAD.right} y1={y(kg)} y2={y(kg)} className="stroke-line" strokeWidth="1" />
+            <text x={PAD.left - 6} y={y(kg) + 4} textAnchor="end" className="fill-muted text-[11px] font-medium">{kg}</text>
+          </g>
+        ))}
+        <polyline fill="none" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="stroke-accent"
+          points={weights.map((w) => `${x(w.log_date)},${y(w.avg7)}`).join(' ')} />
+        {weights.map((w) => <circle key={w.log_date} cx={x(w.log_date)} cy={y(w.weight_kg)} r="3" className="fill-muted" />)}
+        <text x={PAD.left} y={H - 6} className="fill-muted text-[11px] font-medium">{formatDayLabel(first.log_date, today)}</text>
+        <text x={W - PAD.right} y={H - 6} textAnchor="end" className="fill-muted text-[11px] font-medium">{formatDayLabel(last.log_date, today)}</text>
+      </svg>
+    </div>
   );
 }

@@ -66,8 +66,8 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
 
   return (
     <dialog ref={dialog} onClose={onClose} aria-labelledby={`${id}-title`}
-      className="m-auto h-[min(44rem,calc(100dvh-2rem))] w-[calc(100%-1.5rem)] max-w-[500px] rounded-3xl border border-line bg-card p-0 text-text backdrop:bg-black/60">
-      <div className="flex h-full flex-col">
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] max-w-[500px] overflow-y-auto rounded-3xl border border-line bg-card p-0 text-text backdrop:bg-black/60">
+      <div className="flex flex-col">
         <div className="space-y-3 border-b border-line p-4">
           <div className="flex items-center justify-between gap-2">
             <h2 id={`${id}-title`} className="text-lg">Add an exercise</h2>
@@ -107,7 +107,7 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="p-4">
           {add.isError && <p role="alert" className="field-error mb-2 mt-0">{add.error.message}</p>}
           {matches.length === 0 ? (
             <EmptyState title="No exercise matches these filters" hint="Try another level or muscle, or clear the search." />
@@ -123,8 +123,10 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
                     <li key={exercise.id} className="flex items-center gap-3 rounded-2xl border border-line p-2">
                       <img src={exercisePhotos(exercise.id)[0]} alt="" loading="lazy" width={72} height={48} className="h-12 w-[72px] shrink-0 rounded-lg bg-line object-cover" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{exercise.name}</p>
-                        <p className="truncate text-sm text-muted">{exercise.type === 'cardio' ? 'Cardio' : exercise.muscle} · {LEVEL_LABELS[exercise.level]}</p>
+                        <p className="truncate font-medium" title={exercise.name}>{exercise.name}</p>
+                        <p className="truncate text-sm text-muted" title={`${exercise.type === 'cardio' ? 'Cardio' : exercise.muscle} · ${LEVEL_LABELS[exercise.level]}`}>
+                          {exercise.type === 'cardio' ? 'Cardio' : exercise.muscle} · {LEVEL_LABELS[exercise.level]}
+                        </p>
                       </div>
                       <button type="button" className={added ? 'btn shrink-0' : 'btn-primary shrink-0'} disabled={added || add.isPending}
                         aria-label={added ? `Added, ${exercise.name}` : `Add ${exercise.name}`} onClick={() => add.mutate(exercise)}>

@@ -126,6 +126,7 @@ create table if not exists public.ai_usage (
   id         bigint generated always as identity primary key,
   user_id    uuid not null references auth.users(id) on delete cascade,
   kind       text not null check (kind in ('parse_text','parse_photo','weekly_coach')),
+  failed     boolean not null default false,
   created_at timestamptz not null default now()
 );
 create index if not exists ai_usage_user_time_idx on public.ai_usage (user_id, created_at desc);
@@ -189,11 +190,21 @@ create policy foods_delete on public.foods for delete to authenticated using (ow
 do $$
 declare t text;
 begin
-  foreach t in array array['food_logs','saved_meals','daily_checks','weight_logs','measurements','workout_sets','progress_photos','ai_usage'] loop
+  foreach t in array array['food_logs','saved_meals','daily_checks','weight_logs','measurements','workout_sets','progress_photos'] loop
     execute format('drop policy if exists %I on public.%I', t || '_owner', t);
     execute format('create policy %I on public.%I for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid())', t || '_owner', t);
   end loop;
 end $$;
+
+drop policy if exists ai_usage_owner on public.ai_usage;
+drop policy if exists ai_usage_select on public.ai_usage;
+create policy ai_usage_select on public.ai_usage for select to authenticated using (user_id = auth.uid());
+
+drop policy if exists ai_usage_insert on public.ai_usage;
+create policy ai_usage_insert on public.ai_usage for insert to authenticated with check (user_id = auth.uid());
+
+drop policy if exists ai_usage_update on public.ai_usage;
+create policy ai_usage_update on public.ai_usage for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid() and failed = true);
 
 drop policy if exists photos_select on storage.objects;
 create policy photos_select on storage.objects for select to authenticated

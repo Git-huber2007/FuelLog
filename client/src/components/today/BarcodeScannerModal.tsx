@@ -45,17 +45,25 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
     dialog.current?.showModal();
   }, []);
 
-  const lookup = useCallback(async (raw: string) => {
+  const lookup = useCallback(async (raw: string): Promise<boolean> => {
     const code = BarcodeParam.safeParse(raw.trim());
-    if (!code.success) return setMessage('A barcode is 8 to 14 digits.');
-    if (busy.current) return;
+    if (!code.success) {
+      setMessage('A barcode is 8 to 14 digits.');
+      return false;
+    }
+    if (busy.current) return false;
     busy.current = true;
     setMessage('Looking it up…');
     try {
       onFood(await api<Food>(`/foods/barcode/${code.data}`));
+      return true;
     } catch (error) {
-      if (error instanceof ApiError && error.code === 'barcode_not_found') return onUnknown();
+      if (error instanceof ApiError && error.code === 'barcode_not_found') {
+        onUnknown();
+        return true;
+      }
       setMessage((error as Error).message);
+      return false;
     } finally {
       busy.current = false;
     }
@@ -67,12 +75,13 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
     if (!live || !el) return;
     let stopped = false;
     let stop = () => {};
-    // The camera sees the same barcode many times a second; look each one up once, even if the lookup failed.
+    // The camera sees the same barcode many times a second; retry if lookup failed.
     let lastSeen = '';
-    const seen = (code: string) => {
+    const seen = async (code: string) => {
       if (code === lastSeen) return;
       lastSeen = code;
-      lookup(code);
+      const ok = await lookup(code);
+      if (!ok) lastSeen = '';
     };
     const fail = () => {
       if (stopped) return;
@@ -82,19 +91,24 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
 
     if (hasNative()) {
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(async (stream) => {
-        const detector = new BarcodeDetector({ formats: FORMATS });
-        const timer = window.setInterval(async () => {
-          if (el.readyState < 2) return;
-          const codes = await detector.detect(el).catch(() => []);
-          if (codes[0]) seen(codes[0].rawValue);
-        }, 300);
-        stop = () => {
-          window.clearInterval(timer);
+        try {
+          const detector = new BarcodeDetector({ formats: FORMATS });
+          const timer = window.setInterval(async () => {
+            if (el.readyState < 2) return;
+            const codes = await detector.detect(el).catch(() => []);
+            if (codes[0]) seen(codes[0].rawValue);
+          }, 300);
+          stop = () => {
+            window.clearInterval(timer);
+            stream.getTracks().forEach((track) => track.stop());
+          };
+          if (stopped) return stop();
+          el.srcObject = stream;
+          await el.play().catch(() => {});
+        } catch {
           stream.getTracks().forEach((track) => track.stop());
-        };
-        if (stopped) return stop();
-        el.srcObject = stream;
-        await el.play().catch(() => {});
+          fail();
+        }
       }, fail);
     } else {
       import('@zxing/browser')

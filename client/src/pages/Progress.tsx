@@ -22,9 +22,8 @@ export default function Progress() {
   const day = useDay(today);
   const aiEnabled = useProfile().data?.aiEnabled ?? false;
 
-  if (progress.isPending || day.isPending) return <LoadingSkeleton cards={4} />;
+  if (progress.isPending) return <LoadingSkeleton cards={4} />;
   if (progress.isError) return <ErrorState error={progress.error} onRetry={() => progress.refetch()} />;
-  if (day.isError) return <ErrorState error={day.error} onRetry={() => day.refetch()} />;
 
   const { weights, calories, summary, measurements, advice } = progress.data;
   const todayWeight = weights.find((w) => w.log_date === today)?.weight_kg;
@@ -50,7 +49,13 @@ export default function Progress() {
       <section className="card space-y-4" aria-labelledby="measure-title">
         <h2 id="measure-title" className="text-base">Measurements</h2>
         <MeasurementDeltas deltas={measurements} />
-        <MeasurementsForm key={JSON.stringify(day.data.measurements)} initial={day.data.measurements} />
+        {day.isPending ? (
+          <LoadingSkeleton cards={1} />
+        ) : day.isError ? (
+          <ErrorState error={day.error} onRetry={() => day.refetch()} />
+        ) : (
+          <MeasurementsForm key={JSON.stringify(day.data.measurements)} initial={day.data.measurements} />
+        )}
       </section>
 
       <section className="card space-y-4" aria-labelledby="photos-title">

@@ -29,11 +29,12 @@ export function SavedMealChips({ date, meal }: { date: string; meal: Meal }) {
       <h3 className="label">Saved meals</h3>
       <ul className="flex flex-wrap gap-2">
         {meals.data.map((saved) => (
-          <li key={saved.id} className="flex max-w-full overflow-hidden rounded-full border border-line bg-bg">
-            <button type="button" className="min-h-[44px] min-w-0 truncate pl-4 pr-2 text-sm" disabled={log.isPending} onClick={() => log.mutate(saved)}>
+          <li key={saved.id} className="flex max-w-full rounded-full border border-line bg-bg">
+            <button type="button" className="min-h-[44px] min-w-0 truncate rounded-l-full pl-4 pr-2 text-sm" disabled={log.isPending} onClick={() => log.mutate(saved)}
+              title={`${saved.name} · ${Math.round(saved.items.reduce((sum, item) => sum + item.kcal, 0))} kcal`}>
               {saved.name} · {Math.round(saved.items.reduce((sum, item) => sum + item.kcal, 0))} kcal
             </button>
-            <button type="button" className="min-h-[44px] min-w-[44px] text-sm text-muted" aria-label={`Delete saved meal ${saved.name}`}
+            <button type="button" className="min-h-[44px] min-w-[44px] rounded-r-full text-sm text-muted" aria-label={`Delete saved meal ${saved.name}`}
               disabled={remove.isPending} onClick={() => remove.mutate(saved)}>✕</button>
           </li>
         ))}

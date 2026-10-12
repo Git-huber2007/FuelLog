@@ -1,5 +1,5 @@
 import { ProfileInput, type Profile } from '@fuellog/shared';
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useRef, useState, type FormEvent } from 'react';
 import { useSaveProfile } from '../../hooks/useProfile';
 import { numberOrNull } from '../../lib/entries';
 import { NumberField } from '../ui/NumberField';
@@ -17,6 +17,7 @@ const RANGES = { age: 'Age must be 14 to 90', height_cm: 'Height must be 120 to 
 /** Used for onboarding and for editing. Targets update live as the fields change. */
 export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profile; submitLabel: string; onSaved?: () => void }) {
   const id = useId();
+  const formRef = useRef<HTMLFormElement>(null);
   const toast = useToast();
   const save = useSaveProfile();
   const [sex, setSex] = useState<string>(profile.sex ?? '');
@@ -33,7 +34,10 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
   function submit(e: FormEvent) {
     e.preventDefault();
     setSubmitted(true);
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      setTimeout(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(), 0);
+      return;
+    }
     save.mutate(parsed.data, {
       onSuccess: () => {
         toast('Profile saved.');
@@ -44,16 +48,23 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
   }
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-4">
+    <form ref={formRef} onSubmit={submit} noValidate className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor={`${id}-sex`} className="label">Sex</label>
-          <select id={`${id}-sex`} className={`input ${error('sex') ? 'border-protein' : ''}`} value={sex} onChange={(e) => setSex(e.target.value)}>
+          <select
+            id={`${id}-sex`}
+            className={`input ${error('sex') ? 'border-protein' : ''}`}
+            value={sex}
+            onChange={(e) => setSex(e.target.value)}
+            aria-invalid={!!error('sex')}
+            aria-describedby={error('sex') ? `${id}-sex-error` : undefined}
+          >
             <option value="" disabled>Choose</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-          {error('sex') && <p className="field-error">{error('sex')}</p>}
+          {error('sex') && <p id={`${id}-sex-error`} role="alert" className="field-error">{error('sex')}</p>}
         </div>
         <NumberField label="Age" inputMode="numeric" value={age} onChange={setAge} error={error('age')} />
         <NumberField label="Height" suffix="cm" value={height} onChange={setHeight} error={error('height_cm')} />

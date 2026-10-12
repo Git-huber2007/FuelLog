@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  addDays, adjustmentAdvice, asExercise, computeTargets, dayDeltaFor, daysBetween, defaultMeal, EXERCISE_KEYS, exercisePhotos, LIBRARY, libraryExercise, nudge,
+  addDays, adjustmentAdvice, asExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, EXERCISE_KEYS, exercisePhotos, LIBRARY, libraryExercise, nudge,
   overloadHint, SetInput, SPLIT, splitFor, streak, weekdayOf, type Weigh,
 } from '../index';
 
@@ -35,6 +35,14 @@ describe('dates', () => {
   it('picks the meal slot by local time', () => {
     const at = (h: number, m = 0) => defaultMeal(new Date(2026, 0, 1, h, m));
     expect([at(10, 59), at(11), at(15, 59), at(16), at(21, 29), at(21, 30)]).toEqual(['breakfast', 'lunch', 'lunch', 'dinner', 'dinner', 'snack']);
+  });
+  it('validates calendar dates strictly rejecting impossible dates', () => {
+    expect(DateParam.safeParse('2026-10-12').success).toBe(true);
+    expect(DateParam.safeParse('2024-02-29').success).toBe(true);
+    expect(DateParam.safeParse('2026-02-31').success).toBe(false);
+    expect(DateParam.safeParse('2025-02-29').success).toBe(false);
+    expect(DateParam.safeParse('2026-04-31').success).toBe(false);
+    expect(DateParam.safeParse('not-a-date').success).toBe(false);
   });
 });
 

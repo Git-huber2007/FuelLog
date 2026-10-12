@@ -13,18 +13,39 @@ export function CredentialFields({ email, password }: Props) {
       {email && (
         <div>
           <label htmlFor={`${id}-email`} className="label">Email</label>
-          <input id={`${id}-email`} className="input" type="email" inputMode="email" autoComplete="email" required
-            value={email.value} onChange={(e) => email.onChange(e.target.value)} aria-invalid={!!email.error} />
-          {email.error && <p className="field-error">{email.error}</p>}
+          <input
+            id={`${id}-email`}
+            name="email"
+            className={`input ${email.error ? 'border-protein' : ''}`}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            required
+            value={email.value}
+            onChange={(e) => email.onChange(e.target.value)}
+            aria-invalid={!!email.error}
+            aria-describedby={email.error ? `${id}-email-error` : undefined}
+          />
+          {email.error && <p id={`${id}-email-error`} role="alert" className="field-error">{email.error}</p>}
         </div>
       )}
       {password && (
         <div>
           <label htmlFor={`${id}-password`} className="label">{password.isNew ? 'New password (8 characters or more)' : 'Password'}</label>
-          <input id={`${id}-password`} className="input" type="password" required minLength={8}
+          <input
+            id={`${id}-password`}
+            name="password"
+            className={`input ${password.error ? 'border-protein' : ''}`}
+            type="password"
+            required
+            minLength={8}
             autoComplete={password.isNew ? 'new-password' : 'current-password'}
-            value={password.value} onChange={(e) => password.onChange(e.target.value)} aria-invalid={!!password.error} />
-          {password.error && <p className="field-error">{password.error}</p>}
+            value={password.value}
+            onChange={(e) => password.onChange(e.target.value)}
+            aria-invalid={!!password.error}
+            aria-describedby={password.error ? `${id}-password-error` : undefined}
+          />
+          {password.error && <p id={`${id}-password-error`} role="alert" className="field-error">{password.error}</p>}
         </div>
       )}
     </>
