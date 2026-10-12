@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   addDays, adjustmentAdvice, asExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, EXERCISE_KEYS, exercisePhotos, LIBRARY, libraryExercise, nudge,
-  overloadHint, SetInput, SPLIT, splitFor, streak, weekdayOf, type Weigh,
+  overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, SetInput, SPLIT, splitFor, streak, weekdayOf, workoutKcal, type Weigh,
 } from '../index';
 
 const me = { sex: 'male', age: 22, height_cm: 175, weight_kg: 75, goal: 'maintain' } as const;
@@ -134,6 +134,30 @@ describe('split', () => {
     expect(legDays).toEqual([6]);
     expect(splitFor('2026-10-11').exercises).toHaveLength(0);
     expect(splitFor('2026-10-17').title).toBe('Legs');
+  });
+  it('offers three programs built from known exercises, and recommends one per level', () => {
+    for (const key of PROGRAM_KEYS) {
+      expect(PROGRAMS[key].days).toHaveLength(7);
+      expect(PROGRAMS[key].days.flatMap((d) => d.exercises).every((e) => e && EXERCISE_KEYS.has(e.key))).toBe(true);
+    }
+    expect(PROGRAMS.full_body.days.filter((d) => d.exercises.length).length).toBe(3);
+    expect(PROGRAMS.upper_lower.days.filter((d) => d.exercises.length).length).toBe(4);
+    expect([recommendedProgram('beginner'), recommendedProgram('intermediate'), recommendedProgram('expert')]).toEqual(['full_body', 'upper_lower', 'six_day']);
+    expect(splitFor('2026-10-13', 'full_body').exercises).toHaveLength(0); // Tuesday is a rest day on three days a week
+    expect(splitFor('2026-10-13').title).toBe('Pull · back width'); // the default stays the six-day plan
+  });
+  it('estimates calories burned from sets, distance, time and incline', () => {
+    const set = (weight_kg: number, reps: number, incline_pct: number | null = null) => ({ weight_kg, reps, incline_pct });
+    expect(workoutKcal([], 70)).toBe(0);
+    expect(workoutKcal([{ logged: [set(60, 10), set(60, 0)] }], 70)).toBe(13); // one finished set; the empty one counts for nothing
+    const flat = workoutKcal([{ cardio: true, logged: [set(5, 30)] }], 70); // 10 km/h for 30 minutes
+    expect(flat).toBeGreaterThan(330);
+    expect(flat).toBeLessThan(420);
+    expect(workoutKcal([{ cardio: true, logged: [set(5, 30, 5)] }], 70)).toBeGreaterThan(flat);
+    expect(workoutKcal([{ cardio: true, logged: [set(5, 30, -5)] }], 70)).toBeLessThan(flat);
+    expect(workoutKcal([{ cardio: true, logged: [set(0, 20)] }], 70)).toBe(172); // minutes only
+    expect(SetInput.safeParse({ exercise_key: 'Running_Treadmill', set_number: 1, weight_kg: 5, reps: 30, incline_pct: -3 }).success).toBe(true);
+    expect(SetInput.safeParse({ exercise_key: 'Running_Treadmill', set_number: 1, weight_kg: 5, reps: 30, incline_pct: 60 }).success).toBe(false);
   });
   it('has stable, unique, weekday-prefixed keys', () => {
     expect(EXERCISE_KEYS.has('mon-bench-press')).toBe(true);
