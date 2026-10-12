@@ -9,7 +9,7 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
-        value: 20.18.0
+        value: 22.12.0 # the Supabase client needs the WebSocket built into Node 22 and throws on Node 20
       - key: NODE_ENV
         value: production
       - key: SUPABASE_URL

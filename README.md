@@ -8,7 +8,7 @@ It runs as one Node web service that serves both the API and the built React app
 
 ## What you need
 
-- Node.js 20.12 or newer
+- Node.js 22 or newer (the Supabase client no longer runs on Node 20)
 - A free [Supabase](https://supabase.com) project
 - Optional: a [Gemini API key](https://aistudio.google.com/apikey) for AI logging and the weekly coach. Without it everything else works and the AI controls are hidden.
 
@@ -61,7 +61,7 @@ To serve the client from Render as well, change the build command in `render.yam
 2. **Run the migrations.** **SQL Editor → New query**, paste `0001_init.sql`, **Run**. New query, paste `0002_seed_foods.sql`, **Run**.
 3. **Copy the URL and anon key** from **Project Settings → API**.
 4. **Put the code on GitHub.** Create a repository and push this folder to it.
-5. **Create the Render service.** At render.com choose **New → Blueprint**, connect the repository, and Render reads `render.yaml`: one Node 20 web service, build `npm ci && npm run build`, start `npm start`, health check `/api/health`.
+5. **Create the Render service.** At render.com choose **New → Blueprint**, connect the repository, and Render reads `render.yaml`: one Node 22 web service, build `npm ci && npm run build`, start `npm start`, health check `/api/health`.
 6. **Enter the variables** Render asks for:
 
    | Variable | Value |
@@ -78,7 +78,7 @@ To serve the client from Render as well, change the build command in `render.yam
 9. **Create your own account** on the live site and finish onboarding.
 10. **Switch off new sign-ups.** In Supabase go to **Authentication → Sign In / Providers** and turn off **Allow new users to sign up**. Nobody else can register on your deployment.
 
-Railway and Fly.io work the same way: one Node 20 service, the same build and start commands, the same variables.
+Railway and Fly.io work the same way: one Node 22 service, the same build and start commands, the same variables.
 
 ### Install on your phone
 
