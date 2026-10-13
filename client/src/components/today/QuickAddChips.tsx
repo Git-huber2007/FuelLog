@@ -14,15 +14,15 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
   return (
     <div>
       <h3 className="label">Recent</h3>
-      <ul className="flex flex-wrap gap-2">
+      <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">
         {recent.data.map((food) => (
-          <li key={food.name} className="max-w-full">
+          <li key={food.name} className="shrink-0">
             <button type="button" className="chip" aria-label={`Add ${food.name}, ${Math.round(food.kcal)} kcal`}
               onClick={() => {
                 add.mutate([{ ...food, food_id: food.food_id ?? undefined, meal, servings: 1 }]);
                 toast(`Added ${food.name}`);
               }}>
-              <span className="line-clamp-2" title={food.name}>{food.name}</span>
+              <span className="whitespace-nowrap">{food.name}</span>
             </button>
           </li>
         ))}

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { invalidateLogs, useAddFood } from '../../hooks/useDay';
 import { useProfile } from '../../hooks/useProfile';
 import { entryFromFood } from '../../lib/entries';
+import { ActionIcon } from '../ui/ActionIcon';
 import { useToast } from '../ui/Toast';
 import { AiPhotoButton } from './AiPhotoButton';
 import { AiTextForm } from './AiTextForm';
@@ -15,7 +16,7 @@ import { QuickAddChips } from './QuickAddChips';
 import { SavedMealChips } from './SavedMealChips';
 import { ServingStepper } from './ServingStepper';
 
-type Panel = { kind: 'search' } | { kind: 'custom'; name: string } | { kind: 'ai' };
+type Panel ={ kind: 'search' } | { kind: 'custom'; name: string } | { kind: 'ai' };
 
 export function AddFoodCard({ date }: { date: string }) {
   const qc = useQueryClient();
@@ -57,13 +58,11 @@ export function AddFoodCard({ date }: { date: string }) {
 
   return (
     <section className="card space-y-4" aria-labelledby="add-food-title">
-      <h2 id="add-food-title" className="text-base">Add food</h2>
+      <h2 id="add-food-title" className="card-title">Add food</h2>
       <MealSlotPicker value={meal} onChange={setMeal} />
-      <QuickAddChips date={date} meal={meal} />
-      <SavedMealChips date={date} meal={meal} />
 
       {picked ? (
-        <div className="space-y-3 rounded-xl border border-line p-3">
+        <div className="space-y-3 rounded-2xl border border-line p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="line-clamp-2 font-medium" title={picked.name}>{picked.name}</p>
@@ -92,12 +91,23 @@ export function AddFoodCard({ date }: { date: string }) {
       )}
       {panel.kind === 'ai' && aiEnabled && <AiTextForm date={date} meal={meal} onResult={onAiResult} />}
 
-      <div className="flex flex-wrap gap-2">
-        <button ref={scanBtnRef} type="button" className="btn" onClick={() => setScanning(true)}>Scan barcode</button>
-        <button type="button" className="btn" onClick={() => setPanel(panel.kind === 'custom' ? { kind: 'search' } : { kind: 'custom', name: '' })}>Custom food</button>
+      <QuickAddChips date={date} meal={meal} />
+      <SavedMealChips date={date} meal={meal} />
+      <div className="grid grid-cols-2 gap-2">
+        <button ref={scanBtnRef} type="button" className="action" onClick={() => setScanning(true)}>
+          <ActionIcon d="M4 7V5a1 1 0 0 1 1-1h2m10 0h2a1 1 0 0 1 1 1v2m0 10v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M8 8v8m3-8v8m3-8v8m2-8v8" />
+          Scan barcode
+        </button>
+        <button type="button" className="action" aria-pressed={panel.kind === 'custom'} onClick={() => setPanel(panel.kind === 'custom' ? { kind: 'search' } : { kind: 'custom', name: '' })}>
+          <ActionIcon d="M12 5v14m-7-7h14" />
+          Custom food
+        </button>
         {aiEnabled && (
           <>
-            <button type="button" className="btn" onClick={() => setPanel(panel.kind === 'ai' ? { kind: 'search' } : { kind: 'ai' })}>Describe meal</button>
+            <button type="button" className="action" aria-pressed={panel.kind === 'ai'} onClick={() => setPanel(panel.kind === 'ai' ? { kind: 'search' } : { kind: 'ai' })}>
+              <ActionIcon d="M4 6h16M4 12h10M4 18h7m7-5 .8 2.2L21 16l-2.2.8L18 19l-.8-2.2L15 16l2.2-.8z" />
+              Describe meal
+            </button>
             <AiPhotoButton date={date} meal={meal} onResult={onAiResult} />
           </>
         )}

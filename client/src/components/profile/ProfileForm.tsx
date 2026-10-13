@@ -89,7 +89,7 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
           <label htmlFor={`${id}-sex`} className="label">Sex</label>
           <select
             id={`${id}-sex`}
-            className={`input ${error('sex') ? 'border-protein' : ''}`}
+            className={`input ${error('sex') ? 'border-danger' : ''}`}
             value={sex}
             onChange={(e) => setSex(e.target.value)}
             aria-invalid={!!error('sex')}

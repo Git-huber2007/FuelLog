@@ -27,10 +27,10 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
   }
 
   if (failed) {
-    return <div className="flex aspect-[3/2] items-center justify-center rounded-xl bg-line px-4 text-center text-sm text-muted">Demo photo unavailable</div>;
+    return <div className="flex aspect-[2/1] items-center justify-center rounded-2xl bg-line px-4 text-center text-sm text-muted">Demo photo unavailable</div>;
   }
   return (
-    <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-line">
+    <div className="relative aspect-[2/1] overflow-hidden rounded-2xl bg-line">
       <img src={photos[0]} alt={`${name}: start position`} loading="lazy" onError={() => setFailed(true)} className="absolute inset-0 h-full w-full object-cover" />
       {started && (
         <img src={photos[1]} alt={`${name}: finish position`} aria-hidden={!finish} onError={() => setFailed(true)}

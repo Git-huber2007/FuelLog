@@ -33,7 +33,12 @@ export default function Progress() {
       <WeekSummaryCard summary={summary} />
 
       <section className="card space-y-4" aria-labelledby="weight-title">
-        <h2 id="weight-title" className="text-base">Weight</h2>
+        <h2 id="weight-title" className="card-title">Weight</h2>
+        {weights.length > 0 && (
+          <p className="stat">
+            {weights[weights.length - 1].avg7}<span className="stat-unit">kg · 7-day average</span>
+          </p>
+        )}
         <WeightForm key={todayWeight ?? 'none'} todayWeight={todayWeight} />
         <WeightChart weights={weights} />
         {weights.length > 0 && <p className="text-sm text-muted">Dots are weigh-ins. The line is your 7-day average.</p>}
@@ -42,12 +47,12 @@ export default function Progress() {
       <AdviceCard advice={advice} />
 
       <section className="card space-y-3" aria-labelledby="calories-title">
-        <h2 id="calories-title" className="text-base">Calories, last 14 days</h2>
+        <h2 id="calories-title" className="card-title">Calories, last 14 days</h2>
         <CalorieBarsChart days={calories} />
       </section>
 
       <section className="card space-y-4" aria-labelledby="measure-title">
-        <h2 id="measure-title" className="text-base">Measurements</h2>
+        <h2 id="measure-title" className="card-title">Measurements</h2>
         <MeasurementDeltas deltas={measurements} />
         {day.isPending ? (
           <LoadingSkeleton cards={1} />
@@ -59,7 +64,7 @@ export default function Progress() {
       </section>
 
       <section className="card space-y-4" aria-labelledby="photos-title">
-        <h2 id="photos-title" className="text-base">Progress photos</h2>
+        <h2 id="photos-title" className="card-title">Progress photos</h2>
         <PhotoGrid />
         <PhotoUploadButton />
       </section>
@@ -67,7 +72,7 @@ export default function Progress() {
       {aiEnabled && <CoachCard />}
 
       <section className="card space-y-3" aria-labelledby="export-title">
-        <h2 id="export-title" className="text-base">Your data</h2>
+        <h2 id="export-title" className="card-title">Your data</h2>
         <ExportButton />
       </section>
     </>

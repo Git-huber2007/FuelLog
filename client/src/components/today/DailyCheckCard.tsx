@@ -67,9 +67,9 @@ export function DailyCheckCard({ date, initial, waterTargetMl, bodyKg }: Props) 
   return (
     <section className="card space-y-4" aria-labelledby="check-title">
       <div className="flex items-center justify-between">
-        <h2 id="check-title" className="text-base">Daily check</h2>
+        <h2 id="check-title" className="card-title">Daily check</h2>
         <div className="flex items-center gap-2">
-          <span className={`text-sm ${status === 'error' ? 'text-protein' : 'text-muted'}`} role="status">
+          <span className={`text-sm ${status === 'error' ? 'text-danger' : 'text-muted'}`} role="status">
             {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : status === 'error' ? 'Not saved' : ''}
           </span>
           {status === 'error' && (
@@ -87,8 +87,11 @@ export function DailyCheckCard({ date, initial, waterTargetMl, bodyKg }: Props) 
       </div>
       <div className="grid grid-cols-2 gap-2">
         {([['creatine', 'Creatine'], ['protein_shake', 'Protein shake']] as const).map(([key, label]) => (
-          <label key={key} className="flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-2xl border border-line px-3 text-sm">
-            <input type="checkbox" className="h-5 w-5 accent-[rgb(var(--accent))]" checked={check[key]} onChange={(e) => update({ [key]: e.target.checked })} />
+          <label key={key} className="flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-2xl border border-line px-3.5 text-sm transition-colors duration-200 has-[:checked]:border-accent/60 has-[:checked]:bg-accent/10 has-[:checked]:font-medium has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent">
+            <input type="checkbox" className="peer sr-only" checked={check[key]} onChange={(e) => update({ [key]: e.target.checked })} />
+            <span className="order-first flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-input-line text-transparent transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-checked:text-onaccent" aria-hidden>
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10" /></svg>
+            </span>
             {label}
           </label>
         ))}

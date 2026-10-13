@@ -27,7 +27,7 @@ export function AiTextForm({ date, meal, onResult }: { date: string; meal: Meal;
   }
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-2 rounded-xl border border-line p-3">
+    <form onSubmit={submit} noValidate className="space-y-2 rounded-2xl border border-line p-3">
       <label htmlFor={id} className="label">Describe what you ate</label>
       <textarea id={id} className="input py-2" rows={3} maxLength={MAX} placeholder="2 rotis, dal, 1 bowl rice" value={text} onChange={(e) => setText(e.target.value)} />
       <div className="flex items-center justify-between gap-2">

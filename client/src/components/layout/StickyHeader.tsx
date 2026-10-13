@@ -23,8 +23,9 @@ export function StickyHeader() {
   const dated = pathname === '/' || pathname === '/workout';
   return (
     <header className="sticky top-0 z-20 px-3 pt-[calc(0.75rem+env(safe-area-inset-top))] md:px-6">
-      <div className="glass flex min-h-[56px] items-center justify-between gap-1.5 rounded-full py-1.5 pl-3.5 pr-1 md:pl-5 md:pr-1.5">
-        <h1 ref={headingRef} tabIndex={-1} className="min-w-0 truncate text-base outline-none sm:text-lg">{title}</h1>
+      {/* On dated pages the date is what people read; the page name is on the tab bar, so the heading is kept for screen readers only. */}
+      <div className={`glass flex min-h-[56px] items-center justify-between gap-1.5 rounded-full py-1.5 ${dated ? 'px-1.5' : 'pl-5 pr-1.5'}`}>
+        <h1 ref={headingRef} tabIndex={-1} className={dated ? 'sr-only' : 'min-w-0 truncate text-lg outline-none'}>{title}</h1>
         {dated ? <DateSwitcher /> : <span className="pr-4 text-sm font-semibold text-accent">FuelLog</span>}
       </div>
     </header>

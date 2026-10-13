@@ -41,7 +41,7 @@ export function CustomFoodForm({ initialName = '', onCreated, onCancel }: { init
   }
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-3 rounded-xl border border-line p-3">
+    <form onSubmit={submit} noValidate className="space-y-3 rounded-2xl border border-line p-3">
       <h3 className="font-semibold">New custom food</h3>
       <div>
         <label htmlFor={`${id}-name`} className="label">Name</label>

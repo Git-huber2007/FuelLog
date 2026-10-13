@@ -16,7 +16,7 @@ export function CredentialFields({ email, password }: Props) {
           <input
             id={`${id}-email`}
             name="email"
-            className={`input ${email.error ? 'border-protein' : ''}`}
+            className={`input ${email.error ? 'border-danger' : ''}`}
             type="email"
             inputMode="email"
             autoComplete="email"
@@ -35,7 +35,7 @@ export function CredentialFields({ email, password }: Props) {
           <input
             id={`${id}-password`}
             name="password"
-            className={`input ${password.error ? 'border-protein' : ''}`}
+            className={`input ${password.error ? 'border-danger' : ''}`}
             type="password"
             required
             minLength={8}

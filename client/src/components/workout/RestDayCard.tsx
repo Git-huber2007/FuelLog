@@ -8,11 +8,11 @@ export function RestDayCard({ programName, delta, sunday }: { programName?: stri
       <h2 id="rest-title" className="text-xl">Rest day</h2>
       {programName && (
         <p className="text-sm text-muted">
-          <span>{programName}</span> · <Link to="/profile" className="font-medium text-accent underline">Change</Link>
+          <span>{programName}</span> · <Link to="/profile" className="link">Change</Link>
         </p>
       )}
       <p className="text-muted">No lifting planned today. Recovery is where the muscle gets built.</p>
-      <ul className="list-disc space-y-1 pl-5">
+      <ul className="list-dot space-y-1">
         <li>Walk for 20 to 30 minutes</li>
         <li>Stretch what feels tight</li>
         <li>Eat your protein</li>

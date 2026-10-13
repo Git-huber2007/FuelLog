@@ -10,7 +10,7 @@ export function EatenList({ date, logs }: { date: string; logs: FoodLog[] }) {
   const remove = useDeleteLog(date);
   return (
     <section className="card space-y-3" aria-labelledby="eaten-title">
-      <h2 id="eaten-title" tabIndex={-1} className="text-base outline-none">Eaten</h2>
+      <h2 id="eaten-title" tabIndex={-1} className="card-title outline-none">Eaten</h2>
       {logs.length === 0 && (
         <EmptyState title="Nothing logged for this day" hint="Tap a recent food, search the list, or scan a barcode above. Each entry shows up here." />
       )}

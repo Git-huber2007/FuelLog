@@ -27,15 +27,15 @@ export function SavedMealChips({ date, meal }: { date: string; meal: Meal }) {
   return (
     <div>
       <h3 className="label">Saved meals</h3>
-      <ul className="flex flex-wrap gap-2">
+      <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">
         {meals.data.map((saved) => (
-          <li key={saved.id} className="flex max-w-full rounded-full border border-line bg-bg">
-            <button type="button" className="min-h-[44px] min-w-0 truncate rounded-l-full pl-4 pr-2 text-sm" disabled={log.isPending} onClick={() => log.mutate(saved)}
+          <li key={saved.id} className="flex shrink-0 rounded-full border border-line bg-bg">
+            <button type="button" className="min-h-[44px] min-w-0 truncate rounded-l-full pl-4 pr-2 text-sm disabled:opacity-50" disabled={log.isPending} onClick={() => log.mutate(saved)}
               title={`${saved.name} · ${Math.round(saved.items.reduce((sum, item) => sum + item.kcal, 0))} kcal`}>
               {saved.name} · {Math.round(saved.items.reduce((sum, item) => sum + item.kcal, 0))} kcal
             </button>
-            <button type="button" className="min-h-[44px] min-w-[44px] rounded-r-full text-sm text-muted" aria-label={`Delete saved meal ${saved.name}`}
-              disabled={remove.isPending} onClick={() => remove.mutate(saved)}>✕</button>
+            <button type="button" className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-r-full text-muted transition-colors hover:text-text disabled:opacity-50 [&>svg]:h-4 [&>svg]:w-4" aria-label={`Delete saved meal ${saved.name}`}
+              disabled={remove.isPending} onClick={() => remove.mutate(saved)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg></button>
           </li>
         ))}
       </ul>

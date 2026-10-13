@@ -12,7 +12,7 @@ export function EatenListItem({ log, onDelete }: { log: FoodLog; onDelete: () =>
   };
 
   return (
-    <li className="flex items-center gap-2 py-1">
+    <li className="flex items-center gap-2 py-2">
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2" title={log.name}>{log.name}</p>
         <p className="text-sm tabular-nums text-muted">
@@ -20,7 +20,7 @@ export function EatenListItem({ log, onDelete }: { log: FoodLog; onDelete: () =>
         </p>
       </div>
       {/* An entry still being saved has no server id yet, so it cannot be deleted for a moment. */}
-      <button type="button" className="btn px-0 text-muted" aria-label={`Delete ${log.name}`} disabled={isPending(log)} onClick={handleDelete}>✕</button>
+      <button type="button" className="icon-btn -mr-2" aria-label={`Delete ${log.name}`} disabled={isPending(log)} onClick={handleDelete}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg></button>
     </li>
   );
 }

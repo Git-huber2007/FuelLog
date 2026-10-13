@@ -57,23 +57,23 @@ export function SetRow({ date, exerciseKey, setNumber, initial, units, single, i
       {!single && <span className="text-sm text-muted">{name}</span>}
       <div>
         <label htmlFor={`${id}-w`} className="sr-only">{name} {units[0]}</label>
-        <input id={`${id}-w`} className={`input ${invalid ? 'border-protein' : ''}`} inputMode="decimal" autoComplete="off" placeholder={units[0]}
+        <input id={`${id}-w`} className={`input px-2 text-center font-medium tabular-nums ${invalid ? 'border-danger' : ''}`} inputMode="decimal" autoComplete="off" placeholder={units[0]}
           value={weight} onChange={(e) => change(e.target.value, reps)} aria-invalid={invalid} />
       </div>
       <div>
         <label htmlFor={`${id}-r`} className="sr-only">{name} {units[1]}</label>
-        <input id={`${id}-r`} className={`input ${invalid ? 'border-protein' : ''}`} inputMode="numeric" autoComplete="off" placeholder={units[1]}
+        <input id={`${id}-r`} className={`input px-2 text-center font-medium tabular-nums ${invalid ? 'border-danger' : ''}`} inputMode="numeric" autoComplete="off" placeholder={units[1]}
           value={reps} onChange={(e) => change(weight, e.target.value)} aria-invalid={invalid} />
       </div>
       {incline && (
         <div>
           <label htmlFor={`${id}-g`} className="sr-only">{name} incline in percent, negative for a decline</label>
           {/* No inputMode: phone number pads have no minus key, and a decline needs one. */}
-          <input id={`${id}-g`} className={`input ${invalid ? 'border-protein' : ''}`} autoComplete="off" placeholder="0"
+          <input id={`${id}-g`} className={`input px-2 text-center font-medium tabular-nums ${invalid ? 'border-danger' : ''}`} autoComplete="off" placeholder="0"
             value={grade} onChange={(e) => change(weight, reps, e.target.value)} aria-invalid={invalid} />
         </div>
       )}
-      <span className={`text-center text-sm font-semibold ${status === 'error' ? 'text-protein' : 'text-accent'}`} role="status">
+      <span className={`text-center text-sm font-semibold ${status === 'error' ? 'text-danger' : 'text-accent'}`} role="status">
         <span aria-hidden>{status === 'saved' ? '✓' : status === 'saving' ? '…' : status === 'error' ? '!' : ''}</span>
         <span className="sr-only">{status === 'saved' ? 'Saved' : status === 'saving' ? 'Saving' : status === 'error' ? 'Not saved. Edit the value to try again.' : ''}</span>
       </span>

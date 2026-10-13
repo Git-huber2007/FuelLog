@@ -8,20 +8,20 @@ export function CoachCard() {
   const review = coach.data;
   return (
     <section className="card space-y-3" aria-labelledby="coach-title">
-      <h2 id="coach-title" className="text-base">Weekly coach</h2>
+      <h2 id="coach-title" className="card-title">Weekly coach</h2>
       {review ? (
         <div className="space-y-3">
           <p className="font-semibold">{review.headline}</p>
           {review.wins.length > 0 && (
             <div>
               <h3 className="text-sm text-muted">Went well</h3>
-              <ul className="list-disc pl-5">{review.wins.map((win) => <li key={win}>{win}</li>)}</ul>
+              <ul className="list-dot">{review.wins.map((win) => <li key={win}>{win}</li>)}</ul>
             </div>
           )}
           {review.improve.length > 0 && (
             <div>
               <h3 className="text-sm text-muted">To improve</h3>
-              <ul className="list-disc space-y-1 pl-5">
+              <ul className="list-dot space-y-1">
                 {review.improve.map((point) => <li key={point.issue}>{point.issue} <span className="text-muted">{point.action}</span></li>)}
               </ul>
             </div>

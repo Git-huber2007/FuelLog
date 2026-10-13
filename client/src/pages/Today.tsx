@@ -46,16 +46,17 @@ export default function Today() {
           <CalorieRing eaten={totals.kcal} target={targets.kcal} />
           <MacroBars totals={totals} targets={targets} />
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted">
-          <span className="tabular-nums">{Math.round(totals.kcal)} of {targets.kcal} kcal eaten</span>
-          <StreakBadge days={progress.data?.streak} />
-        </div>
-        {totalBurn > 0 && (
-          <p className="text-sm text-muted">
-            Burned today: about {totalBurn} kcal (workout {workoutBurn}, walking {walkingBurn})
-          </p>
-        )}
+        <dl className="grid grid-cols-3 gap-2">
+          {([['Eaten', Math.round(totals.kcal)], ['Target', targets.kcal], ['Burned', totalBurn]] as const).map(([label, value]) => (
+            <div key={label} className="tile px-3 py-2.5">
+              <dt className="tile-label">{label}</dt>
+              <dd className="tile-value text-lg">{value.toLocaleString()}<span className="ml-1 text-xs font-normal text-muted">kcal</span></dd>
+            </div>
+          ))}
+        </dl>
+        {totalBurn > 0 && <p className="text-sm text-muted">Burned is an estimate: workout {workoutBurn}, walking {walkingBurn}.</p>}
         <NudgeLine text={line} />
+        <StreakBadge days={progress.data?.streak} />
       </section>
       </div>
       <AddFoodCard key={`add-${date}`} date={date} />

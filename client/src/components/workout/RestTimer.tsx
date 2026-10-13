@@ -27,8 +27,8 @@ export function RestTimer() {
   return (
     <section className="card flex items-center justify-between gap-3" aria-label="Rest timer">
       <div>
-        <p className="text-sm text-muted">Rest timer</p>
-        <p className="text-2xl font-semibold tabular-nums" role="timer" aria-live="off">
+        <p className="card-title">Rest timer</p>
+        <p className="stat mt-1.5" role="timer" aria-live="off">
           {running ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : '1:30'}
         </p>
       </div>

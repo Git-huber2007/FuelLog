@@ -34,19 +34,19 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
     <section className="card space-y-3" aria-label={exercise.name}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-base">{exercise.name}</h3>
+          <h3 className="text-lg leading-snug">{exercise.name}</h3>
           {exercise.detail && <p className="text-sm text-muted">{exercise.detail}</p>}
         </div>
-        <span className="shrink-0 text-sm tabular-nums text-muted">{exercise.prescription}</span>
+        <span className="shrink-0 rounded-full bg-bg px-2.5 py-1 text-xs font-medium tabular-nums text-muted">{exercise.prescription}</span>
       </div>
       <ExerciseDemo name={exercise.name} photos={exercisePhotos(exercise.key)} />
       <LastSessionLine last={exercise.last} cardio={exercise.cardio} />
       <OverloadHint show={exercise.overload} />
       <div className={`grid items-center gap-2 text-xs font-medium text-muted ${incline ? 'grid-cols-[1fr_1fr_1fr_1.5rem]' : exercise.sets === 1 ? 'grid-cols-[1fr_1fr_1.5rem]' : 'grid-cols-[2.5rem_1fr_1fr_1.5rem]'}`} aria-hidden="true">
         {exercise.sets !== 1 && <span></span>}
-        <span className="px-1">{units[0]}</span>
-        <span className="px-1">{units[1]}</span>
-        {incline && <span className="px-1">incline %</span>}
+        <span className="text-center uppercase tracking-[0.08em]">{units[0]}</span>
+        <span className="text-center uppercase tracking-[0.08em]">{units[1]}</span>
+        {incline && <span className="text-center uppercase tracking-[0.08em]">incline %</span>}
         <span></span>
       </div>
       <ul className="space-y-2">

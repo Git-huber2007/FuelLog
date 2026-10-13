@@ -15,6 +15,7 @@ export default {
         line: token('line'),
         'input-line': token('input-line'),
         accent: token('accent'),
+        danger: token('danger'),
         onaccent: token('on-accent'),
         // Macro colours, taken from bumper plates.
         kcal: token('kcal'),
@@ -24,5 +25,6 @@ export default {
       },
     },
   },
+  future: { hoverOnlyWhenSupported: true }, // hover styles would otherwise stick after a tap on a phone
   plugins: [],
 } satisfies Config;

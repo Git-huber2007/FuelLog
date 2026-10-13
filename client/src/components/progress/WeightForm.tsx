@@ -33,7 +33,7 @@ export function WeightForm({ todayWeight }: { todayWeight: number | undefined })
       <div className="min-w-0 flex-1">
         <NumberField label="Weight today" suffix="kg" value={weight} onChange={setWeight} error={error} placeholder="75.0" />
       </div>
-      <button className="btn-primary mt-6 shrink-0" disabled={save.isPending}>{todayWeight === undefined ? 'Log' : 'Update'}</button>
+      <button className="btn-primary mt-[1.625rem] min-h-[48px] shrink-0" disabled={save.isPending}>{todayWeight === undefined ? 'Log' : 'Update'}</button>
     </form>
   );
 }

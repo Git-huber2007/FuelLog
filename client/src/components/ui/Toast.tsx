@@ -29,7 +29,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 export function Toast({ message, kind }: { message: string; kind: Kind }) {
   return (
-    <p className={`toast-in max-w-[480px] rounded-xl border bg-card px-4 py-3 text-sm shadow-lg ${kind === 'error' ? 'border-protein text-protein' : 'border-line text-text'}`}>
+    <p className={`toast-in max-w-[480px] rounded-2xl border bg-card px-4 py-3 text-sm shadow-lg ${kind === 'error' ? 'border-danger text-danger' : 'border-line text-text'}`}>
       {message}
     </p>
   );

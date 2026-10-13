@@ -10,12 +10,13 @@ export function WeekSummaryCard({ summary }: { summary: ProgressResponse['summar
   ];
   return (
     <section className="card" aria-labelledby="week-title">
-      <h2 id="week-title" className="text-base">Last 7 days</h2>
-      <dl className="mt-3 grid grid-cols-2 gap-3">
-        {stats.map(([label, value]) => (
-          <div key={label} className="rounded-2xl bg-bg p-3.5">
-            <dt className="text-sm text-muted">{label}</dt>
-            <dd className="text-lg font-semibold tabular-nums">{value}</dd>
+      <h2 id="week-title" className="card-title">Last 7 days</h2>
+      {/* The first figure spans the row, so five tiles never leave an orphan. */}
+      <dl className="mt-3 grid grid-cols-2 gap-2">
+        {stats.map(([label, value], i) => (
+          <div key={label} className={`tile ${i === 0 ? 'col-span-2' : ''}`}>
+            <dt className="tile-label">{label}</dt>
+            <dd className={i === 0 ? 'stat mt-1.5' : 'tile-value'}>{value}</dd>
           </div>
         ))}
       </dl>

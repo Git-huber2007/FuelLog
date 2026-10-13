@@ -20,7 +20,7 @@ export function AdviceCard({ advice }: { advice: Advice }) {
 
   return (
     <section className="card space-y-3" aria-labelledby="advice-title">
-      <h2 id="advice-title" className="text-base">Target tuning</h2>
+      <h2 id="advice-title" className="card-title">Target tuning</h2>
       <p>{advice.message}</p>
       {advice.status === 'adjust' && (
         <button type="button" className="btn-primary w-full" disabled={apply.isPending} onClick={() => apply.mutate()}>

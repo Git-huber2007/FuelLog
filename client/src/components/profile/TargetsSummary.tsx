@@ -16,7 +16,7 @@ export function TargetsSummary({ profile }: { profile: TargetProfile }) {
   ];
   return (
     <section aria-label="Your daily targets">
-      <h2 className="text-base">Your daily targets</h2>
+      <h2 className="card-title">Your daily targets</h2>
       <dl className="mt-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
         {rows.map(([label, value]) => (
           <div key={label} className="contents">

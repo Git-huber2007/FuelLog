@@ -27,8 +27,8 @@ export function PhotoGrid() {
         <li key={photo.id}>
           <figure>
             {photo.url
-              ? <img src={photo.url} alt={`Progress photo from ${photo.log_date}`} loading="lazy" className="aspect-[3/4] w-full rounded-xl bg-line object-cover" />
-              : <div className="flex aspect-[3/4] items-center justify-center rounded-xl bg-line p-2 text-center text-sm text-muted">Photo unavailable</div>}
+              ? <img src={photo.url} alt={`Progress photo from ${photo.log_date}`} loading="lazy" className="aspect-[3/4] w-full rounded-2xl bg-line object-cover" />
+              : <div className="flex aspect-[3/4] items-center justify-center rounded-2xl bg-line p-2 text-center text-sm text-muted">Photo unavailable</div>}
             <figcaption className="mt-1 flex items-center justify-between gap-2 text-sm text-muted">
               {formatDayLabel(photo.log_date, today)}
               <button type="button" className="btn px-3 text-sm" disabled={remove.isPending} aria-label={`Delete photo from ${photo.log_date}`}

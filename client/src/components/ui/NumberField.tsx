@@ -18,7 +18,7 @@ export function NumberField({ label, value, onChange, inputMode = 'decimal', suf
       <label htmlFor={id} className="label">{label}{suffix && ` (${suffix})`}</label>
       <input
         id={id}
-        className={`input ${error ? 'border-protein' : ''}`}
+        className={`input ${error ? 'border-danger' : ''}`}
         inputMode={inputMode}
         autoComplete="off"
         placeholder={placeholder}

@@ -23,7 +23,7 @@ export function BottomTabBar() {
               end
               className={({ isActive }) =>
                 `flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-full px-3 text-[0.6875rem] transition-[background-color,color,transform] duration-300 ease-spring active:scale-[0.96] lg:min-h-[64px] lg:w-16 lg:rounded-[1.5rem] ${
-                  isActive ? 'bg-accent font-semibold text-onaccent' : 'text-muted hover:text-text'
+                  isActive ? 'bg-text/[0.09] font-semibold text-text' : 'text-muted hover:text-text'
                 }`}
             >
               <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

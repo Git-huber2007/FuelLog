@@ -35,7 +35,7 @@ export function FoodSearchInput({ onPick, onCreate }: { onPick: (food: Food) => 
       )}
       {query && results.data && (
         results.data.length ? (
-          <ul className="mt-2 divide-y divide-line rounded-xl border border-line">
+          <ul className="mt-2 divide-y divide-line rounded-2xl border border-line">
             {results.data.map((food) => (
               <li key={food.id} className="flex items-stretch">
                 <button type="button" className="flex min-h-[44px] min-w-0 flex-1 items-center justify-between gap-3 px-3 py-2 text-left"
