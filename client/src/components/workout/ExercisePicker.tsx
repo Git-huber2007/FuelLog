@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useProfile } from '../../hooks/useProfile';
 import { api } from '../../lib/apiClient';
 import { EmptyState } from '../ui/EmptyState';
+import { ExercisePhoto } from './ExercisePhoto';
 
 const LEVEL_KEY = 'fuellog.level';
 const SHOWN = 40;
@@ -132,7 +133,7 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
                   const isBusy = pendingId === exercise.id;
                   return (
                     <li key={exercise.id} className="flex items-center gap-3 rounded-2xl border border-line p-2">
-                      <img src={exercisePhotos(exercise.id)[0]} alt="" loading="lazy" width={72} height={48} className="h-12 w-[72px] shrink-0 rounded-lg bg-line object-cover" />
+                      <ExercisePhoto src={exercisePhotos(exercise.id)[0]} alt="" loading="lazy" width={72} height={48} className="h-12 w-[72px] shrink-0 rounded-lg bg-line object-cover" />
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 font-medium" title={exercise.name}>{exercise.name}</p>
                         <p className="truncate text-sm text-muted" title={`${exercise.type === 'cardio' ? 'Cardio' : exercise.muscle} · ${LEVEL_LABELS[exercise.level]}`}>

@@ -33,7 +33,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"], // React sets style attributes for bar widths and chart geometry
-      imgSrc: ["'self'", 'data:', 'blob:', supabaseOrigin, 'https://cdn.jsdelivr.net'], // jsDelivr serves the exercise-library photos
+      imgSrc: ["'self'", 'data:', 'blob:', supabaseOrigin, 'https://cdn.jsdelivr.net', 'https://raw.githubusercontent.com', 'https://cdn.statically.io'], // jsDelivr, GitHub and Statically serve exercise-library photos
       connectSrc: ["'self'", supabaseOrigin, supabaseOrigin.replace(/^http/, 'ws')],
       mediaSrc: ["'self'", 'blob:'],
       workerSrc: ["'self'"],

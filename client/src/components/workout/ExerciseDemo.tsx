@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { resolvePhotoUrl } from './ExercisePhoto';
 
 const FRAME_MS = 1100;
 
@@ -10,6 +11,8 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
   const [playing, setPlaying] = useState(false);
   const [started, setStarted] = useState(false);
   const [finish, setFinish] = useState(false);
+  const [attempt0, setAttempt0] = useState(0);
+  const [attempt1, setAttempt1] = useState(0);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -26,15 +29,44 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
     setPlaying(!playing);
   }
 
+  function handlePhoto0Error() {
+    if (photos[0].startsWith('https://') && attempt0 < 2) {
+      setAttempt0((prev) => prev + 1);
+    } else {
+      setFailed(true);
+    }
+  }
+
+  function handlePhoto1Error() {
+    if (photos[1].startsWith('https://') && attempt1 < 2) {
+      setAttempt1((prev) => prev + 1);
+    } else {
+      setFailed(true);
+    }
+  }
+
   if (failed) {
     return <div className="flex aspect-[2/1] items-center justify-center rounded-2xl bg-line px-4 text-center text-sm text-muted">Demo photo unavailable</div>;
   }
   return (
     <div className="relative aspect-[2/1] overflow-hidden rounded-2xl bg-line">
-      <img src={photos[0]} alt={`${name}: start position`} loading="lazy" onError={() => setFailed(true)} className="absolute inset-0 h-full w-full object-cover" />
+      <img
+        src={resolvePhotoUrl(photos[0], attempt0)}
+        alt={`${name}: start position`}
+        loading="lazy"
+        crossOrigin="anonymous"
+        onError={handlePhoto0Error}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
       {started && (
-        <img src={photos[1]} alt={`${name}: finish position`} aria-hidden={!finish} onError={() => setFailed(true)}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-out ${finish ? 'opacity-100' : 'opacity-0'}`} />
+        <img
+          src={resolvePhotoUrl(photos[1], attempt1)}
+          alt={`${name}: finish position`}
+          aria-hidden={!finish}
+          crossOrigin="anonymous"
+          onError={handlePhoto1Error}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-out ${finish ? 'opacity-100' : 'opacity-0'}`}
+        />
       )}
       <span className="absolute left-2 top-2 rounded-md bg-black/60 px-2 py-0.5 text-xs font-medium text-white" aria-live="off">{finish ? 'Finish' : 'Start'}</span>
       <button type="button" onClick={toggle} aria-label={`${playing ? 'Pause' : 'Play'} demo of ${name}`}

@@ -13,7 +13,7 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
     return (
       <div role="status" aria-label="Loading recent foods">
         <h3 className="label">Recent</h3>
-        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">
+        <div className="flex flex-wrap gap-2">
           {[80, 110, 95, 120].map((w, i) => (
             <div key={i} className="h-9 shrink-0 rounded-full bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
           ))}
@@ -25,15 +25,19 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
   return (
     <div>
       <h3 className="label">Recent</h3>
-      <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">
+      <ul className="flex flex-wrap gap-2">
         {recent.data.map((food) => (
-          <li key={food.name} className="shrink-0">
-            <button type="button" className="chip" aria-label={`Add ${food.name}, ${Math.round(food.kcal)} kcal`}
+          <li key={food.name} className="max-w-full">
+            <button
+              type="button"
+              className="chip max-w-full py-1.5 text-left"
+              aria-label={`Add ${food.name}, ${Math.round(food.kcal)} kcal`}
               onClick={() => {
                 add.mutate([{ ...food, food_id: food.food_id ?? undefined, meal, servings: 1 }]);
                 toast(`Added ${food.name}.`);
-              }}>
-              <span className="whitespace-nowrap">{food.name}</span>
+              }}
+            >
+              <span className="line-clamp-2" title={food.name}>{food.name}</span>
             </button>
           </li>
         ))}
