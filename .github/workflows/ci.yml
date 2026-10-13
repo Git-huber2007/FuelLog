@@ -36,3 +36,14 @@ jobs:
 
       - name: Build applications
         run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: client
+
+      - name: Run E2E tests
+        run: npm run test:e2e -w client
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-anon-key
+

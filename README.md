@@ -53,6 +53,12 @@ The browser only ever talks to the Vercel address. `vercel.json` forwards `/api/
 
 The Render free plan sleeps after about 15 idle minutes, so the first request after a break takes close to a minute. The app shell still opens at once from Vercel.
 
+## Releasing a change
+
+1. **Run the migration first.** In the Supabase SQL Editor, run the new migration file before pushing code.
+2. **Push to main.** Code changes will run through CI. Once GitHub checks pass, Render automatically deploys the updated API (`autoDeployTrigger: checksPass`).
+3. **Rollout protection.** `render.yaml` points Render's health check at `/api/health`. The server verifies that required columns exist in the database at startup and in every health check. If a deploy occurs with a database that is behind the code, `/api/health` responds with HTTP 503 (`{ ok: false, reason: 'schema' }`), and Render cancels the deploy, keeping the previous live release running seamlessly.
+
 ## Alternative: everything on one Render service
 
 To serve the client from Render as well, change the build command in `render.yaml` back to `npm ci && npm run build` and add the three `VITE_` variables there. The server serves `client/dist` whenever it exists.

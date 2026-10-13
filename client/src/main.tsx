@@ -8,20 +8,41 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { ToastProvider } from './components/ui/Toast';
 import { SessionProvider } from './hooks/useSession';
 import { ApiError } from './lib/apiClient';
+import { reportClientError } from './lib/reportClientError';
 import '@fontsource-variable/geist';
 import './index.css';
 
 registerSW({ immediate: true });
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    reportClientError(event.error ?? event.message);
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    reportClientError(event.reason);
+  });
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30_000,
-      // A 4xx will not get better by asking again; network and server errors get one more try.
-      retry: (failures, error) => failures < 1 && !(error instanceof ApiError && error.status >= 400 && error.status < 500),
+      retry: (failures, error) => {
+        if (failures >= 3) return false;
+        if (error instanceof ApiError) {
+          if (error.status >= 400 && error.status < 500) return false;
+          return error.status === 0 || error.status === 502 || error.status === 503 || error.status === 504;
+        }
+        return true;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
+    },
+    mutations: {
+      retry: false,
     },
   },
 });
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

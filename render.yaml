@@ -4,6 +4,7 @@ services:
     name: fuellog
     runtime: node
     plan: free
+    autoDeployTrigger: checksPass
     buildCommand: npm ci && npm run build -w server
     startCommand: npm start
     healthCheckPath: /api/health

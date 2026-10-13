@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+import { reportClientError } from '../../lib/reportClientError';
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -6,6 +7,11 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: 
   static getDerivedStateFromError() {
     return { failed: true };
   }
+
+  componentDidCatch(error: Error) {
+    reportClientError(error);
+  }
+
 
   render() {
     if (!this.state.failed) return this.props.children;

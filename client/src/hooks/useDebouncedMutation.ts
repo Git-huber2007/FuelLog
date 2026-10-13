@@ -21,6 +21,7 @@ export function useDebouncedMutation<T extends object>(
   const timer = useRef<number>();
   const pending = useRef<T>();
   const lastFailed = useRef<T>();
+  const lastFailedCode = useRef<string | undefined>();
   const inFlightCount = useRef(0);
   const keepalivePending = useRef(false);
   const saveRef = useRef(save);
@@ -50,6 +51,7 @@ export function useDebouncedMutation<T extends object>(
           } else {
             setWaiting(false);
             lastFailed.current = undefined;
+            lastFailedCode.current = undefined;
             setStatus('saved');
           }
         }
@@ -62,6 +64,7 @@ export function useDebouncedMutation<T extends object>(
           } else {
             setWaiting(false);
             lastFailed.current = value;
+            lastFailedCode.current = (error as { code?: string }).code;
             setStatus('error');
             toast(error.message, 'error');
           }
@@ -79,11 +82,26 @@ export function useDebouncedMutation<T extends object>(
 
   const retry = useCallback(() => {
     if (lastFailed.current !== undefined) {
+      lastFailedCode.current = undefined;
       pending.current = lastFailed.current;
       setWaiting(true);
       flush();
     }
   }, [flush]);
+
+  useEffect(() => {
+    const onOnline = () => {
+      if (lastFailedCode.current === 'offline' && lastFailed.current !== undefined) {
+        lastFailedCode.current = undefined;
+        retry();
+      }
+    };
+
+    window.addEventListener('online', onOnline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+    };
+  }, [retry]);
 
   useEffect(() => {
     const onHide = () => flush({ keepalive: true });
@@ -101,4 +119,5 @@ export function useDebouncedMutation<T extends object>(
   }, [flush]);
 
   return { run, status, retry, flush, waiting };
+
 }

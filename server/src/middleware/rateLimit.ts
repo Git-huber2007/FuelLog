@@ -46,3 +46,32 @@ export const userRateLimit = rateLimit({
   },
 });
 
+/** 10 requests a minute per user/IP for client crash reporting. */
+export const clientErrorsRateLimit = rateLimit({
+  windowMs: 60_000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const authHeader = req.headers.authorization;
+    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.slice(7);
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+          if (payload && typeof payload.sub === 'string') return payload.sub;
+        }
+      } catch {
+        // fallback
+      }
+    }
+    return req.userId ?? getClientIp(req);
+  },
+  handler: (_req, res) => {
+    res.status(429).json({ error: { code: 'rate_limited', message: 'Too many error reports.' } });
+  },
+});
+
+
+

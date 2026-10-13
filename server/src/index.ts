@@ -17,6 +17,8 @@ import { profileRouter } from './routes/profile';
 import { progressRouter } from './routes/progress';
 import { savedMealsRouter } from './routes/savedMeals';
 import { workoutRouter } from './routes/workout';
+import { clientErrorsRouter } from './routes/clientErrors';
+import { checkRequiredSchema } from './lib/schemaCheck';
 
 const app = express();
 app.set('trust proxy', 1); // one hop: the host's HTTPS proxy
@@ -59,10 +61,15 @@ app.use('/api', directIpRateLimit, ipRateLimit, (req, res, next) => {
 app.use('/api/ai/parse-photo', express.json({ limit: '6mb' }));
 app.use(express.json({ limit: '100kb' }));
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
+  const schema = await checkRequiredSchema();
+  if (!schema.ok) {
+    return res.status(503).json({ ok: false, reason: 'schema' });
+  }
   res.json({ ok: true });
 });
 
+app.use('/api', clientErrorsRouter);
 app.use('/api', auth, userRateLimit, profileRouter, foodsRouter, daysRouter, workoutRouter, savedMealsRouter, progressRouter, photosRouter, aiRouter, exportRouter, notFound);
 
 // Serves the built client when it is there (single-service deploy). With the client on Vercel it is not built here, and this is skipped.
@@ -76,6 +83,34 @@ if (isProd && existsSync(clientDist)) {
 
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, () => {
   console.log(`FuelLog API listening on port ${env.PORT} (${env.NODE_ENV})${env.GEMINI_API_KEY ? '' : ', AI disabled: GEMINI_API_KEY is empty'}`);
+  checkRequiredSchema().then((result) => {
+    if (!result.ok) {
+      console.warn(`[Startup Warning] Database is missing required schema: ${result.missing}`);
+    }
+  }).catch((err) => {
+    console.error('Initial database schema check error:', err);
+  });
 });
+
+// Proxy-safe timeouts (keep-alive must exceed upstream reverse proxy idle timeout, e.g. 60s)
+server.keepAliveTimeout = 65_000;
+server.headersTimeout = 66_000;
+
+// Clean shutdown on SIGTERM
+let shuttingDown = false;
+process.on('SIGTERM', () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log('SIGTERM received: stopping new connections and draining in-flight requests...');
+  server.close(() => {
+    console.log('HTTP server closed cleanly.');
+    process.exit(0);
+  });
+  setTimeout(() => {
+    console.error('10-second drain window expired; forcing process exit.');
+    process.exit(0);
+  }, 10_000).unref();
+});
+

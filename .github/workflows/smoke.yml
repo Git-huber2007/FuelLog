@@ -1,0 +1,52 @@
+name: Smoke Test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live endpoints after deploy
+        run: |
+          echo "Waiting for deploy to be healthy on Render..."
+          HEALTH_URL="https://fuellog-4uka.onrender.com/api/health"
+          UNAUTH_URL="https://fuellog-4uka.onrender.com/api/profile"
+
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          HEALTH_PASSED=false
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            HTTP_CODE=$(curl -s -o /tmp/health_body.json -w "%{http_code}" "$HEALTH_URL" || true)
+            if [ "$HTTP_CODE" = "200" ]; then
+              if grep -q '"ok":true' /tmp/health_body.json; then
+                HEALTH_PASSED=true
+                echo "Health check succeeded on attempt $ATTEMPT: HTTP 200 with ok: true"
+                break
+              fi
+            fi
+            echo "Waiting for health check... (attempt $ATTEMPT/$MAX_ATTEMPTS, status: $HTTP_CODE)"
+            sleep 10
+          done
+
+          if [ "$HEALTH_PASSED" != "true" ]; then
+            echo "::error::Smoke test failed: /api/health did not return 200 ok within timeout."
+            cat /tmp/health_body.json || true
+            exit 1
+          fi
+
+          echo "Verifying unauthenticated request returns 401..."
+          UNAUTH_CODE=$(curl -s -o /tmp/unauth_body.json -w "%{http_code}" "$UNAUTH_URL" || true)
+          if [ "$UNAUTH_CODE" != "401" ]; then
+            echo "::error::Smoke test failed: expected 401 for unauthenticated request to $UNAUTH_URL, but got $UNAUTH_CODE."
+            cat /tmp/unauth_body.json || true
+            exit 1
+          fi
+
+          echo "Smoke test passed successfully: /api/health is ok, unauthenticated request answered 401."

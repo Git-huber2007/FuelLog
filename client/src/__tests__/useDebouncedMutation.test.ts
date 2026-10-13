@@ -297,4 +297,55 @@ describe('useDebouncedMutation', () => {
       await Promise.resolve();
     });
   });
+
+  it('a save that failed with offline is retried once automatically on online event', async () => {
+    let shouldFail = true;
+    const attempts: string[] = [];
+
+    const saveFn = async (val: { title: string }) => {
+      attempts.push(val.title);
+      if (shouldFail) {
+        const err = new Error('You seem to be offline.') as Error & { code: string };
+        err.code = 'offline';
+        throw err;
+      }
+    };
+
+    const hook = renderHook(saveFn, 200);
+
+    mock.timers.enable({ apis: ['setTimeout'] });
+
+    act(() => { hook.current.run({ title: 'offline-item' }); });
+    act(() => { mock.timers.tick(200); });
+
+    mock.timers.reset();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    assert.equal(hook.current.status, 'error');
+    assert.deepEqual(attempts, ['offline-item']);
+
+    // Now restore connection
+    shouldFail = false;
+
+    // Dispatch online event
+    await act(async () => {
+      mockWindow.dispatchEvent('online');
+      await Promise.resolve();
+    });
+
+    assert.equal(hook.current.status, 'saved');
+    assert.deepEqual(attempts, ['offline-item', 'offline-item'], 'Should auto-retry the failed save once on online');
+
+    // Firing online again should not trigger another retry
+    await act(async () => {
+      mockWindow.dispatchEvent('online');
+      await Promise.resolve();
+    });
+
+    assert.equal(attempts.length, 2, 'Should not retry more than once');
+  });
 });
+

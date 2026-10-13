@@ -60,7 +60,28 @@ export default defineConfig({
         // Cache the app shell only. API calls always go to the network.
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'exercise-photos',
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 24 * 60 * 60, // 60 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^\/api\/.*/i,
+            handler: 'NetworkOnly',
+          },
+        ],
       },
+
     }),
   ],
   build: {
