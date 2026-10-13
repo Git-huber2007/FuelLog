@@ -8,7 +8,7 @@ export function CalorieRing({ eaten, target }: { eaten: number; target: number }
   return (
     <svg viewBox="0 0 120 120" className="h-32 w-32 shrink-0 sm:h-36 sm:w-36" role="img"
       aria-label={`${Math.abs(left)} kcal ${over ? 'over' : 'left'}. Eaten ${Math.round(eaten)} of ${target} kcal.`}>
-      <circle cx="60" cy="60" r={R} fill="none" strokeWidth="8" className="stroke-text/10" />
+      <circle cx="60" cy="60" r={R} fill="none" strokeWidth="8" className="stroke-line" />
       <circle cx="60" cy="60" r={R} fill="none" strokeWidth="8" strokeLinecap="round" transform="rotate(-90 60 60)"
         className={`transition-[stroke-dashoffset] duration-500 ${over ? 'stroke-fat' : 'stroke-kcal'}`}
         strokeDasharray={CIRCUMFERENCE} strokeDashoffset={CIRCUMFERENCE * (1 - filled)} />

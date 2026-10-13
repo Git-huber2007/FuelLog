@@ -21,15 +21,17 @@ export function AuthPage({ title, children, footer }: { title: string; children:
   }, [title]);
 
   return (
-    <main className="stagger mx-auto grid min-h-dvh w-full max-w-[520px] content-center gap-8 px-4 py-10 lg:max-w-[1080px] lg:grid-cols-2 lg:gap-x-20 lg:px-8">
+    <main className="stagger mx-auto grid min-h-dvh w-full max-w-[520px] content-center gap-8 px-4 py-10 lg:max-w-[1120px] lg:grid-cols-2 lg:gap-x-20 lg:px-8">
       <header className="lg:self-end">
         <Link to="/welcome" className="inline-flex items-center gap-2.5 text-lg font-semibold">
           <img src="/icon-192.png" alt="" width={36} height={36} className="h-9 w-9 rounded-xl" />
           FuelLog
         </Link>
-        <p className="eyebrow mt-8">Calories · Macros · Training</p>
-        <p className="display mt-5">Eat for your goal. Train with a plan.</p>
-        <p className="mt-4 text-lg text-muted">A calorie, macro and gym tracker built for people who have just started lifting.</p>
+        <div className="hidden lg:block">
+          <p className="eyebrow mt-8">Calories · Macros · Training</p>
+          <p className="display mt-5">Eat for your goal. Train with a plan.</p>
+          <p className="mt-4 text-lg text-muted">A calorie, macro and gym tracker built for people who have just started lifting.</p>
+        </div>
       </header>
 
       <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
@@ -57,4 +59,5 @@ export function AuthPage({ title, children, footer }: { title: string; children:
   );
 }
 
-export const authLink = 'inline-flex min-h-[44px] items-center font-medium text-accent underline underline-offset-4';
+export const authLink = 'link inline-flex min-h-[44px] items-center';
+

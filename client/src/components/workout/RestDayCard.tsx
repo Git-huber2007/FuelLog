@@ -5,12 +5,12 @@ export function RestDayCard({ programName, delta, sunday }: { programName?: stri
   const amount = delta !== undefined ? Math.abs(delta) : 180;
   return (
     <section className="card space-y-2" aria-labelledby="rest-title">
-      <h2 id="rest-title" className="text-xl">Rest day</h2>
       {programName && (
         <p className="text-sm text-muted">
           <span>{programName}</span> · <Link to="/profile" className="link">Change</Link>
         </p>
       )}
+      <h2 id="rest-title" className="mt-1 text-[1.75rem] leading-tight">Rest day</h2>
       <p className="text-muted">No lifting planned today. Recovery is where the muscle gets built.</p>
       <ul className="list-dot space-y-1">
         <li>Walk for 20 to 30 minutes</li>

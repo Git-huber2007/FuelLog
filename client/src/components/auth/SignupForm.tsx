@@ -32,7 +32,12 @@ export function SignupForm() {
   }
 
   if (confirmSent) {
-    return <p role="status">Check {email} for a confirmation link. Open it on this device and you will land in FuelLog.</p>;
+    return (
+      <div role="status" className="space-y-2 rounded-2xl border border-line bg-bg p-4 text-left">
+        <h2 className="font-semibold text-text">Check your email</h2>
+        <p className="text-sm text-muted">We sent a confirmation link to <strong className="font-medium text-text">{email}</strong>. Open it on this device and you will land in FuelLog.</p>
+      </div>
+    );
   }
 
   return (

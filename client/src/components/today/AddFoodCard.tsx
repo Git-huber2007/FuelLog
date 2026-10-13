@@ -45,7 +45,7 @@ export function AddFoodCard({ date }: { date: string }) {
   function logPicked() {
     if (!picked) return;
     add.mutate([entryFromFood(picked, servings, meal)]);
-    toast(`Added ${picked.name}`);
+    toast(`Added ${picked.name}.`);
     setPicked(null);
   }
 

@@ -4,7 +4,7 @@ import { useSelectedDate } from '../../hooks/useSelectedDate';
 export function DateSwitcher() {
   const { date, today, isToday, setDate } = useSelectedDate();
   return (
-    <div className="flex flex-1 items-center justify-between">
+    <div className="flex flex-1 w-full max-w-[26rem] mx-auto items-center justify-between">
       <button className="icon-btn" aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 6l-6 6 6 6" /></svg>
       </button>

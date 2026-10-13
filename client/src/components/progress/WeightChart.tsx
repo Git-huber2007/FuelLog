@@ -2,8 +2,8 @@ import { daysBetween, formatDayLabel, todayISO, type ProgressResponse } from '@f
 import { EmptyState } from '../ui/EmptyState';
 
 const W = 320;
-const H = 170;
-const PAD = { left: 34, right: 10, top: 10, bottom: 22 };
+const H = 160;
+const PAD = { left: 34, right: 10, top: 12, bottom: 12 };
 
 /** Daily weigh-ins as dots, with the 7-day average as a line so day-to-day noise does not mislead. */
 export function WeightChart({ weights }: { weights: ProgressResponse['weights'] }) {
@@ -39,20 +39,69 @@ export function WeightChart({ weights }: { weights: ProgressResponse['weights'] 
           </tbody>
         </table>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-h-[170px]" role="img"
-        aria-label={`Weight over ${weights.length} weigh-ins. Latest ${last.weight_kg} kg, 7-day average ${last.avg7} kg.`}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full min-h-[160px]"
+        role="img"
+        aria-label={`Weight over ${weights.length} weigh-ins. Latest ${last.weight_kg} kg, 7-day average ${last.avg7} kg.`}
+      >
         {[min, (min + max) / 2, max].map((kg) => (
           <g key={kg}>
-            <line x1={PAD.left} x2={W - PAD.right} y1={y(kg)} y2={y(kg)} className="stroke-line" strokeWidth="1" />
-            <text x={PAD.left - 6} y={y(kg) + 4} textAnchor="end" className="fill-muted text-[11px] font-medium">{kg}</text>
+            <line
+              x1={PAD.left}
+              x2={W - PAD.right}
+              y1={y(kg)}
+              y2={y(kg)}
+              className="stroke-line"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+            <text x={PAD.left - 6} y={y(kg) + 4} textAnchor="end" className="fill-muted text-[11px] font-medium">
+              {kg.toLocaleString()}
+            </text>
           </g>
         ))}
-        <polyline fill="none" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="stroke-accent"
-          points={weights.map((w) => `${x(w.log_date)},${y(w.avg7)}`).join(' ')} />
-        {weights.map((w) => <circle key={w.log_date} cx={x(w.log_date)} cy={y(w.weight_kg)} r="3" className="fill-muted" />)}
-        <text x={PAD.left} y={H - 6} className="fill-muted text-[11px] font-medium">{formatDayLabel(first.log_date, today)}</text>
-        <text x={W - PAD.right} y={H - 6} textAnchor="end" className="fill-muted text-[11px] font-medium">{formatDayLabel(last.log_date, today)}</text>
+        <polyline
+          fill="none"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          className="stroke-accent"
+          vectorEffect="non-scaling-stroke"
+          points={weights.map((w) => `${x(w.log_date)},${y(w.avg7)}`).join(' ')}
+        />
+        {weights.map((w, i) => {
+          const isLatest = i === weights.length - 1;
+          return (
+            <g key={w.log_date}>
+              {isLatest && (
+                <circle
+                  cx={x(w.log_date)}
+                  cy={y(w.weight_kg)}
+                  r="6.5"
+                  fill="none"
+                  strokeWidth="2"
+                  className="stroke-accent"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )}
+              <circle
+                cx={x(w.log_date)}
+                cy={y(w.weight_kg)}
+                r="3.5"
+                className={isLatest ? 'fill-accent' : 'fill-muted'}
+              >
+                <title>{`${formatDayLabel(w.log_date, today)}: ${w.weight_kg} kg (7-day avg: ${w.avg7} kg)`}</title>
+              </circle>
+            </g>
+          );
+        })}
       </svg>
+      {/* HTML axis end labels so they stop scaling with the SVG card */}
+      <div className="mt-1 flex items-center justify-between text-xs font-medium text-muted">
+        <span>{formatDayLabel(first.log_date, today)}</span>
+        <span>{formatDayLabel(last.log_date, today)}</span>
+      </div>
     </div>
   );
 }

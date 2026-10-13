@@ -9,8 +9,19 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
   const toast = useToast();
   const recent = useQuery({ queryKey: ['recent-foods'], queryFn: () => api<RecentFood[]>('/recent-foods') });
   const add = useAddFood(date);
-  if (!recent.data) return null;
-  if (!recent.data.length) return <p className="text-sm text-muted">Foods you log will appear here for one-tap adding.</p>;
+  if (recent.isPending) {
+    return (
+      <div role="status" aria-label="Loading recent foods">
+        <h3 className="label">Recent</h3>
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">
+          {[80, 110, 95, 120].map((w, i) => (
+            <div key={i} className="h-9 shrink-0 rounded-full bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (!recent.data?.length) return <p className="text-sm text-muted">Foods you log will appear here for one-tap adding.</p>;
   return (
     <div>
       <h3 className="label">Recent</h3>
@@ -20,7 +31,7 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
             <button type="button" className="chip" aria-label={`Add ${food.name}, ${Math.round(food.kcal)} kcal`}
               onClick={() => {
                 add.mutate([{ ...food, food_id: food.food_id ?? undefined, meal, servings: 1 }]);
-                toast(`Added ${food.name}`);
+                toast(`Added ${food.name}.`);
               }}>
               <span className="whitespace-nowrap">{food.name}</span>
             </button>
