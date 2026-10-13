@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 const FEATURES: [title: string, detail: string][] = [
   ['Log food in seconds', 'Recent foods, saved meals, barcode scan, or just type what you ate.'],
@@ -22,12 +23,12 @@ export function AuthPage({ title, children, footer }: { title: string; children:
   return (
     <main className="stagger mx-auto grid min-h-dvh w-full max-w-[520px] content-center gap-8 px-4 py-10 lg:max-w-[1080px] lg:grid-cols-2 lg:gap-x-20 lg:px-8">
       <header className="lg:self-end">
-        <p className="flex items-center gap-2.5 text-lg font-semibold">
+        <Link to="/welcome" className="inline-flex items-center gap-2.5 text-lg font-semibold">
           <img src="/icon-192.png" alt="" width={36} height={36} className="h-9 w-9 rounded-xl" />
           FuelLog
-        </p>
+        </Link>
         <p className="eyebrow mt-8">Calories · Macros · Training</p>
-        <p className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tight lg:text-6xl">Eat for your goal. Train with a plan.</p>
+        <p className="display mt-5">Eat for your goal. Train with a plan.</p>
         <p className="mt-4 text-lg text-muted">A calorie, macro and gym tracker built for people who have just started lifting.</p>
       </header>
 

@@ -5,6 +5,7 @@ import { OnboardedRoute } from './components/layout/OnboardedRoute';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { LoadingSkeleton } from './components/ui/LoadingSkeleton';
 
+const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
@@ -19,6 +20,7 @@ export default function App() {
   return (
     <Suspense fallback={<div className="p-4"><LoadingSkeleton cards={3} /></div>}>
       <Routes>
+        <Route path="/welcome" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/reset-password" element={<ResetPassword />} />
