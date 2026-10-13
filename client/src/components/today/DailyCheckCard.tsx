@@ -73,7 +73,7 @@ export function DailyCheckCard({ date, initial, waterTargetMl, bodyKg }: Props) 
             {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : status === 'error' ? 'Not saved' : ''}
           </span>
           {status === 'error' && (
-            <button type="button" className="btn px-2 py-0.5 text-xs" onClick={retry}>Retry</button>
+            <button type="button" className="link text-xs" onClick={retry}>Retry</button>
           )}
         </div>
       </div>

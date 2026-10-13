@@ -73,7 +73,16 @@ export function ResetPasswordForm() {
       </form>
     );
   }
-  if (sent) return <p role="status">If {email} has an account, a reset link is on its way. Open it on this device.</p>;
+
+  if (sent) {
+    return (
+      <div role="status" className="rounded-2xl border border-line bg-card p-6 space-y-3">
+        <h2 className="text-xl font-semibold">Check your email</h2>
+        <p className="text-sm text-muted">If <strong className="text-text">{email}</strong> has an account, a reset link is on its way.</p>
+        <p className="text-xs text-muted">Open it on this device to choose a new password.</p>
+      </div>
+    );
+  }
   return (
     <form ref={formRef} onSubmit={requestLink} noValidate className="space-y-4">
       <CredentialFields email={{ value: email, onChange: setEmail, error }} />

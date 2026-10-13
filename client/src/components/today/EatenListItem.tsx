@@ -12,7 +12,7 @@ export function EatenListItem({ log, onDelete }: { log: FoodLog; onDelete: () =>
   };
 
   return (
-    <li className="flex items-center gap-2 py-2">
+    <li className="flex items-center gap-2 py-2 animate-[fade-in_300ms_ease-out]">
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2" title={log.name}>{log.name}</p>
         <p className="text-sm tabular-nums text-muted">

@@ -61,42 +61,48 @@ export default function Profile() {
 
   return (
     <>
-      <section className="card" aria-label="Edit profile">
-        <ProfileForm profile={profile} submitLabel="Save changes" />
-      </section>
-      <p className="px-1 text-sm text-muted">Estimates only, not medical advice. Calorie targets never go below 1500 kcal.</p>
-
-      <section className="card space-y-3" aria-label="Account">
-        <h2 className="card-title">Account</h2>
-        <p className="break-all text-sm text-muted">Signed in as {session?.user.email}</p>
-
-        <div className="space-y-2 pt-1">
-          <button
-            type="button"
-            className="btn w-full"
-            disabled={sendingReset}
-            onClick={handleChangePassword}
-          >
-            {sendingReset ? 'Sending reset link…' : 'Change password'}
-          </button>
-          <button type="button" className="btn w-full" onClick={signOut}>
-            Sign out
-          </button>
-          <button
-            type="button"
-            className="btn w-full text-danger border-danger/20 hover:border-danger/40"
-            onClick={openDeleteDialog}
-          >
-            Delete account
-          </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
+        <div className="space-y-5">
+          <section className="card" aria-label="Edit profile">
+            <ProfileForm profile={profile} submitLabel="Save changes" />
+          </section>
+          <p className="px-1 text-sm text-muted">Estimates only, not medical advice. Calorie targets never go below 1500 kcal.</p>
         </div>
 
-        <div className="flex items-center justify-center gap-4 pt-2 text-xs text-muted">
-          <Link to="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
-          <span>•</span>
-          <Link to="/terms" className="underline hover:text-foreground">Terms of Service</Link>
+        <div className="space-y-5">
+          <section className="card space-y-3" aria-label="Account">
+            <h2 className="card-title">Account</h2>
+            <p className="break-all text-sm text-muted">Signed in as {session?.user.email}</p>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                className="btn w-full"
+                disabled={sendingReset}
+                onClick={handleChangePassword}
+              >
+                {sendingReset ? 'Sending reset link…' : 'Change password'}
+              </button>
+              <button type="button" className="btn w-full" onClick={signOut}>
+                Sign out
+              </button>
+              <button
+                type="button"
+                className="btn w-full text-danger border-danger/20 hover:border-danger/40"
+                onClick={openDeleteDialog}
+              >
+                Delete account
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center gap-4 pt-2 text-xs text-muted">
+              <Link to="/privacy" className="link text-xs">Privacy Policy</Link>
+              <span>•</span>
+              <Link to="/terms" className="link text-xs">Terms of Service</Link>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Native dialog for account deletion */}
       <dialog

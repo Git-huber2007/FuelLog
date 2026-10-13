@@ -14,7 +14,7 @@ export function BottomTabBar() {
   const keepDate = pathname === '/' || pathname === '/workout' ? search : '';
   return (
     <nav aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:inset-x-auto lg:bottom-auto lg:left-4 lg:top-1/2 lg:-translate-y-1/2 lg:p-0">
+      className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:inset-x-auto lg:bottom-auto lg:left-[max(1rem,calc(50vw-560px+0.75rem))] lg:top-1/2 lg:-translate-y-1/2 lg:p-0">
       <ul className="glass mx-auto flex max-w-[26rem] gap-1 rounded-full p-1.5 lg:flex-col lg:rounded-[2rem]">
         {TABS.map((tab) => (
           <li key={tab.to} className="flex-1">

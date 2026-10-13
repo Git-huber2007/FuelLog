@@ -49,7 +49,7 @@
   html {
     -webkit-text-size-adjust: 100%;
     font-family: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-    font-feature-settings: 'ss01', 'cv11';
+    font-feature-settings: 'ss01';
     scroll-padding-top: 5rem;
     scroll-padding-bottom: 7rem;
   }
@@ -109,16 +109,27 @@
     break-inside: avoid;
   }
   .btn {
-    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-line bg-card px-5 text-base font-medium text-text transition-[transform,background-color,opacity] duration-150 ease-spring hover:bg-bg active:scale-[0.97] disabled:opacity-50;
+    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full border border-line bg-card px-5 text-base font-medium text-text transition-[transform,background-color,opacity] duration-150 ease-spring hover:bg-bg active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-primary {
-    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full bg-accent px-6 text-base font-semibold text-onaccent transition-[transform,filter,opacity] duration-150 ease-spring hover:brightness-110 active:scale-[0.97] disabled:opacity-50;
+    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full bg-accent px-6 text-base font-semibold text-onaccent transition-[transform,filter,opacity] duration-150 ease-spring hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.25),
       0 10px 24px -12px rgb(var(--accent) / 0.7);
   }
   .input {
     @apply min-h-[48px] w-full min-w-0 rounded-2xl border border-input-line bg-bg px-4 text-base text-text transition-[border-color,box-shadow] duration-300 ease-spring placeholder:text-muted;
+  }
+  .input[aria-invalid='true'] {
+    border-color: rgb(var(--danger));
+  }
+  .input[aria-invalid='true']:focus-visible {
+    border-color: rgb(var(--danger));
+    box-shadow: 0 0 0 4px rgb(var(--danger) / 0.18);
+  }
+  .input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   /* One arrow for every select, in place of each platform's own. */
   select.input {
@@ -147,7 +158,7 @@
   }
   /* A borderless round control for an icon: delete, step, previous, next. */
   .icon-btn {
-    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-text/[0.06] hover:text-text active:bg-text/10 disabled:opacity-40;
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-text/[0.06] hover:text-text active:bg-text/10 disabled:opacity-40 disabled:pointer-events-none;
   }
   .icon-btn svg {
     @apply h-5 w-5;
@@ -177,6 +188,11 @@
   .action {
     @apply flex min-h-[76px] cursor-pointer flex-col items-start justify-between gap-2 rounded-2xl border border-line bg-bg p-3.5 text-left text-sm font-medium text-text transition-[transform,background-color,border-color] duration-300 ease-spring hover:border-accent/40 active:scale-[0.97];
   }
+  .action[aria-pressed='true'] {
+    border-color: rgb(var(--accent) / 0.6);
+    background: rgb(var(--accent) / 0.1);
+    box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.2);
+  }
   .action svg {
     @apply h-[22px] w-[22px] text-accent;
   }
@@ -184,7 +200,7 @@
     @apply mb-1.5 block text-sm text-muted;
   }
   .chip {
-    @apply inline-flex min-h-[44px] max-w-full items-center rounded-full border border-line bg-bg px-4 text-sm text-text transition-[transform,background-color,opacity] duration-150 ease-spring hover:border-input-line active:scale-[0.97] disabled:opacity-50;
+    @apply inline-flex min-h-[44px] max-w-full items-center rounded-full border border-line bg-bg px-4 text-sm text-text transition-[transform,background-color,opacity] duration-150 ease-spring hover:border-input-line active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
   }
   .pressable {
     @apply transition-transform duration-150 ease-spring active:scale-[0.97];
@@ -200,6 +216,17 @@
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / var(--highlight)),
       0 16px 40px -20px rgb(0 0 0 / var(--shadow));
+  }
+  /* Segmented controls: shared between level, sex, goal and meal pickers */
+  .segmented {
+    @apply flex w-full items-center gap-1 rounded-2xl border border-line/70 bg-bg p-1 text-sm;
+  }
+  .segmented-option {
+    @apply flex min-h-[40px] flex-1 cursor-pointer select-none items-center justify-center rounded-xl px-3 py-1.5 text-center text-sm font-medium text-muted transition-[background-color,color,box-shadow] duration-150 ease-spring hover:text-text has-[:checked]:bg-card has-[:checked]:font-semibold has-[:checked]:text-text has-[:checked]:shadow-sm has-[:focus-visible]:outline-none;
+  }
+  /* A dialog sheet: centered modal on desktop, bottom sheet on phones */
+  .sheet {
+    @apply fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] w-full max-w-lg rounded-t-[2rem] border border-line bg-card p-5 text-text shadow-2xl backdrop-blur-xl transition-all sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-[2rem];
   }
   .field-error {
     @apply mt-1 text-sm text-danger;
@@ -268,4 +295,22 @@ dialog[open]::backdrop {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none !important;
+  }
+  .toast-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
+
+@media print {
+  .reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+  }
+}
+

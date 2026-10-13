@@ -13,5 +13,14 @@ export function EmptyState({ title, hint, action }: { title: string; hint: strin
 
 /** For a query that failed: the message plus a way to try again. */
 export function ErrorState({ error, onRetry }: { error: Error; onRetry: () => void }) {
-  return <EmptyState title="Could not load this" hint={error.message} action={<button className="btn" onClick={onRetry}>Try again</button>} />;
+  return (
+    <div className="rounded-2xl bg-bg px-4 py-4 space-y-2">
+      <p className="font-medium text-danger">Couldn&apos;t load this</p>
+      <p className="text-sm text-muted">Check your connection or try again in a moment.</p>
+      {error.message && <p className="text-xs text-muted/70 break-all">{error.message}</p>}
+      <div className="pt-1">
+        <button type="button" className="btn text-sm" onClick={onRetry}>Try again</button>
+      </div>
+    </div>
+  );
 }

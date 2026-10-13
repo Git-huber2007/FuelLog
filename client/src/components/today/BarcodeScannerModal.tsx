@@ -149,11 +149,15 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
 
   return (
     <dialog ref={dialog} onClose={onClose} aria-labelledby={`${id}-title`}
-      className="m-auto w-[calc(100%-2rem)] max-w-[480px] rounded-2xl border border-line bg-card p-4 text-text backdrop:bg-black/60">
+      className="sheet p-4">
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <h2 id={`${id}-title`} className="text-lg">Scan a barcode</h2>
-          <button type="button" className="btn" onClick={onClose}>Close</button>
+          <h2 id={`${id}-title`} className="text-lg font-semibold">Scan a barcode</h2>
+          <button type="button" className="icon-btn" aria-label="Close" onClick={onClose}>
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {live && (

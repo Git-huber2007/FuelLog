@@ -1,6 +1,7 @@
-import { useSyncExternalStore } from 'react';
+import { Suspense, useSyncExternalStore } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { getSlowRequestCount, subscribeSlowRequests } from '../../lib/apiClient';
+import { LoadingSkeleton } from '../ui/LoadingSkeleton';
 import { BottomTabBar } from './BottomTabBar';
 import { StickyHeader } from './StickyHeader';
 
@@ -44,8 +45,10 @@ export function AppShell() {
       )}
       <StickyHeader />
       {/* key: each page plays its entrance once, on arrival */}
-      <main key={pathname} className="stagger flex-1 px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5 md:columns-2 md:gap-5 md:px-6 lg:pb-10 [&>*]:mb-5">
-        <Outlet />
+      <main key={pathname} className="stagger flex-1 px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5 md:px-6 lg:pb-10">
+        <Suspense fallback={<LoadingSkeleton cards={3} />}>
+          <Outlet />
+        </Suspense>
       </main>
       <BottomTabBar />
     </div>

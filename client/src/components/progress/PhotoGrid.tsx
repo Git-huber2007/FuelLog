@@ -15,7 +15,14 @@ export function PhotoGrid() {
     onError: (error) => toast(error.message, 'error'),
   });
 
-  if (photos.isPending) return <p className="text-sm text-muted" role="status">Loading photos…</p>;
+  if (photos.isPending) {
+    return (
+      <div role="status" aria-label="Loading photos" className="grid grid-cols-2 gap-3">
+        <div className="aspect-[3/4] w-full rounded-2xl bg-line/20 animate-pulse" />
+        <div className="aspect-[3/4] w-full rounded-2xl bg-line/20 animate-pulse" />
+      </div>
+    );
+  }
   if (photos.isError) return <ErrorState error={photos.error} onRetry={() => photos.refetch()} />;
   if (!photos.data.length) {
     return <EmptyState title="No progress photos yet" hint="Add one below, same spot and same light each week. Only you can see them." />;
@@ -26,13 +33,26 @@ export function PhotoGrid() {
       {photos.data.map((photo) => (
         <li key={photo.id}>
           <figure>
-            {photo.url
-              ? <img src={photo.url} alt={`Progress photo from ${photo.log_date}`} loading="lazy" className="aspect-[3/4] w-full rounded-2xl bg-line object-cover" />
-              : <div className="flex aspect-[3/4] items-center justify-center rounded-2xl bg-line p-2 text-center text-sm text-muted">Photo unavailable</div>}
-            <figcaption className="mt-1 flex items-center justify-between gap-2 text-sm text-muted">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-line">
+              {photo.url ? (
+                <img src={photo.url} alt={`Progress photo from ${photo.log_date}`} loading="lazy" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center p-2 text-center text-sm text-muted">Photo unavailable</div>
+              )}
+              <button
+                type="button"
+                className="icon-btn absolute right-2 top-2 bg-black/40 text-white backdrop-blur hover:bg-danger hover:text-white"
+                disabled={remove.isPending}
+                aria-label={`Delete photo from ${photo.log_date}`}
+                onClick={() => remove.mutate(photo.id)}
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <figcaption className="mt-1 text-sm text-muted">
               {formatDayLabel(photo.log_date, today)}
-              <button type="button" className="btn px-3 text-sm" disabled={remove.isPending} aria-label={`Delete photo from ${photo.log_date}`}
-                onClick={() => remove.mutate(photo.id)}>Delete</button>
             </figcaption>
           </figure>
         </li>

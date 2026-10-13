@@ -19,7 +19,19 @@ export default function Today() {
   const progress = useProgress();
   const profile = useProfile();
 
-  if (day.isPending) return <LoadingSkeleton />;
+  if (day.isPending) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
+        <div className="space-y-5">
+          <LoadingSkeleton variant="hero" />
+          <LoadingSkeleton cards={1} />
+        </div>
+        <div className="space-y-5">
+          <LoadingSkeleton cards={2} />
+        </div>
+      </div>
+    );
+  }
   if (day.isError) return <ErrorState error={day.error} onRetry={() => day.refetch()} />;
 
   const { targets, logs, check } = day.data;
@@ -39,29 +51,36 @@ export default function Today() {
   });
 
   return (
-    <>
-      <div className="bezel">
-      <section className="card space-y-4 rounded-[1.75rem]" aria-label="Calories and macros">
-        <div className="flex items-center gap-5">
-          <CalorieRing eaten={totals.kcal} target={targets.kcal} />
-          <MacroBars totals={totals} targets={targets} />
-        </div>
-        <dl className="grid grid-cols-3 gap-2">
-          {([['Eaten', Math.round(totals.kcal)], ['Target', targets.kcal], ['Burned', totalBurn]] as const).map(([label, value]) => (
-            <div key={label} className="tile px-3 py-2.5">
-              <dt className="tile-label">{label}</dt>
-              <dd className="tile-value text-lg">{value.toLocaleString()}<span className="ml-1 text-xs font-normal text-muted">kcal</span></dd>
+    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
+      <div className="space-y-5">
+        <div className="bezel">
+          <section className="card space-y-4 rounded-[1.75rem]" aria-label="Calories and macros">
+            <div className="flex flex-col min-[360px]:flex-row items-center gap-5">
+              <CalorieRing eaten={totals.kcal} target={targets.kcal} />
+              <MacroBars totals={totals} targets={targets} />
             </div>
-          ))}
-        </dl>
-        {totalBurn > 0 && <p className="text-sm text-muted">Burned is an estimate: workout {workoutBurn}, walking {walkingBurn}.</p>}
-        <NudgeLine text={line} />
-        <StreakBadge days={progress.data?.streak} />
-      </section>
+            <dl className="grid grid-cols-3 gap-2">
+              {([['Eaten', Math.round(totals.kcal)], ['Target', targets.kcal], ['Burned', totalBurn]] as const).map(([label, value]) => (
+                <div key={label} className="tile px-3 py-2.5">
+                  <dt className="tile-label">{label}</dt>
+                  <dd className="tile-value text-lg">
+                    {value.toLocaleString()}
+                    <span className="sr-only"> kcal</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {totalBurn > 0 && <p className="text-sm text-muted">Burned is an estimate: workout {workoutBurn}, walking {walkingBurn}.</p>}
+            <NudgeLine text={line} />
+            <StreakBadge days={progress.data?.streak} />
+          </section>
+        </div>
+        <DailyCheckCard key={`check-${date}`} date={date} initial={check} waterTargetMl={targets.water_ml} bodyKg={profile.data?.profile.weight_kg ?? null} />
       </div>
-      <AddFoodCard key={`add-${date}`} date={date} />
-      <EatenList date={date} logs={logs} />
-      <DailyCheckCard key={`check-${date}`} date={date} initial={check} waterTargetMl={targets.water_ml} bodyKg={profile.data?.profile.weight_kg ?? null} />
-    </>
+      <div className="space-y-5">
+        <AddFoodCard key={`add-${date}`} date={date} />
+        <EatenList date={date} logs={logs} />
+      </div>
+    </div>
   );
 }

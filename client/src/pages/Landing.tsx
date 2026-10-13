@@ -32,7 +32,7 @@ function useReveal() {
 }
 
 const Arrow = () => (
-  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/10 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-px">
+  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-current/10 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-px">
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17 17 7M9 7h8v8" /></svg>
   </span>
 );
@@ -50,7 +50,7 @@ function Tile({ className = '', eyebrow, title, detail, children }: { className?
         <div>
           <p className="card-title text-accent">{eyebrow}</p>
           <h3 className="mt-2 text-2xl leading-tight md:text-[1.75rem]">{title}</h3>
-          <p className="mt-2 text-muted">{detail}</p>
+          <p className="mt-2 max-w-[34rem] text-muted">{detail}</p>
         </div>
       </div>
     </li>
@@ -81,7 +81,7 @@ export default function Landing() {
     <div className="relative overflow-x-clip">
       {/* Two fixed-size glows behind the hero. Absolutely placed and inert, so scrolling never repaints them. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[56rem]"
-        style={{ background: 'radial-gradient(48rem 30rem at 18% 8%, rgb(var(--accent) / 0.22), transparent 70%), radial-gradient(40rem 28rem at 92% 30%, rgb(var(--carbs) / 0.14), transparent 70%)' }} />
+        style={{ background: 'radial-gradient(48rem 30rem at 18% 8%, rgb(var(--accent) / var(--glow)), transparent 70%), radial-gradient(40rem 28rem at 92% 30%, rgb(var(--carbs) / calc(var(--glow) * 0.7)), transparent 70%)' }} />
 
       <header className="sticky top-0 z-20 px-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <nav aria-label="Main" className="glass mx-auto flex min-h-[56px] max-w-[1200px] items-center justify-between gap-2 rounded-full py-1.5 pl-4 pr-1.5">
@@ -92,7 +92,7 @@ export default function Landing() {
           <div className="flex items-center gap-1">
             <a href="#features" className="hidden min-h-[44px] items-center rounded-full px-4 text-sm text-muted transition-colors hover:text-text sm:inline-flex">Features</a>
             <a href="#how" className="hidden min-h-[44px] items-center rounded-full px-4 text-sm text-muted transition-colors hover:text-text sm:inline-flex">How it works</a>
-            <Link to="/login" className="inline-flex min-h-[44px] items-center rounded-full px-4 text-sm font-medium transition-colors hover:text-accent">Sign in</Link>
+            <Link to="/login" className="hidden min-[380px]:inline-flex min-h-[44px] items-center rounded-full px-4 text-sm font-medium transition-colors hover:text-accent">Sign in</Link>
             <Link to="/signup" className="btn-primary px-5 text-sm">Get started</Link>
           </div>
         </nav>
@@ -118,7 +118,7 @@ export default function Landing() {
             <div className="reveal bezel lg:-rotate-2">
               <div className="card rounded-[1.75rem]">
                 <p className="card-title">Today</p>
-                <div className="mt-4 flex items-center gap-5">
+                <div className="mt-4 flex flex-col min-[360px]:flex-row items-center gap-5">
                   <CalorieRing eaten={SAMPLE_EATEN.kcal} target={SAMPLE_TARGETS.kcal} />
                   <MacroBars totals={SAMPLE_EATEN} targets={SAMPLE_TARGETS} />
                 </div>
@@ -215,7 +215,7 @@ export default function Landing() {
         <section className="mx-auto max-w-[1200px] px-5 pb-24 md:pb-32">
           <div className="reveal bezel">
             <div className="card relative overflow-hidden rounded-[1.75rem] px-6 py-16 text-center md:py-24">
-              <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(36rem 20rem at 50% 0%, rgb(var(--accent) / 0.18), transparent 70%)' }} />
+              <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(36rem 20rem at 50% 0%, rgb(var(--accent) / var(--glow)), transparent 70%)' }} />
               <h2 className="display-2 relative mx-auto max-w-[36rem]">Start with today&apos;s breakfast.</h2>
               <p className="relative mx-auto mt-4 max-w-[30rem] text-lg text-muted">Create an account, answer five questions, and your targets and first workout are ready.</p>
               <div className="relative mt-9 flex justify-center"><Cta>Create your account</Cta></div>

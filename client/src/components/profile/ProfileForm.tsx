@@ -58,59 +58,95 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
   }
 
   return (
-    <form ref={formRef} onSubmit={submit} noValidate className="space-y-4">
-      <div>
-        <label htmlFor={`${id}-level`} className="label">Training level</label>
-        <select id={`${id}-level`} className="input" value={level} onChange={(e) => changeLevel(e.target.value as Level)}>
-          {LEVELS.map((l) => <option key={l} value={l}>{LEVEL_LABELS[l]}</option>)}
-        </select>
-      </div>
-      <div>
-        <label htmlFor={`${id}-program`} className="label">Weekly program</label>
-        <select
-          id={`${id}-program`}
-          className="input"
-          value={program}
-          aria-describedby={`${id}-program-help`}
-          onChange={(e) => {
-            setProgram(e.target.value as ProgramKey);
-            setProgramChosen(true);
-          }}
-        >
-          {PROGRAM_KEYS.map((key) => <option key={key} value={key}>{PROGRAMS[key].name}{key === suggested ? ' (recommended)' : ''}</option>)}
-        </select>
-        <p id={`${id}-program-help`} className="mt-1.5 text-sm text-muted">
-          {PROGRAMS[program].summary}
-          {program !== suggested && ` For ${LEVEL_LABELS[level].toLowerCase()} level we recommend ${PROGRAMS[suggested].name}.`}
-        </p>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
+    <form ref={formRef} onSubmit={submit} noValidate className="space-y-6">
+      <fieldset className="space-y-3">
+        <legend className="card-title">Training</legend>
         <div>
-          <label htmlFor={`${id}-sex`} className="label">Sex</label>
-          <select
-            id={`${id}-sex`}
-            className={`input ${error('sex') ? 'border-danger' : ''}`}
-            value={sex}
-            onChange={(e) => setSex(e.target.value)}
-            aria-invalid={!!error('sex')}
-            aria-describedby={error('sex') ? `${id}-sex-error` : undefined}
-          >
-            <option value="" disabled>Choose</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-          {error('sex') && <p id={`${id}-sex-error`} role="alert" className="field-error">{error('sex')}</p>}
+          <span className="label">Training level</span>
+          <div className="segmented">
+            {LEVELS.map((l) => (
+              <label key={l} className="segmented-option">
+                <input
+                  type="radio"
+                  name="level"
+                  className="sr-only"
+                  checked={level === l}
+                  onChange={() => changeLevel(l)}
+                />
+                {LEVEL_LABELS[l]}
+              </label>
+            ))}
+          </div>
         </div>
-        <NumberField label="Age" inputMode="numeric" value={age} onChange={setAge} error={error('age')} />
-        <NumberField label="Height" suffix="cm" value={height} onChange={setHeight} error={error('height_cm')} />
-        <NumberField label="Weight" suffix="kg" value={weight} onChange={setWeight} error={error('weight_kg')} />
-      </div>
-      <div>
-        <label htmlFor={`${id}-goal`} className="label">Goal</label>
-        <select id={`${id}-goal`} className="input" value={goal} onChange={(e) => setGoal(e.target.value)}>
-          {GOALS.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
-        </select>
-      </div>
+        <div>
+          <label htmlFor={`${id}-program`} className="label">Weekly program</label>
+          <select
+            id={`${id}-program`}
+            className="input"
+            value={program}
+            aria-describedby={`${id}-program-help`}
+            onChange={(e) => {
+              setProgram(e.target.value as ProgramKey);
+              setProgramChosen(true);
+            }}
+          >
+            {PROGRAM_KEYS.map((key) => (
+              <option key={key} value={key}>
+                {PROGRAMS[key].name}{key === suggested ? ' (recommended)' : ''}
+              </option>
+            ))}
+          </select>
+          <p id={`${id}-program-help`} className="mt-1.5 text-xs text-muted">
+            {PROGRAMS[program].summary}
+            {program !== suggested && ` For ${LEVEL_LABELS[level].toLowerCase()} level we recommend ${PROGRAMS[suggested].name}.`}
+          </p>
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className="card-title">About you</legend>
+        <div>
+          <span className="label">Sex</span>
+          <div className="segmented">
+            {(['male', 'female'] as const).map((s) => (
+              <label key={s} className="segmented-option capitalize">
+                <input
+                  type="radio"
+                  name="sex"
+                  className="sr-only"
+                  checked={sex === s}
+                  onChange={() => setSex(s)}
+                />
+                {s}
+              </label>
+            ))}
+          </div>
+          {error('sex') && <p role="alert" className="field-error">{error('sex')}</p>}
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <NumberField label="Age" inputMode="numeric" value={age} onChange={setAge} error={error('age')} />
+          <NumberField label="Height" suffix="cm" value={height} onChange={setHeight} error={error('height_cm')} />
+          <NumberField label="Weight" suffix="kg" value={weight} onChange={setWeight} error={error('weight_kg')} />
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className="card-title">Goal</legend>
+        <div className="segmented">
+          {GOALS.map((g) => (
+            <label key={g.value} className="segmented-option">
+              <input
+                type="radio"
+                name="goal"
+                className="sr-only"
+                checked={goal === g.value}
+                onChange={() => setGoal(g.value)}
+              />
+              {g.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       {parsed.success ? (
         <TargetsSummary profile={{ ...parsed.data, kcal_adjust: profile.kcal_adjust }} />
@@ -118,7 +154,10 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
         <p className="text-sm text-muted">Fill in every field to see your calorie and macro targets.</p>
       )}
 
-      <button className="btn-primary w-full" disabled={save.isPending}>{save.isPending ? 'Saving…' : submitLabel}</button>
+      <button className="btn-primary w-full" disabled={save.isPending}>
+        {save.isPending ? 'Saving…' : submitLabel}
+      </button>
     </form>
+
   );
 }

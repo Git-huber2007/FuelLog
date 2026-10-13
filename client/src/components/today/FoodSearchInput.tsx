@@ -27,19 +27,50 @@ export function FoodSearchInput({ onPick, onCreate }: { onPick: (food: Food) => 
   return (
     <div>
       <label htmlFor={id} className="label">Search foods</label>
-      <input id={id} className="input" type="search" autoComplete="off" placeholder="Roti, dal, chicken…" value={text} onChange={(e) => setText(e.target.value)} />
-      {query && results.data && (
+      <div className="relative">
+        <input
+          id={id}
+          className={`input ${text ? 'pr-11' : ''}`}
+          type="text"
+          autoComplete="off"
+          placeholder="Roti, dal, chicken…"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        {text && (
+          <button
+            type="button"
+            className="icon-btn absolute right-1 top-1/2 -translate-y-1/2 text-muted hover:text-text"
+            aria-label="Clear search"
+            onClick={() => { setText(''); setQuery(''); }}
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {query && results.isFetching && (
+        <p role="status" className="mt-2 text-xs text-muted">Searching…</p>
+      )}
+
+      {query && results.data && !results.isFetching && (
         <p role="status" className="sr-only">
           {results.data.length} {results.data.length === 1 ? 'result' : 'results'} found
         </p>
       )}
+
       {query && results.data && (
         results.data.length ? (
-          <ul className="mt-2 divide-y divide-line rounded-2xl border border-line">
+          <ul className="mt-2 divide-y divide-line rounded-2xl border border-line overflow-hidden">
             {results.data.map((food) => (
               <li key={food.id} className="flex items-stretch">
-                <button type="button" className="flex min-h-[44px] min-w-0 flex-1 items-center justify-between gap-3 px-3 py-2 text-left"
-                  onClick={() => { onPick(food); setText(''); }}>
+                <button
+                  type="button"
+                  className="flex min-h-[44px] min-w-0 flex-1 items-center justify-between gap-3 px-3 py-2 text-left transition-colors hover:bg-text/[0.04] active:bg-text/[0.08]"
+                  onClick={() => { onPick(food); setText(''); }}
+                >
                   <span className="min-w-0">
                     <span className="block line-clamp-2" title={food.name}>{food.name}</span>
                     <span className="block text-sm text-muted">{food.serving_label} · {food.protein_g} g protein</span>
@@ -47,8 +78,17 @@ export function FoodSearchInput({ onPick, onCreate }: { onPick: (food: Food) => 
                   <span className="shrink-0 text-sm tabular-nums text-muted">{Math.round(food.kcal)} kcal</span>
                 </button>
                 {food.owner_id && (
-                  <button type="button" className="min-w-[44px] border-l border-line px-2 text-sm text-muted" aria-label={`Delete custom food ${food.name}`}
-                    disabled={remove.isPending} onClick={() => remove.mutate(food)}>✕</button>
+                  <button
+                    type="button"
+                    className="icon-btn my-auto mr-2 shrink-0 text-muted hover:text-danger"
+                    aria-label={`Delete custom food ${food.name}`}
+                    disabled={remove.isPending}
+                    onClick={() => remove.mutate(food)}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
                 )}
               </li>
             ))}

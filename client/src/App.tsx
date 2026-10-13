@@ -1,9 +1,8 @@
-import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { OnboardedRoute } from './components/layout/OnboardedRoute';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
-import { LoadingSkeleton } from './components/ui/LoadingSkeleton';
 
 const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
@@ -18,30 +17,41 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Today = lazy(() => import('./pages/Today'));
 const Workout = lazy(() => import('./pages/Workout'));
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
-    <Suspense fallback={<div className="p-4"><LoadingSkeleton cards={3} /></div>}>
-      <Routes>
-        <Route path="/welcome" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route element={<OnboardedRoute />}>
-            <Route element={<AppShell />}>
-              <Route path="/" element={<Today />} />
-              <Route path="/workout" element={<Workout />} />
-              <Route path="/progress" element={<Progress />} />
-              <Route path="/profile" element={<Profile />} />
+    <>
+      <ScrollToTop />
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path="/welcome" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route element={<OnboardedRoute />}>
+              <Route element={<AppShell />}>
+                <Route path="/" element={<Today />} />
+                <Route path="/workout" element={<Workout />} />
+                <Route path="/progress" element={<Progress />} />
+                <Route path="/profile" element={<Profile />} />
+              </Route>
             </Route>
           </Route>
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </>
   );
 }
 

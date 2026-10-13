@@ -16,8 +16,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
+      includeAssets: ['favicon.svg', 'og-image.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
       manifest: {
+        id: '/',
         name: 'FuelLog',
         short_name: 'FuelLog',
         description: 'Calorie, macro and gym tracker for beginners.',
@@ -25,7 +26,7 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        theme_color: '#15803d',
+        theme_color: '#0b0c0c',
         background_color: '#0b0c0c',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },

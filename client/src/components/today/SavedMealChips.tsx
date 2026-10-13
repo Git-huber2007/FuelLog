@@ -23,6 +23,19 @@ export function SavedMealChips({ date, meal }: { date: string; meal: Meal }) {
     onError: (error) => toast(error.message, 'error'),
   });
 
+  if (meals.isPending) {
+    return (
+      <div role="status" aria-label="Loading saved meals">
+        <h3 className="label">Saved meals</h3>
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">
+          {[140, 160].map((w, i) => (
+            <div key={i} className="h-11 shrink-0 rounded-full bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (!meals.data?.length) return null;
   return (
     <div>

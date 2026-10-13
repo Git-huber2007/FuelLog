@@ -26,35 +26,46 @@ export default function Workout() {
   const delta = dayDeltaFor(date, program);
   const setsDone = exercises.reduce((n, e) => n + e.logged.filter((s) => s.reps > 0).length, 0);
   const bodyKg = profile.data?.profile.weight_kg;
+  const half = Math.ceil(exercises.length / 2);
+  const leftExercises = exercises.slice(0, half);
+  const rightExercises = exercises.slice(half);
+
   return (
     <>
-      {workout.isError && <p role="alert" className="field-error">Could not refresh this workout. Showing the last loaded version.</p>}
-      {restDay ? (
-        <RestDayCard programName={programName} delta={delta} sunday={weekdayOf(date) === 0} />
-      ) : (
-        <WorkoutHeader title={title} muscles={muscles} programName={programName} />
-      )}
-      {exercises.length > 0 && <RestTimer />}
-      {exercises.map((exercise) => <ExerciseCard key={`${date}-${exercise.key}`} date={date} exercise={exercise} />)}
-      {setsDone > 0 && bodyKg && (
-        <section className="card" aria-labelledby="burn-title">
-          <h2 id="burn-title" className="card-title">Workout summary</h2>
-          <p className="stat mt-2">
-            {workoutKcal(exercises, bodyKg)}<span className="stat-unit">kcal burned</span>
-          </p>
-          <p className="mt-2 text-sm text-muted">
-            An estimate from {setsDone} logged {setsDone === 1 ? 'set' : 'sets'}, your body weight, and the distance, time and incline of any cardio.
-            It does not change your calorie target.
-          </p>
-        </section>
-      )}
-      <section className="card space-y-3" aria-labelledby="more-title">
-        <div>
-          <h2 id="more-title" className="card-title">{restDay ? 'Feel like moving?' : 'Want more?'}</h2>
-          <p className="text-sm text-muted">Add cardio, stretching or any lift from the library, filtered by level and muscle.</p>
+      {workout.isError && <p role="alert" className="field-error mb-4">Could not refresh this workout. Showing the last loaded version.</p>}
+      <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
+        <div className="space-y-5">
+          {restDay ? (
+            <RestDayCard programName={programName} delta={delta} sunday={weekdayOf(date) === 0} />
+          ) : (
+            <WorkoutHeader title={title} muscles={muscles} programName={programName} />
+          )}
+          {exercises.length > 0 && <RestTimer />}
+          {leftExercises.map((exercise) => <ExerciseCard key={`${date}-${exercise.key}`} date={date} exercise={exercise} />)}
         </div>
-        <button type="button" className="btn w-full" onClick={() => setPicking(true)}>Add exercise or cardio</button>
-      </section>
+        <div className="space-y-5">
+          {rightExercises.map((exercise) => <ExerciseCard key={`${date}-${exercise.key}`} date={date} exercise={exercise} />)}
+          {setsDone > 0 && bodyKg && (
+            <section className="card" aria-labelledby="burn-title">
+              <h2 id="burn-title" className="card-title">Workout summary</h2>
+              <p className="stat mt-2">
+                {workoutKcal(exercises, bodyKg)}<span className="stat-unit">kcal burned</span>
+              </p>
+              <p className="mt-2 text-sm text-muted">
+                An estimate from {setsDone} logged {setsDone === 1 ? 'set' : 'sets'}, your body weight, and the distance, time and incline of any cardio.
+                It does not change your calorie target.
+              </p>
+            </section>
+          )}
+          <section className="card space-y-3" aria-labelledby="more-title">
+            <div>
+              <h2 id="more-title" className="card-title">{restDay ? 'Feel like moving?' : 'Extras'}</h2>
+              <p className="text-sm text-muted">Add cardio, stretching or any lift from the library, filtered by level and muscle.</p>
+            </div>
+            <button type="button" className="btn w-full" onClick={() => setPicking(true)}>Add exercise or cardio</button>
+          </section>
+        </div>
+      </div>
       {picking && <ExercisePicker date={date} onDay={new Set(exercises.map((e) => e.key))} onClose={() => setPicking(false)} />}
     </>
   );

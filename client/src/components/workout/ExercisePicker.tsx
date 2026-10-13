@@ -48,10 +48,15 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
       && words.every((w) => e.name.toLowerCase().includes(w)));
   }, [type, muscle, level, search]);
 
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
   const add = useMutation({
     // An exercise is on a day once it has a set there, so adding it is saving an empty first set.
-    mutationFn: (exercise: LibraryExercise) =>
-      api(`/days/${date}/sets`, { method: 'PUT', body: { exercise_key: exercise.id, set_number: 1, weight_kg: 0, reps: 0 } }),
+    mutationFn: (exercise: LibraryExercise) => {
+      setPendingId(exercise.id);
+      return api(`/days/${date}/sets`, { method: 'PUT', body: { exercise_key: exercise.id, set_number: 1, weight_kg: 0, reps: 0 } });
+    },
+    onSettled: () => setPendingId(null),
     // Returning the refetch keeps the buttons disabled until the row reads "Added". Toasts sit behind a modal, so errors show inline.
     onSuccess: () => qc.invalidateQueries({ queryKey: ['workout', date] }),
   });
@@ -67,13 +72,17 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
 
   return (
     <dialog ref={dialog} onClose={onClose} aria-labelledby={`${id}-title`}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] max-w-[500px] overflow-y-auto rounded-3xl border border-line bg-card p-0 text-text backdrop:bg-black/60">
+      className="sheet p-0">
       <div className="flex flex-col">
-        <div className="space-y-3 border-b border-line p-4">
+        <div className="sticky top-0 z-10 space-y-3 border-b border-line bg-card p-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 id={`${id}-title`} className="text-lg">Add an exercise</h2>
+            <h2 id={`${id}-title`} className="text-lg font-semibold">Add an exercise</h2>
             {/* close() fires the dialog's close event, which returns focus to the button that opened it */}
-            <button type="button" className="btn" onClick={() => dialog.current?.close()}>Done</button>
+            <button type="button" className="icon-btn" aria-label="Close" onClick={() => dialog.current?.close()}>
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1" role="group" aria-label="Type of exercise">
@@ -120,6 +129,7 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
               <ul className="space-y-2">
                 {matches.slice(0, SHOWN).map((exercise) => {
                   const added = onDay.has(exercise.id);
+                  const isBusy = pendingId === exercise.id;
                   return (
                     <li key={exercise.id} className="flex items-center gap-3 rounded-2xl border border-line p-2">
                       <img src={exercisePhotos(exercise.id)[0]} alt="" loading="lazy" width={72} height={48} className="h-12 w-[72px] shrink-0 rounded-lg bg-line object-cover" />
@@ -129,9 +139,9 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
                           {exercise.type === 'cardio' ? 'Cardio' : exercise.muscle} · {LEVEL_LABELS[exercise.level]}
                         </p>
                       </div>
-                      <button type="button" className={added ? 'btn shrink-0' : 'btn-primary shrink-0'} disabled={added || add.isPending}
-                        aria-label={added ? `Added, ${exercise.name}` : `Add ${exercise.name}`} onClick={() => add.mutate(exercise)}>
-                        {added ? 'Added' : 'Add'}
+                      <button type="button" className={added ? 'btn shrink-0' : 'btn-primary shrink-0'} disabled={added || isBusy}
+                        aria-label={added ? `Added, ${exercise.name}` : isBusy ? `Adding ${exercise.name}` : `Add ${exercise.name}`} onClick={() => add.mutate(exercise)}>
+                        {added ? 'Added' : isBusy ? 'Adding…' : 'Add'}
                       </button>
                     </li>
                   );

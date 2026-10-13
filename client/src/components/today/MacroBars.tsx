@@ -20,7 +20,7 @@ export function MacroBars({ totals, targets }: { totals: MacroTotals; targets: T
               <span className="whitespace-nowrap text-[0.8125rem] tabular-nums text-muted">{eaten} / {target} g</span>
             </div>
             <div className="mt-1 h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={target} aria-valuenow={eaten}>
-              <div className={`h-full rounded-full transition-[width] duration-500 ${color}`} style={{ width: `${target ? Math.min(100, (eaten / target) * 100) : 0}%` }} />
+              <div className={`h-full w-full rounded-full origin-left transition-transform duration-500 ease-out ${color}`} style={{ transform: `scaleX(${target ? Math.min(1, eaten / target) : 0})` }} />
             </div>
           </li>
         );
