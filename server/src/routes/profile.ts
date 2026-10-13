@@ -50,3 +50,25 @@ profileRouter.post('/profile/adjustment', h(async (req, res) => {
   );
   res.json(respond(updated));
 }));
+
+profileRouter.delete('/account', h(async (req, res) => {
+  const { data: files, error: listError } = await req.sb.storage.from('progress-photos').list(req.userId);
+  if (listError) {
+    throw new HttpError(500, 'storage_error', 'Could not inspect stored photos. Account was not deleted.');
+  }
+
+  if (files && files.length > 0) {
+    const paths = files.map((f) => `${req.userId}/${f.name}`);
+    const { error: removeError } = await req.sb.storage.from('progress-photos').remove(paths);
+    if (removeError) {
+      throw new HttpError(500, 'storage_error', 'Could not remove stored photos. Account was not deleted.');
+    }
+  }
+
+  const { error: rpcError } = await req.sb.rpc('delete_my_account');
+  if (rpcError) {
+    throw new HttpError(500, 'delete_failed', 'Could not delete account.');
+  }
+
+  res.status(204).end();
+}));

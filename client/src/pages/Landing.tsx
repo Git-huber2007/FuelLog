@@ -231,7 +231,9 @@ export default function Landing() {
             FuelLog
           </p>
           <p>Estimates only, not medical advice.</p>
-          <p className="flex gap-5">
+          <p className="flex flex-wrap gap-5 items-center">
+            <Link to="/privacy" className="link inline-flex min-h-[44px] items-center">Privacy</Link>
+            <Link to="/terms" className="link inline-flex min-h-[44px] items-center">Terms</Link>
             <Link to="/login" className="link inline-flex min-h-[44px] items-center">Sign in</Link>
             <Link to="/signup" className="link inline-flex min-h-[44px] items-center">Create an account</Link>
           </p>

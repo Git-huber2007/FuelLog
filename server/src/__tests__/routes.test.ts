@@ -8,7 +8,10 @@ import { auth } from '../middleware/auth';
 import { errorHandler } from '../middleware/errors';
 import { daysRouter } from '../routes/days';
 import { workoutRouter } from '../routes/workout';
+import { profileRouter } from '../routes/profile';
+import { aiRouter } from '../routes/ai';
 import { setClientFactory } from '../lib/supabase';
+import { env } from '../env';
 
 interface StubQuery {
   then<TResult1 = unknown, TResult2 = never>(
@@ -58,7 +61,11 @@ function createStubQuery(resolveValue: unknown): StubQuery {
   return query;
 }
 
-function createStubClient(fromHandler?: (table: string) => unknown): SupabaseClient {
+function createStubClient(
+  fromHandler?: (table: string) => unknown,
+  storageHandler?: unknown,
+  rpcHandler?: (fn: string, params?: unknown) => unknown,
+): SupabaseClient {
   return {
     auth: {
       getUser: async () => ({
@@ -67,6 +74,13 @@ function createStubClient(fromHandler?: (table: string) => unknown): SupabaseCli
       }),
     },
     from: (fromHandler ?? (() => createStubQuery({ data: [], error: null }))) as unknown,
+    storage: (storageHandler ?? {
+      from: () => ({
+        list: () => Promise.resolve({ data: [], error: null }),
+        remove: () => Promise.resolve({ data: [], error: null }),
+      }),
+    }) as unknown,
+    rpc: (rpcHandler ?? (() => Promise.resolve({ data: null, error: null }))) as unknown,
   } as unknown as SupabaseClient;
 }
 
@@ -76,8 +90,9 @@ describe('Server Route Tests', () => {
 
   beforeEach(async () => {
     const app = express();
-    app.use(express.json());
-    app.use('/api', auth, daysRouter, workoutRouter);
+    app.use('/api/ai/parse-photo', express.json({ limit: '6mb' }));
+    app.use(express.json({ limit: '100kb' }));
+    app.use('/api', auth, profileRouter, daysRouter, workoutRouter, aiRouter);
     app.use(errorHandler);
 
     await new Promise<void>((resolve) => {
@@ -264,5 +279,166 @@ describe('Server Route Tests', () => {
     assert.equal(resValid.status, 200);
     const validBody = (await resValid.json()) as { steps: number };
     assert.equal(validBody.steps, 8500);
+  });
+
+  it('account deletion: files removed before the function is called', async () => {
+    const callOrder: string[] = [];
+    let removedPaths: string[] = [];
+
+    const stubStorage = {
+      from(bucket: string) {
+        assert.equal(bucket, 'progress-photos');
+        return {
+          list(folder: string) {
+            assert.equal(folder, 'test-user-123');
+            return Promise.resolve({
+              data: [{ name: 'pic1.jpg' }, { name: 'pic2.jpg' }],
+              error: null,
+            });
+          },
+          remove(paths: string[]) {
+            callOrder.push('storage.remove');
+            removedPaths = paths;
+            return Promise.resolve({ data: paths, error: null });
+          },
+        };
+      },
+    };
+
+    const stubRpc = (fnName: string) => {
+      callOrder.push(`rpc.${fnName}`);
+      return Promise.resolve({ data: null, error: null });
+    };
+
+    setClientFactory(() => createStubClient(undefined, stubStorage, stubRpc));
+
+    const res = await fetch(`${baseUrl}/api/account`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer test-token' },
+    });
+
+    assert.equal(res.status, 204);
+    assert.deepEqual(removedPaths, ['test-user-123/pic1.jpg', 'test-user-123/pic2.jpg']);
+    assert.deepEqual(callOrder, ['storage.remove', 'rpc.delete_my_account']);
+  });
+
+  it('account deletion: a storage failure means the function is never called', async () => {
+    let rpcCalled = false;
+
+    const stubStorage = {
+      from(bucket: string) {
+        assert.equal(bucket, 'progress-photos');
+        return {
+          list(folder: string) {
+            assert.equal(folder, 'test-user-123');
+            return Promise.resolve({
+              data: null,
+              error: { message: 'Storage bucket unavailable' },
+            });
+          },
+          remove() {
+            return Promise.resolve({ data: null, error: null });
+          },
+        };
+      },
+    };
+
+    const stubRpc = () => {
+      rpcCalled = true;
+      return Promise.resolve({ data: null, error: null });
+    };
+
+    setClientFactory(() => createStubClient(undefined, stubStorage, stubRpc));
+
+    const res = await fetch(`${baseUrl}/api/account`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer test-token' },
+    });
+
+    assert.equal(res.status, 500);
+    const body = (await res.json()) as { error: { code: string } };
+    assert.equal(body.error.code, 'storage_error');
+    assert.equal(rpcCalled, false, 'delete_my_account must never be called if storage fails');
+  });
+
+  it('the AI route at the limit inserts nothing', async () => {
+    let insertCalled = false;
+    const origKey = env.GEMINI_API_KEY;
+    (env as { GEMINI_API_KEY: string }).GEMINI_API_KEY = 'test-gemini-key';
+
+    try {
+      setClientFactory(() =>
+        createStubClient((table) => {
+          if (table === 'ai_usage') {
+            return {
+              select() {
+                return {
+                  gte() {
+                    // Current count is at limit (40)
+                    return Promise.resolve({ count: env.AI_DAILY_LIMIT, error: null });
+                  },
+                };
+              },
+              insert() {
+                insertCalled = true;
+                return Promise.resolve({ data: [], error: null });
+              },
+            };
+          }
+          return createStubQuery({ data: [], error: null });
+        }),
+      );
+
+      const res = await fetch(`${baseUrl}/api/ai/parse-text`, {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer test-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: '2 eggs and toast',
+          date: '2026-10-12',
+          meal: 'breakfast',
+        }),
+      });
+
+      assert.equal(res.status, 429);
+      const body = (await res.json()) as { error: { code: string } };
+      assert.equal(body.error.code, 'ai_limit');
+      assert.equal(insertCalled, false, 'AI route at limit must not insert usage rows');
+    } finally {
+      (env as { GEMINI_API_KEY: string }).GEMINI_API_KEY = origKey;
+    }
+  });
+
+  it('a 200 kB body on a normal route is refused', async () => {
+    const largePayload = {
+      entries: [
+        {
+          meal: 'breakfast',
+          name: 'x'.repeat(200 * 1024),
+          servings: 1,
+          kcal: 100,
+          protein_g: 10,
+          carbs_g: 10,
+          fat_g: 0,
+          fibre_g: 0,
+          source: 'list',
+        },
+      ],
+    };
+
+    const res = await fetch(`${baseUrl}/api/days/2026-10-12/food`, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer test-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(largePayload),
+    });
+
+    assert.equal(res.status, 400);
+    const body = (await res.json()) as { error: { code: string } };
+    assert.equal(body.error.code, 'too_large');
   });
 });

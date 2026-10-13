@@ -9,10 +9,12 @@ const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
+const Privacy = lazy(() => import('./pages/Privacy'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Progress = lazy(() => import('./pages/Progress'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Signup = lazy(() => import('./pages/Signup'));
+const Terms = lazy(() => import('./pages/Terms'));
 const Today = lazy(() => import('./pages/Today'));
 const Workout = lazy(() => import('./pages/Workout'));
 
@@ -24,6 +26,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/onboarding" element={<Onboarding />} />
           <Route element={<OnboardedRoute />}>

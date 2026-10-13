@@ -137,5 +137,7 @@ Choices made where the specification left room:
 ## Known limits
 
 - **`npm audit` reports 5 high findings, all one advisory**: `braces` 3.0.3, pulled in by Tailwind CSS v3's file watcher. No patched `braces` exists, and the only fix npm offers is Tailwind v4, which the project brief rules out. It is build-time tooling that only reads this repository's own file patterns, and it is not in the server bundle or the browser bundle. There are no critical findings.
-- The 40-a-day AI limit is counted from rows each user can delete through Supabase directly, because the schema gives users full access to their own `ai_usage` rows. It stops accidents and runaway use, not a determined account owner. For a personal deployment with sign-ups off, that owner is you.
+- **AI usage and quota**: Usage rows are stored in `ai_usage`. Rows older than 7 days should be removed by a scheduled job (e.g. nightly via `pg_cron` at 03:00 UTC, included in `0007_hardening.sql`).
+- **Account deletion**: `DELETE /api/account` removes all photos from storage and calls `delete_my_account()` which cascades across all user tables.
+- **Limits**: Direct calls to Supabase are restricted by row caps (500 custom foods, 200 food logs/day, 100 saved meals, 100 sets/day, 60 photos) and storage caps (60 photos).
 - The app shell works offline; logging needs a connection.

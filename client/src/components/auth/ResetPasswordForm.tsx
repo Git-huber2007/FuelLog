@@ -1,25 +1,34 @@
 import { Credentials } from '@fuellog/shared';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSession } from '../../hooks/useSession';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';
 import { CredentialFields } from './CredentialFields';
 
 /**
- * Two steps on one route. Signed out: ask for the email and send the link.
- * The link signs the user in and returns here, where a session means "choose the new password".
+ * Two steps on one route.
+ * Request link: asks for email and sends reset email.
+ * Password recovery: shown only upon PASSWORD_RECOVERY event; revokes other sessions on completion.
  */
 export function ResetPasswordForm() {
-  const { session } = useSession();
   const navigate = useNavigate();
   const toast = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const [isRecovery, setIsRecovery] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovery(true);
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
 
   async function requestLink(e: FormEvent) {
     e.preventDefault();
@@ -46,13 +55,17 @@ export function ResetPasswordForm() {
     }
     setBusy(true);
     const result = await supabase.auth.updateUser({ password: parsed.data });
+    if (result.error) {
+      setBusy(false);
+      return setError(result.error.message);
+    }
+    await supabase.auth.signOut({ scope: 'others' });
     setBusy(false);
-    if (result.error) return setError(result.error.message);
     toast('Password updated.');
     navigate('/', { replace: true });
   }
 
-  if (session) {
+  if (isRecovery) {
     return (
       <form ref={formRef} onSubmit={savePassword} noValidate className="space-y-4">
         <CredentialFields password={{ value: password, onChange: setPassword, error, isNew: true }} />

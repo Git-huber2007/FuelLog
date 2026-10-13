@@ -22,6 +22,18 @@ export const ipRateLimit = rateLimit({
   },
 });
 
+/** Second limiter keyed strictly on req.ip with a high ceiling so direct callers cannot forge x-vercel-forwarded-for. */
+export const directIpRateLimit = rateLimit({
+  windowMs: 5 * 60_000,
+  limit: 600,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+  handler: (_req, res) => {
+    res.status(429).json({ error: { code: 'rate_limited', message: 'Too many requests from this IP. Wait a few minutes and try again.' } });
+  },
+});
+
 /** 120 requests a minute per signed-in user. Runs after auth, so userId is always set. */
 export const userRateLimit = rateLimit({
   windowMs: 60_000,

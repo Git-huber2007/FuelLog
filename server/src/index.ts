@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import { env, isProd } from './env';
 import { auth } from './middleware/auth';
 import { errorHandler, notFound } from './middleware/errors';
-import { ipRateLimit, userRateLimit } from './middleware/rateLimit';
+import { directIpRateLimit, ipRateLimit, userRateLimit } from './middleware/rateLimit';
 import { aiRouter } from './routes/ai';
 import { daysRouter } from './routes/days';
 import { exportRouter } from './routes/export';
@@ -44,16 +44,20 @@ app.use(helmet({
   },
 }));
 if (!isProd) app.use(cors({ origin: env.CLIENT_ORIGIN })); // production is same-origin
-app.use(express.json({ limit: '6mb' }));
 
-// Method, path, status, duration and user id only: never bodies, tokens or health data.
-app.use('/api', ipRateLimit, (req, res, next) => {
+// Rate limiting and no-store headers before reading request bodies into memory
+app.use('/api', directIpRateLimit, ipRateLimit, (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
   const started = Date.now();
   res.on('finish', () => {
     console.log(`${req.method} ${req.baseUrl}${req.path} ${res.statusCode} ${Date.now() - started}ms user=${req.userId ?? '-'}`);
   });
   next();
 });
+
+// Global body limit 100 kB; 6 MB only on /api/ai/parse-photo
+app.use('/api/ai/parse-photo', express.json({ limit: '6mb' }));
+app.use(express.json({ limit: '100kb' }));
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true });

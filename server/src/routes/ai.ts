@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   addDays, AiItems, CoachResult, exerciseName, ParsePhotoBody, ParseTextBody, type AiParseResponse, type FoodLog, type Meal,
 } from '@fuellog/shared';
-import { assertAiQuota, recordAiUse } from '../lib/aiUsage';
+import { assertAiQuota, checkAiQuota, recordAiUse } from '../lib/aiUsage';
 import { aiEnabled, generateJson } from '../lib/gemini';
 import { h, HttpError, unwrap } from '../middleware/errors';
 import { notFuture, validate } from '../middleware/validate';
@@ -64,6 +64,7 @@ aiRouter.use('/ai', (_req, _res, next) => {
 
 aiRouter.post('/ai/parse-text', validate({ body: ParseTextBody }), notFuture, h(async (req, res) => {
   const { text: mealText, date, meal } = req.body;
+  await checkAiQuota(req.sb);
   await recordAiUse(req.sb, req.userId, 'parse_text');
   await assertAiQuota(req.sb);
   const result = await generateJson({ system: SYSTEM_PROMPT, parts: [{ text: parseTextPrompt(mealText) }], responseSchema: ITEMS_SCHEMA, validate: ClampedItems });
@@ -75,6 +76,7 @@ aiRouter.post('/ai/parse-photo', validate({ body: ParsePhotoBody }), notFuture, 
   const { imageBase64, mimeType, date, meal } = req.body;
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(imageBase64)) throw new HttpError(400, 'validation', 'That photo could not be read. Try taking it again.');
   if ((imageBase64.length * 3) / 4 > MAX_PHOTO_BYTES) throw new HttpError(400, 'too_large', 'That photo is over 4 MB. Try a smaller one.');
+  await checkAiQuota(req.sb);
   await recordAiUse(req.sb, req.userId, 'parse_photo');
   await assertAiQuota(req.sb);
   const result = await generateJson({
@@ -112,6 +114,7 @@ function exerciseTrends(sets: SetRow[], weekStart: string) {
 }
 
 aiRouter.post('/ai/weekly-coach', h(async (req, res) => {
+  await checkAiQuota(req.sb);
   await recordAiUse(req.sb, req.userId, 'weekly_coach');
   await assertAiQuota(req.sb);
   const weekStart = addDays(req.today, -6);

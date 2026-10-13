@@ -109,6 +109,7 @@ export function AddFoodCard({ date }: { date: string }) {
               Describe meal
             </button>
             <AiPhotoButton date={date} meal={meal} onResult={onAiResult} />
+            <p className="col-span-2 text-xs text-muted">Meal text descriptions and photos are sent to Google to produce estimates.</p>
           </>
         )}
       </div>

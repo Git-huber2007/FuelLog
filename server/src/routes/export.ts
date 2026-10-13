@@ -14,6 +14,15 @@ async function all<T>(page: (from: number, to: number) => PromiseLike<{ data: T[
 
 type Day = { kcal: number; protein: number; carbs: number; fat: number; fibre: number; water?: number; sleep?: number | null; steps?: number; weight?: number };
 
+function sanitizeCsvCell(val: unknown): string {
+  if (val === null || val === undefined) return '';
+  const s = String(val);
+  if (/^[=+\-@\t]/.test(s)) {
+    return `'${s}`;
+  }
+  return s;
+}
+
 export const exportRouter = Router();
 
 exportRouter.get('/export.csv', h(async (req, res) => {
@@ -46,7 +55,57 @@ exportRouter.get('/export.csv', h(async (req, res) => {
   const lines = ['date,kcal,protein,carbs,fat,fibre,water,sleep,steps,weight'];
   for (const date of [...days.keys()].sort()) {
     const d = days.get(date)!;
-    lines.push([date, n(d.kcal), n(d.protein), n(d.carbs), n(d.fat), n(d.fibre), d.water ?? '', d.sleep ?? '', d.steps ?? '', d.weight ?? ''].join(','));
+    lines.push([
+      date,
+      n(d.kcal),
+      n(d.protein),
+      n(d.carbs),
+      n(d.fat),
+      n(d.fibre),
+      d.water ?? '',
+      d.sleep ?? '',
+      d.steps ?? '',
+      d.weight ?? '',
+    ].map(sanitizeCsvCell).join(','));
   }
   res.type('text/csv').attachment(`fuellog-${req.today}.csv`).send(`${lines.join('\n')}\n`);
 }));
+
+exportRouter.get('/export.json', h(async (req, res) => {
+  const { sb, userId } = req;
+  const [profile, foodLogs, customFoods, savedMeals, checks, weights, measurements, workoutSets, photoRows] = await Promise.all([
+    sb.from('profiles').select('*').eq('id', userId).maybeSingle().then(unwrap),
+    all((from, to) => sb.from('food_logs').select('*').order('log_date').order('created_at').range(from, to)),
+    all((from, to) => sb.from('foods').select('*').eq('owner_id', userId).order('created_at').range(from, to)),
+    all((from, to) => sb.from('saved_meals').select('*').order('created_at').range(from, to)),
+    all((from, to) => sb.from('daily_checks').select('*').order('log_date').range(from, to)),
+    all((from, to) => sb.from('weight_logs').select('*').order('log_date').range(from, to)),
+    all((from, to) => sb.from('measurements').select('*').order('log_date').range(from, to)),
+    all((from, to) => sb.from('workout_sets').select('*').order('log_date').order('set_number').range(from, to)),
+    all<{ id: string; log_date: string; storage_path: string; created_at: string }>((from, to) =>
+      sb.from('progress_photos').select('*').order('log_date').range(from, to)),
+  ]);
+
+  const photos = await Promise.all(
+    photoRows.map(async (p) => {
+      const { data } = await sb.storage.from('progress-photos').createSignedUrl(p.storage_path, 3600);
+      return { ...p, signed_url: data?.signedUrl ?? null };
+    }),
+  );
+
+  const payload = {
+    exported_at: new Date().toISOString(),
+    profile,
+    food_logs: foodLogs,
+    custom_foods: customFoods,
+    saved_meals: savedMeals,
+    checks,
+    weights,
+    measurements,
+    workout_sets: workoutSets,
+    photos,
+  };
+
+  res.type('application/json').attachment(`fuellog-${req.today}.json`).json(payload);
+}));
+
