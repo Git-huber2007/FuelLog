@@ -9,4 +9,4 @@ dev-dist/
 Thumbs.db
 test-results/
 playwright-report/
-
+.archify/
