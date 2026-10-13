@@ -9,15 +9,17 @@ It runs as one Node web service that serves both the API and the built React app
 ## System Architecture
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/architecture-light.png">
-    <img alt="FuelLog System Architecture" src="docs/architecture-light.png" width="100%">
-  </picture>
+  <a href="https://git-huber2007.github.io/FuelLog/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="docs/architecture-light.png">
+      <img alt="FuelLog System Architecture (Click to open interactive diagram)" src="docs/architecture-light.png" width="100%">
+    </picture>
+  </a>
 </p>
 
-> [!NOTE]
-> An interactive version of this architecture diagram generated with Archify is available at [`docs/architecture.html`](docs/architecture.html).
+> [!TIP]
+> **Click the diagram above** to launch the interactive visualization at [git-huber2007.github.io/FuelLog](https://git-huber2007.github.io/FuelLog/) (or open [`docs/architecture.html`](docs/architecture.html)).
 
 ## What you need
 
