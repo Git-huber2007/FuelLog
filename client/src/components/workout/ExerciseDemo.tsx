@@ -30,7 +30,7 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
   }
 
   function handlePhoto0Error() {
-    if (photos[0].startsWith('https://') && attempt0 < 2) {
+    if (attempt0 < 3) {
       setAttempt0((prev) => prev + 1);
     } else {
       setFailed(true);
@@ -38,7 +38,7 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
   }
 
   function handlePhoto1Error() {
-    if (photos[1].startsWith('https://') && attempt1 < 2) {
+    if (attempt1 < 3) {
       setAttempt1((prev) => prev + 1);
     } else {
       setFailed(true);

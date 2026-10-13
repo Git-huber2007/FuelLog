@@ -200,7 +200,7 @@ describe('split', () => {
   });
   it('serves plan photos from the app and library photos from the pinned CDN', () => {
     expect(exercisePhotos('mon-bench-press')[0]).toBe('/exercises/mon-bench-press-0.jpg');
-    expect(exercisePhotos('Plank')[1]).toMatch(/^https:\/\/raw\.githubusercontent\.com\/yuhonas\/free-exercise-db\/[0-9a-f]{40}\/exercises\/Plank\/1\.jpg$/);
+    expect(exercisePhotos('Plank')[1]).toBe('/api/exercises/Plank/1.jpg');
   });
   it('rejects sets for unknown exercises', () => {
     const set = { set_number: 1, weight_kg: 40, reps: 10 };
