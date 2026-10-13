@@ -7,6 +7,7 @@ import { CredentialFields } from './CredentialFields';
 export function SignupForm() {
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
@@ -23,7 +24,14 @@ export function SignupForm() {
       return;
     }
     setBusy(true);
-    const { data, error } = await supabase.auth.signUp({ ...parsed.data, options: { emailRedirectTo: window.location.origin } });
+    const trimmedName = name.trim();
+    const { data, error } = await supabase.auth.signUp({
+      ...parsed.data,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: trimmedName ? { name: trimmedName } : undefined,
+      },
+    });
     setBusy(false);
     if (error) return setErrors({ form: error.message });
     // No session means the project requires email confirmation first.
@@ -42,6 +50,22 @@ export function SignupForm() {
 
   return (
     <form ref={formRef} onSubmit={submit} noValidate className="space-y-4">
+      <div>
+        <label htmlFor="signup-name" className="label">
+          Name <span className="text-muted font-normal">(optional)</span>
+        </label>
+        <input
+          id="signup-name"
+          name="name"
+          type="text"
+          maxLength={50}
+          className="input"
+          placeholder="e.g. Alex"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          autoComplete="name"
+        />
+      </div>
       <CredentialFields email={{ value: email, onChange: setEmail, error: errors.email }} password={{ value: password, onChange: setPassword, error: errors.password, isNew: true }} />
       {errors.form && <p role="alert" className="field-error">{errors.form}</p>}
       <button className="btn-primary w-full" disabled={busy}>{busy ? 'Creating account…' : 'Create account'}</button>

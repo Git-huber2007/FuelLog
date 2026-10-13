@@ -12,8 +12,11 @@ import { useDay } from '../hooks/useDay';
 import { useProfile } from '../hooks/useProfile';
 import { useProgress } from '../hooks/useProgress';
 import { useSelectedDate } from '../hooks/useSelectedDate';
+import { useSession } from '../hooks/useSession';
 
 export default function Today() {
+  const { session } = useSession();
+  const userName = ((session?.user.user_metadata?.name ?? session?.user.user_metadata?.full_name ?? '') as string) || '';
   const { date, isToday } = useSelectedDate();
   const day = useDay(date);
   const progress = useProgress();
@@ -53,6 +56,16 @@ export default function Today() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
       <div className="space-y-5">
+        {userName && (
+          <div className="px-1 -mb-1">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted">
+              {isToday ? 'Welcome back' : 'Viewing log'}
+            </span>
+            <p className="text-lg font-bold tracking-tight text-foreground">
+              {userName}
+            </p>
+          </div>
+        )}
         <div className="bezel">
           <section className="card space-y-4 rounded-[1.75rem]" aria-label="Calories and macros">
             <div className="flex flex-col min-[360px]:flex-row items-center gap-5">

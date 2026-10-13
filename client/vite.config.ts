@@ -63,7 +63,7 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/i,
+            urlPattern: /^https:\/\/(cdn\.jsdelivr\.net|raw\.githubusercontent\.com|cdn\.statically\.io)\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'exercise-photos',

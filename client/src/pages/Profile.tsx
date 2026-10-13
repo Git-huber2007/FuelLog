@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ProfileForm } from '../components/profile/ProfileForm';
 import { ExportButton } from '../components/progress/ExportButton';
@@ -14,6 +14,29 @@ export default function Profile() {
   const signOut = useSignOut();
   const navigate = useNavigate();
   const toast = useToast();
+
+  const currentName = ((session?.user.user_metadata?.name ?? session?.user.user_metadata?.full_name ?? '') as string) || '';
+  const [userName, setUserName] = useState(currentName);
+  const [savingName, setSavingName] = useState(false);
+
+  useEffect(() => {
+    setUserName(currentName);
+  }, [currentName]);
+
+  async function handleSaveName(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = userName.trim();
+    setSavingName(true);
+    const { error } = await supabase.auth.updateUser({
+      data: { name: trimmed },
+    });
+    setSavingName(false);
+    if (error) {
+      toast(error.message, 'error');
+    } else {
+      toast(trimmed ? 'Name updated.' : 'Name cleared.');
+    }
+  }
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [confirmText, setConfirmText] = useState('');
@@ -70,11 +93,40 @@ export default function Profile() {
         </div>
 
         <div className="space-y-5">
-          <section className="card space-y-3" aria-label="Account">
+          <section className="card space-y-4" aria-label="Account">
             <h2 className="card-title">Account</h2>
-            <p className="break-all text-sm text-muted">Signed in as {session?.user.email}</p>
+            <div className="space-y-0.5">
+              {currentName && (
+                <p className="text-base font-semibold text-foreground">{currentName}</p>
+              )}
+              <p className="break-all text-sm text-muted">Signed in as {session?.user.email}</p>
+            </div>
 
-            <div className="space-y-2 pt-1">
+            <form onSubmit={handleSaveName} className="space-y-2 pt-1 border-t border-line">
+              <label htmlFor="user-display-name" className="block text-xs font-medium text-muted">
+                Display name
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="user-display-name"
+                  type="text"
+                  maxLength={50}
+                  className="input flex-1"
+                  placeholder="e.g. Alex"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="btn-primary shrink-0"
+                  disabled={savingName || userName.trim() === currentName.trim()}
+                >
+                  {savingName ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </form>
+
+            <div className="space-y-2 pt-1 border-t border-line">
               <button
                 type="button"
                 className="btn w-full"
