@@ -42,7 +42,7 @@ export const asExercise = (e: LibraryExercise): Exercise =>
     : { key: e.id, name: e.name, sets: 3, topReps: 12, prescription: '3×8–12', detail: `${e.muscle} · ${title(e.level)}` };
 
 // Pinned to one commit so a photo can never change or vanish under a deployed app.
-const PHOTO_BASE = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises';
+const PHOTO_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises';
 
 /** Start and finish photos. The fixed split's photos ship with the app; library photos come from the CDN. */
 export const exercisePhotos = (key: string): [start: string, finish: string] =>
