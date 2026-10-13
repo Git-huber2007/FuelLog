@@ -54,7 +54,6 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
         src={resolvePhotoUrl(photos[0], attempt0)}
         alt={`${name}: start position`}
         loading="lazy"
-        crossOrigin="anonymous"
         onError={handlePhoto0Error}
         className="absolute inset-0 h-full w-full object-cover"
       />
@@ -63,7 +62,6 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
           src={resolvePhotoUrl(photos[1], attempt1)}
           alt={`${name}: finish position`}
           aria-hidden={!finish}
-          crossOrigin="anonymous"
           onError={handlePhoto1Error}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-out ${finish ? 'opacity-100' : 'opacity-0'}`}
         />

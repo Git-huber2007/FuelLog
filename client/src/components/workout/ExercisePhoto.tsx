@@ -1,13 +1,28 @@
 import { useState } from 'react';
 
 // CDNs that serve the public-domain free-exercise-db photos.
-// If jsDelivr is blocked by ISP DNS or adblockers, fall back to GitHub Raw or Statically.
+// Primary is GitHub raw (direct, never ISP blocked), with Statically and jsDelivr as resilient fallbacks.
 const FALLBACK_ENGINES: Array<(url: string) => string> = [
-  (url) =>
-    url.includes('cdn.jsdelivr.net/gh/')
-      ? url.replace('https://cdn.jsdelivr.net/gh/', 'https://raw.githubusercontent.com/').replace('@', '/')
-      : url,
-  (url) => url.replace('https://cdn.jsdelivr.net/', 'https://cdn.statically.io/'),
+  (url) => {
+    if (url.includes('raw.githubusercontent.com/yuhonas/free-exercise-db/')) {
+      return url.replace('https://raw.githubusercontent.com/yuhonas/free-exercise-db/', 'https://cdn.statically.io/gh/yuhonas/free-exercise-db/');
+    }
+    if (url.includes('cdn.jsdelivr.net/gh/')) {
+      return url.replace('https://cdn.jsdelivr.net/gh/', 'https://raw.githubusercontent.com/').replace('@', '/');
+    }
+    return url;
+  },
+  (url) => {
+    if (url.includes('raw.githubusercontent.com/yuhonas/free-exercise-db/')) {
+      const parts = url.split('/free-exercise-db/');
+      const rest = parts[1] ? parts[1].replace('/', '@') : '';
+      return 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@' + rest.replace(/^[^@]+@/, '');
+    }
+    if (url.includes('cdn.jsdelivr.net/gh/')) {
+      return url.replace('https://cdn.jsdelivr.net/', 'https://cdn.statically.io/');
+    }
+    return url;
+  },
 ];
 
 let globalUseFallback = false;
@@ -73,7 +88,6 @@ export function ExercisePhoto({ src, alt = '', className = '', loading = 'lazy',
       loading={loading}
       width={width}
       height={height}
-      crossOrigin="anonymous"
       onError={handleError}
       className={className}
     />
