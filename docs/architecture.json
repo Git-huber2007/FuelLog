@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "FuelLog system architecture",
+    "output": ".archify/architecture-fuellog-20261013-141942/fuellog.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Git-huber2007/FuelLog.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "f4f7095f7fea630d477b3c3ecbc23a211b5d2703"
+    }
+  },
+  "components": [
+    { "id": "person", "type": "external", "icon": "person", "label": "User", "sublabel": "phone or desktop", "pos": [40, 300], "size": [120, 64],
+      "sources": [{ "path": "client/src/pages/Landing.tsx", "label": "entry page" }] },
+    { "id": "pwa", "type": "frontend", "label": "React PWA", "sublabel": "Vite · TanStack Query · Workbox", "pos": [230, 300], "size": [180, 64],
+      "sources": [
+        { "path": "client/src/lib/apiClient.ts", "line": 33, "end_line": 63, "label": "API call with JWT" },
+        { "path": "client/vite.config.ts", "line": 63, "end_line": 81, "label": "service worker caching" }
+      ] },
+    { "id": "edge", "type": "cloud", "label": "Vercel", "sublabel": "static + /api rewrite", "pos": [570, 300], "size": [130, 64], "tag": "CSP headers",
+      "sources": [
+        { "path": "vercel.json", "line": 7, "end_line": 16, "label": "rewrites" },
+        { "path": "vercel.json", "line": 17, "end_line": 37, "label": "security headers" }
+      ] },
+    { "id": "api", "type": "backend", "label": "Express API", "sublabel": "limits → JWT auth → Zod → routes", "pos": [825, 300], "size": [200, 64], "tag": "Render · Node 22",
+      "sources": [
+        { "path": "server/src/index.ts", "line": 51, "end_line": 73, "label": "middleware order" },
+        { "path": "server/src/middleware/auth.ts", "line": 19, "end_line": 35, "label": "token check" },
+        { "path": "render.yaml", "line": 3, "end_line": 13, "label": "Render service" }
+      ] },
+    { "id": "ci", "type": "cloud", "label": "GitHub Actions", "sublabel": "CI · keep-warm · smoke", "pos": [1120, 300], "size": [130, 64],
+      "sources": [
+        { "path": ".github/workflows/ci.yml", "line": 12, "end_line": 45, "label": "lint, test, build, e2e" },
+        { "path": ".github/workflows/keep-warm.yml", "line": 4, "end_line": 18, "label": "scheduled ping" },
+        { "path": ".github/workflows/smoke.yml", "line": 14, "end_line": 18, "label": "post-deploy check" }
+      ] },
+    { "id": "shared", "type": "backend", "label": "@fuellog/shared", "sublabel": "Zod schemas · formulas", "pos": [570, 110], "size": [130, 64],
+      "sources": [{ "path": "shared/src/index.ts", "line": 1, "end_line": 8, "label": "exports" }] },
+    { "id": "gemini", "type": "external", "label": "Gemini", "sublabel": "meal parse · coach", "pos": [780, 110], "size": [130, 64],
+      "sources": [
+        { "path": "server/src/lib/gemini.ts", "line": 17, "end_line": 43, "label": "generateContent" },
+        { "path": "server/src/routes/ai.ts", "line": 68, "end_line": 70, "label": "quota then call" }
+      ] },
+    { "id": "off", "type": "external", "label": "Open Food Facts", "sublabel": "barcode nutrition", "pos": [950, 110], "size": [130, 64],
+      "sources": [
+        { "path": "server/src/lib/openFoodFacts.ts", "line": 20, "end_line": 27, "label": "lookup" },
+        { "path": "server/src/routes/foods.ts", "line": 32, "label": "route call" }
+      ] },
+    { "id": "bucket", "type": "database", "label": "Storage", "sublabel": "progress-photos bucket", "pos": [170, 490], "size": [130, 64],
+      "sources": [
+        { "path": "client/src/components/progress/PhotoUploadButton.tsx", "line": 16, "end_line": 24, "label": "direct upload" },
+        { "path": "server/src/routes/photos.ts", "line": 15, "label": "signed URLs" }
+      ] },
+    { "id": "idp", "type": "security", "label": "Supabase Auth", "sublabel": "issues session JWT", "pos": [400, 490], "size": [130, 64],
+      "sources": [
+        { "path": "client/src/hooks/useSession.tsx", "line": 17, "end_line": 18, "label": "browser session" },
+        { "path": "server/src/middleware/auth.ts", "line": 23, "end_line": 27, "label": "getUser(token)" }
+      ] },
+    { "id": "pg", "type": "database", "label": "Postgres", "sublabel": "RLS on 10 tables", "pos": [860, 490], "size": [130, 64], "tag": "no service-role key",
+      "sources": [
+        { "path": "server/src/lib/supabase.ts", "line": 6, "end_line": 21, "label": "per-request client" },
+        { "path": "supabase/migrations/0001_init.sql", "line": 292, "end_line": 301, "label": "RLS enabled" }
+      ] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Supabase project", "wraps": ["bucket", "idp", "pg"] }
+  ],
+  "connections": [
+    { "id": "person-opens-pwa", "from": "person", "to": "pwa", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "pwa-calls-api", "from": "pwa", "to": "edge", "label": "/api/* + Bearer JWT", "variant": "emphasis" },
+    { "id": "edge-proxies-api", "from": "edge", "to": "api", "label": "rewrite to Render", "variant": "emphasis" },
+    { "id": "api-queries-pg", "from": "api", "to": "pg", "label": "queries as caller", "fromSide": "bottom", "toSide": "top" },
+    { "id": "api-verifies-token", "from": "api", "to": "idp", "label": "getUser(token)", "variant": "security", "fromSide": "bottom", "toSide": "top" },
+    { "id": "pwa-signs-in", "from": "pwa", "to": "idp", "label": "sign in", "variant": "security", "fromSide": "bottom", "toSide": "top" },
+    { "id": "pwa-uploads-photo", "from": "pwa", "to": "bucket", "label": "upload photo", "fromSide": "bottom", "toSide": "top" },
+    { "id": "api-asks-gemini", "from": "api", "to": "gemini", "label": "generateContent", "fromSide": "top", "toSide": "bottom" },
+    { "id": "api-looks-up-barcode", "from": "api", "to": "off", "label": "barcode", "fromSide": "top", "toSide": "bottom" },
+    { "id": "api-imports-shared", "from": "api", "to": "shared", "label": "imports", "variant": "dashed", "fromSide": "top", "toSide": "bottom" },
+    { "id": "pwa-imports-shared", "from": "pwa", "to": "shared", "label": "imports", "variant": "dashed", "fromSide": "top", "toSide": "left" },
+    { "id": "ci-pings-api", "from": "ci", "to": "api", "label": "health", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Request path", "items": [
+      "Browser calls same-origin /api; Vercel rewrites it to the Render service",
+      "Every /api route except health and client-errors needs a Bearer token",
+      "The API builds a Supabase client from the caller's token for each request"
+    ] },
+    { "dot": "rose", "title": "Security", "items": [
+      "Row-level security isolates users; the server holds only the anon key",
+      "IP limits run before body parsing; body cap 100 kB, 6 MB for photo parsing",
+      "GEMINI_API_KEY lives only in the Render environment"
+    ] },
+    { "dot": "amber", "title": "Reliability", "items": [
+      "/api/health checks required columns and answers 503 when the schema is behind",
+      "Render deploys only after CI checks pass",
+      "Gemini calls have a 25 s deadline and one retry on 429/503"
+    ] },
+    { "dot": "slate", "title": "Not drawn", "items": [
+      "API also signs photo URLs and removes files in Storage",
+      "Exercise photos load from jsDelivr and are cached by the service worker",
+      "A usage row is written to ai_usage before each Gemini call"
+    ] }
+  ]
+}

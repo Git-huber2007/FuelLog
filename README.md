@@ -6,6 +6,19 @@ It runs as one Node web service that serves both the API and the built React app
 
 **Estimates only, not medical advice.**
 
+## System Architecture
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/architecture-light.png">
+    <img alt="FuelLog System Architecture" src="docs/architecture-light.png" width="100%">
+  </picture>
+</p>
+
+> [!NOTE]
+> An interactive version of this architecture diagram generated with Archify is available at [`docs/architecture.html`](docs/architecture.html).
+
 ## What you need
 
 - Node.js 22 or newer (the Supabase client no longer runs on Node 20)
