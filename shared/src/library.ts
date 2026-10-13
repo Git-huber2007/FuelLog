@@ -44,9 +44,9 @@ export const asExercise = (e: LibraryExercise): Exercise =>
 // Pinned to one commit so a photo can never change or vanish under a deployed app.
 const PHOTO_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises';
 
-/** Start and finish photos. The fixed split's photos ship with the app; library photos come from the CDN. */
+/** Start and finish photos. The fixed split's photos ship with the app; library photos come from the proxy endpoint. */
 export const exercisePhotos = (key: string): [start: string, finish: string] =>
-  EXERCISE_KEYS.has(key) ? [`/exercises/${key}-0.jpg`, `/exercises/${key}-1.jpg`] : [`${PHOTO_BASE}/${key}/0.jpg`, `${PHOTO_BASE}/${key}/1.jpg`];
+  EXERCISE_KEYS.has(key) ? [`/exercises/${key}-0.jpg`, `/exercises/${key}-1.jpg`] : [`/api/exercises/${key}/0.jpg`, `/api/exercises/${key}/1.jpg`];
 
 const INCLINE_KEYWORDS = ['treadmill', 'walking', 'running', 'hiking', 'stair', 'step', 'elliptical'];
 

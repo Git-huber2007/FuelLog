@@ -1,36 +1,38 @@
 import { useState } from 'react';
 
-// CDNs that serve the public-domain free-exercise-db photos.
-// Primary is GitHub raw (direct, never ISP blocked), with Statically and jsDelivr as resilient fallbacks.
-const FALLBACK_ENGINES: Array<(url: string) => string> = [
-  (url) => {
-    if (url.includes('raw.githubusercontent.com/yuhonas/free-exercise-db/')) {
-      return url.replace('https://raw.githubusercontent.com/yuhonas/free-exercise-db/', 'https://cdn.statically.io/gh/yuhonas/free-exercise-db/');
-    }
-    if (url.includes('cdn.jsdelivr.net/gh/')) {
-      return url.replace('https://cdn.jsdelivr.net/gh/', 'https://raw.githubusercontent.com/').replace('@', '/');
-    }
-    return url;
-  },
-  (url) => {
-    if (url.includes('raw.githubusercontent.com/yuhonas/free-exercise-db/')) {
-      const parts = url.split('/free-exercise-db/');
-      const rest = parts[1] ? parts[1].replace('/', '@') : '';
-      return 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@' + rest.replace(/^[^@]+@/, '');
-    }
-    if (url.includes('cdn.jsdelivr.net/gh/')) {
-      return url.replace('https://cdn.jsdelivr.net/', 'https://cdn.statically.io/');
-    }
-    return url;
-  },
-];
+/**
+ * Extracts exercise key and frame filename from /api/exercises/:key/:frame or CDN URLs.
+ * Returns null for local built-in split photos (/exercises/mon-bench-press-0.jpg).
+ */
+export function parseExercisePath(url: string): { key: string; frame: string } | null {
+  const match = url.match(/\/exercises\/([^/]+)\/([01]\.jpg)/);
+  if (match) return { key: match[1], frame: match[2] };
+  return null;
+}
 
-let globalUseFallback = false;
-
+/**
+ * Resolves exercise photo URL across 4 tiers:
+ * Tier 0: Same-origin API proxy (/api/exercises/:key/:frame) - bypasses ISP/adblock DNS filtering.
+ * Tier 1: GitHub Raw (raw.githubusercontent.com)
+ * Tier 2: Statically CDN (cdn.statically.io)
+ * Tier 3: jsDelivr CDN (cdn.jsdelivr.net)
+ */
 export function resolvePhotoUrl(url: string, attempt: number): string {
   if (attempt === 0) return url;
-  const engine = FALLBACK_ENGINES[attempt - 1];
-  return engine ? engine(url) : url;
+  const parsed = parseExercisePath(url);
+  if (!parsed) return url;
+  const { key, frame } = parsed;
+
+  if (attempt === 1) {
+    return `https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/${key}/${frame}`;
+  }
+  if (attempt === 2) {
+    return `https://cdn.statically.io/gh/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/${key}/${frame}`;
+  }
+  if (attempt === 3) {
+    return `https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/${key}/${frame}`;
+  }
+  return url;
 }
 
 interface Props {
@@ -43,24 +45,23 @@ interface Props {
 }
 
 /**
- * Exercise photo with multi-CDN fallback. If jsDelivr fails (e.g. ISP or extension block),
- * it seamlessly switches to raw.githubusercontent.com or statically CDN, and finally
- * falls back to an accessible SVG exercise placeholder icon instead of a broken image icon.
+ * Exercise photo with multi-tier fallback. It starts with the same-origin API proxy,
+ * then falls back across GitHub Raw, Statically, and jsDelivr, before rendering
+ * an accessible SVG exercise icon if completely offline.
  */
 export function ExercisePhoto({ src, alt = '', className = '', loading = 'lazy', width, height }: Props) {
-  const isCdn = src.startsWith('https://');
-  const [attempt, setAttempt] = useState(() => (isCdn && globalUseFallback ? 1 : 0));
+  const parsed = parseExercisePath(src);
+  const [attempt, setAttempt] = useState(0);
   const [failed, setFailed] = useState(false);
 
-  const currentSrc = isCdn ? resolvePhotoUrl(src, attempt) : src;
+  const currentSrc = resolvePhotoUrl(src, attempt);
 
   function handleError() {
-    if (!isCdn) {
+    if (!parsed) {
       setFailed(true);
       return;
     }
-    globalUseFallback = true;
-    if (attempt < FALLBACK_ENGINES.length) {
+    if (attempt < 3) {
       setAttempt((prev) => prev + 1);
     } else {
       setFailed(true);

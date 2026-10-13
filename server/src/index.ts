@@ -18,6 +18,7 @@ import { progressRouter } from './routes/progress';
 import { savedMealsRouter } from './routes/savedMeals';
 import { workoutRouter } from './routes/workout';
 import { clientErrorsRouter } from './routes/clientErrors';
+import { exercisePhotosRouter } from './routes/exercisePhotos';
 import { checkRequiredSchema } from './lib/schemaCheck';
 
 const app = express();
@@ -70,6 +71,7 @@ app.get('/api/health', async (_req, res) => {
 });
 
 app.use('/api', clientErrorsRouter);
+app.use('/api', exercisePhotosRouter);
 app.use('/api', auth, userRateLimit, profileRouter, foodsRouter, daysRouter, workoutRouter, savedMealsRouter, progressRouter, photosRouter, aiRouter, exportRouter, notFound);
 
 // Serves the built client when it is there (single-service deploy). With the client on Vercel it is not built here, and this is skipped.
