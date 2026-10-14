@@ -47,6 +47,46 @@
   }
 }
 
+:root.dark, :root[data-theme='dark'] {
+  --bg: 11 12 12;
+  --card: 24 25 26;
+  --text: 244 244 246;
+  --muted: 163 163 172;
+  --line: 40 43 44;
+  --input-line: 95 95 102;
+  --accent: 74 222 128;
+  --on-accent: 5 46 22;
+  --kcal: 74 222 128;
+  --protein: 244 114 182;
+  --danger: 248 113 113;
+  --carbs: 96 165 250;
+  --fat: 250 204 21;
+  --gold: 245 158 11;
+  --highlight: 0.06;
+  --shadow: 0.4;
+  --glow: 0.13;
+}
+
+:root.light, :root[data-theme='light'] {
+  --bg: 242 242 240;
+  --card: 255 255 255;
+  --text: 17 17 19;
+  --muted: 82 82 91;
+  --line: 226 226 222;
+  --input-line: 135 135 130;
+  --accent: 22 101 52;
+  --on-accent: 255 255 255;
+  --kcal: 22 101 52;
+  --protein: 190 24 93;
+  --danger: 185 28 28;
+  --carbs: 29 78 216;
+  --fat: 180 83 9;
+  --gold: 217 119 6;
+  --highlight: 0.9;
+  --shadow: 0.14;
+  --glow: 0.1;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;

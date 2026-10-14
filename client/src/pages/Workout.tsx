@@ -37,7 +37,7 @@ export default function Workout() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-12 md:gap-6 items-start space-y-5 md:space-y-0 pb-16 md:pb-0">
+      <div className="grid grid-cols-1 md:grid-cols-12 md:gap-6 items-start space-y-5 md:space-y-0 pb-28 md:pb-6">
         {/* Main Column: Header and Sequential Exercise Cards */}
         <div className="md:col-span-7 lg:col-span-8 space-y-5">
           {restDay ? (
@@ -91,7 +91,11 @@ export default function Workout() {
                   Add cardio, stretching or any lift from the library, filtered by level and muscle.
                 </p>
               </div>
-              <button type="button" className="btn w-full" onClick={() => setPicking(true)}>
+              <button
+                type="button"
+                className="btn min-h-[44px] w-full active:scale-[0.98] transition-transform"
+                onClick={() => setPicking(true)}
+              >
                 Add exercise or cardio
               </button>
             </section>
@@ -128,7 +132,11 @@ export default function Workout() {
                 Add cardio, stretching or any lift from the library, filtered by level and muscle.
               </p>
             </div>
-            <button type="button" className="btn w-full" onClick={() => setPicking(true)}>
+            <button
+              type="button"
+              className="btn min-h-[44px] w-full active:scale-[0.98] transition-transform"
+              onClick={() => setPicking(true)}
+            >
               Add exercise or cardio
             </button>
           </section>

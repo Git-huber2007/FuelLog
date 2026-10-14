@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { api } from '../../lib/apiClient';
 import { useToast } from '../ui/Toast';
 import { ExerciseDemo } from './ExerciseDemo';
-import { LastSessionLine } from './LastSessionLine';
 import { OverloadHint } from './OverloadHint';
 import { SetRow } from './SetRow';
 
@@ -34,15 +33,15 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
 
   const colClass = isSingle
     ? exercise.sets === 1
-      ? 'grid-cols-[4.5rem_1fr_2.5rem]'
-      : 'grid-cols-[2.25rem_4.5rem_1fr_2.5rem]'
+      ? 'grid-cols-[4.5rem_1fr_2.75rem]'
+      : 'grid-cols-[2.25rem_4.5rem_1fr_2.75rem]'
     : incline
       ? exercise.sets === 1
-        ? 'grid-cols-[4.5rem_1fr_1fr_1fr_2.5rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.5rem]'
+        ? 'grid-cols-[4.5rem_1fr_1fr_1fr_2.75rem]'
+        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.75rem]'
       : exercise.sets === 1
-        ? 'grid-cols-[4.5rem_1fr_1fr_2.5rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_2.5rem]';
+        ? 'grid-cols-[4.5rem_1fr_1fr_2.75rem]'
+        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_2.75rem]';
 
   // Parse default target reps from prescription (e.g. 3×8–12 -> 12, 3×8 -> 8, default 8 or 30s)
   const targetMatch = exercise.prescription?.match(/\d+×(\d+)(?:–(\d+))?/);
@@ -69,7 +68,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
   });
 
   return (
-    <section className="card space-y-3" aria-label={exercise.name}>
+    <section className="card space-y-3.5" aria-label={exercise.name}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
@@ -99,12 +98,11 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
       </div>
 
       <ExerciseDemo name={exercise.name} photos={exercisePhotos(exercise.key)} />
-      <LastSessionLine last={exercise.last} kind={exercise.kind} />
       <OverloadHint show={exercise.overload} kind={exercise.kind} />
 
       {/* Hevy-style Table Column Headers */}
       <div
-        className={`grid items-center gap-2 px-2.5 text-xs font-medium text-muted ${colClass}`}
+        className={`grid items-center gap-2 px-2.5 text-xs font-semibold text-muted ${colClass}`}
         aria-hidden="true"
       >
         {exercise.sets !== 1 && <span className="text-center uppercase tracking-[0.08em]">Set</span>}
@@ -152,7 +150,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
       {exercise.extra && (
         <button
           type="button"
-          className="btn w-full text-muted hover:text-danger hover:border-danger/40 transition-colors"
+          className="btn min-h-[44px] w-full text-muted hover:text-danger hover:border-danger/40 active:scale-[0.98] transition-all"
           disabled={remove.isPending}
           onClick={() => remove.mutate()}
         >

@@ -55,7 +55,7 @@ export function WorkoutHeader({
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-bg border border-line/60">
             <div
-              className="h-full rounded-full bg-accent transition-[width] duration-300 ease-spring"
+              className="h-full rounded-full bg-accent transition-[width] duration-300 ease-spring motion-reduce:transition-none"
               style={{ width: `${percent}%` }}
             />
           </div>

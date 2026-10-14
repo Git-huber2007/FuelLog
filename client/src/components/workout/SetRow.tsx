@@ -30,7 +30,7 @@ interface Props {
   removed?: { current: boolean };
 }
 
-/** One prescribed set. Saves itself shortly after typing or upon clicking the ✓ completion button. */
+/** One prescribed set with Hevy-style logging, auto-fill, PR badge, and auto-focus selection. */
 export function SetRow({
   date,
   exerciseKey,
@@ -164,15 +164,15 @@ export function SetRow({
 
   const colClass = isSingle
     ? single
-      ? 'grid-cols-[4.5rem_1fr_2.5rem]'
-      : 'grid-cols-[2.25rem_4.5rem_1fr_2.5rem]'
+      ? 'grid-cols-[4.5rem_1fr_2.75rem]'
+      : 'grid-cols-[2.25rem_4.5rem_1fr_2.75rem]'
     : incline
       ? single
-        ? 'grid-cols-[4.5rem_1fr_1fr_1fr_2.5rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.5rem]'
+        ? 'grid-cols-[4.5rem_1fr_1fr_1fr_2.75rem]'
+        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.75rem]'
       : single
-        ? 'grid-cols-[4.5rem_1fr_1fr_2.5rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_2.5rem]';
+        ? 'grid-cols-[4.5rem_1fr_1fr_2.75rem]'
+        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_2.75rem]';
 
   return (
     <li
@@ -183,12 +183,13 @@ export function SetRow({
       }`}
     >
       {!single && (
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center w-9 shrink-0">
           <span className="text-xs font-semibold text-muted">{setNumber}</span>
           {isPr && (
             <span
-              className="mt-0.5 rounded px-1 py-0.5 text-[0.5625rem] font-bold uppercase tracking-wider bg-gold/15 text-gold border border-gold/30"
+              className="mt-0.5 rounded px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase tracking-wider bg-gold/15 text-gold border border-gold/30 motion-safe:animate-rise-in motion-reduce:transition-none motion-reduce:animate-none"
               title="Personal Record!"
+              aria-label="Personal record set"
             >
               PR
             </span>
@@ -196,19 +197,19 @@ export function SetRow({
         </div>
       )}
 
-      {/* Previous hint pill with tap-to-copy */}
+      {/* Previous hint pill with tap-to-copy (touch target >= 44px) */}
       <button
         type="button"
         disabled={!previous || prevHint === '—'}
         onClick={copyPrevious}
-        className="h-10 px-1 text-center text-xs font-medium text-muted rounded-xl bg-bg border border-line/60 hover:border-accent/60 hover:text-text active:scale-95 disabled:pointer-events-none disabled:opacity-40 truncate transition-all"
+        className="h-11 min-h-[44px] px-1 text-center text-xs font-semibold text-muted rounded-xl bg-bg border border-line/60 hover:border-accent/60 hover:text-text active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40 truncate transition-transform"
         title={previous && prevHint !== '—' ? `Previous: ${prevHint}. Tap to copy` : 'No previous set'}
         aria-label={previous && prevHint !== '—' ? `Previous set ${prevHint}. Tap to copy` : 'No previous set'}
       >
         {prevHint}
       </button>
 
-      {/* Kind input fields */}
+      {/* Kind input fields (touch targets >= 44px, select contents on focus) */}
       {isSingle ? (
         <div>
           <label htmlFor={`${id}-r`} className="sr-only">
@@ -216,11 +217,12 @@ export function SetRow({
           </label>
           <input
             id={`${id}-r`}
-            className="input h-10 min-h-0 px-2 text-center text-sm font-semibold tabular-nums rounded-xl"
+            className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
             inputMode="numeric"
             autoComplete="off"
             placeholder={repsPlaceholder}
             value={reps}
+            onFocus={(e) => e.target.select()}
             onChange={(e) => change('', e.target.value)}
             aria-invalid={invalid}
           />
@@ -233,11 +235,12 @@ export function SetRow({
             </label>
             <input
               id={`${id}-w`}
-              className="input h-10 min-h-0 px-2 text-center text-sm font-semibold tabular-nums rounded-xl"
+              className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
               inputMode="decimal"
               autoComplete="off"
               placeholder={weightPlaceholder}
               value={weight}
+              onFocus={(e) => e.target.select()}
               onChange={(e) => change(e.target.value, reps)}
               aria-invalid={invalid}
             />
@@ -248,11 +251,12 @@ export function SetRow({
             </label>
             <input
               id={`${id}-r`}
-              className="input h-10 min-h-0 px-2 text-center text-sm font-semibold tabular-nums rounded-xl"
+              className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
               inputMode="numeric"
               autoComplete="off"
               placeholder={repsPlaceholder}
               value={reps}
+              onFocus={(e) => e.target.select()}
               onChange={(e) => change(weight, e.target.value)}
               aria-invalid={invalid}
             />
@@ -267,18 +271,19 @@ export function SetRow({
           </label>
           <input
             id={`${id}-g`}
-            className="input h-10 min-h-0 px-2 text-center text-sm font-semibold tabular-nums rounded-xl"
+            className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
             autoComplete="off"
             placeholder="0"
             value={grade}
+            onFocus={(e) => e.target.select()}
             onChange={(e) => change(weight, reps, e.target.value)}
             aria-invalid={invalid}
           />
         </div>
       )}
 
-      {/* Complete Set (✓) Button with status indicator */}
-      <div className="relative flex items-center justify-center">
+      {/* Complete Set (✓) Button (touch target >= 44px, no layout shift) */}
+      <div className="relative flex items-center justify-center w-11 min-w-[44px] shrink-0">
         <button
           type="button"
           onClick={handleCheck}
@@ -287,15 +292,18 @@ export function SetRow({
               ? `${name} completed. Tap to restart rest timer`
               : `Complete ${name} and start rest timer`
           }
-          className={`h-10 w-10 flex items-center justify-center rounded-xl font-bold transition-all ${
+          className={`h-11 w-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl font-bold transition-transform active:scale-[0.96] ${
             isDone
-              ? 'bg-accent text-onaccent shadow-sm active:scale-95'
-              : 'bg-bg text-muted border border-input-line hover:border-accent hover:text-accent active:scale-95'
+              ? 'bg-accent text-onaccent shadow-sm'
+              : 'bg-bg text-muted border border-input-line hover:border-accent hover:text-accent'
           }`}
           title={isDone ? 'Completed! Tap to restart rest timer' : 'Tap to log set and start rest timer'}
         >
           {status === 'saving' ? (
-            <span className="h-2.5 w-2.5 rounded-full bg-current animate-pulse" aria-hidden />
+            <span
+              className="h-3 w-3 rounded-full bg-current motion-safe:animate-pulse motion-reduce:animate-none"
+              aria-hidden
+            />
           ) : (
             <svg
               viewBox="0 0 24 24"
@@ -311,6 +319,15 @@ export function SetRow({
             </svg>
           )}
         </button>
+        <span className="sr-only" role="status">
+          {status === 'saved'
+            ? 'Saved'
+            : status === 'saving'
+              ? 'Saving'
+              : status === 'error'
+                ? 'Not saved. Edit the value to try again.'
+                : ''}
+        </span>
       </div>
     </li>
   );
