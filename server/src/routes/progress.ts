@@ -113,6 +113,7 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
       latestMetric: latestMetricFormatted,
       trend,
       trendDelta,
+      sparkline: metricsBySession,
     };
   });
 

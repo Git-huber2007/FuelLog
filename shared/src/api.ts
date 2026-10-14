@@ -186,4 +186,5 @@ export interface TopLiftSummary {
   latestMetric: string;
   trend: 'up' | 'flat' | 'down';
   trendDelta: string;
+  sparkline?: number[];
 }

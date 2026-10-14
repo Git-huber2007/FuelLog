@@ -22,10 +22,12 @@ function MetricLineChart({
   points,
   unit,
   metricName,
+  prs = [],
 }: {
   points: ExerciseHistoryPoint[];
   unit: string;
   metricName: string;
+  prs?: { date: string }[];
 }) {
   if (points.length === 0) {
     return (
@@ -55,6 +57,7 @@ function MetricLineChart({
 
   const today = todayISO();
   const mid = Math.round(((min + max) / 2) * 10) / 10;
+  const prDates = new Set(prs.map((p) => p.date));
 
   return (
     <div>
@@ -125,12 +128,24 @@ function MetricLineChart({
         {/* Data points */}
         {points.map((p, i) => {
           const isLatest = i === points.length - 1;
+          const isPr = prDates.has(p.date);
           const cx = x(p.date);
           const cy = y(p.metric);
 
           return (
             <g key={p.date}>
-              {isLatest && (
+              {/* Outer halo for PR (gold) or Latest (accent) */}
+              {isPr ? (
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r="7"
+                  fill="none"
+                  strokeWidth="2"
+                  className="stroke-gold motion-safe:animate-pulse motion-reduce:animate-none"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ) : isLatest ? (
                 <circle
                   cx={cx}
                   cy={cy}
@@ -140,14 +155,20 @@ function MetricLineChart({
                   className="stroke-accent"
                   vectorEffect="non-scaling-stroke"
                 />
-              )}
+              ) : null}
               <circle
                 cx={cx}
                 cy={cy}
-                r="4"
-                className={isLatest ? 'fill-accent' : 'fill-muted hover:fill-accent transition-colors'}
+                r={isPr ? 4.5 : 4}
+                className={
+                  isPr
+                    ? 'fill-gold'
+                    : isLatest
+                      ? 'fill-accent'
+                      : 'fill-muted hover:fill-accent transition-colors'
+                }
               >
-                <title>{`${formatDayLabel(p.date, today)}: ${p.formatted} (${p.metric} ${unit})`}</title>
+                <title>{`${isPr ? '🏆 PR on ' : ''}${formatDayLabel(p.date, today)}: ${p.formatted} (${p.metric} ${unit})`}</title>
               </circle>
             </g>
           );
@@ -156,6 +177,12 @@ function MetricLineChart({
 
       <div className="mt-2 flex items-center justify-between text-xs text-muted">
         <span>{formatDayLabel(first.date, today)}</span>
+        {prDates.size > 0 && (
+          <span className="inline-flex items-center gap-1 text-[11px] text-gold font-medium">
+            <span className="h-2 w-2 rounded-full bg-gold inline-block" aria-hidden="true" />
+            PR milestone
+          </span>
+        )}
         <span>{formatDayLabel(last.date, today)}</span>
       </div>
     </div>
@@ -240,7 +267,7 @@ export default function ExerciseHistory() {
             </span>
           )}
         </div>
-        <MetricLineChart points={chartPoints} unit={metricUnit} metricName={metricName} />
+        <MetricLineChart points={chartPoints} unit={metricUnit} metricName={metricName} prs={prs} />
       </section>
 
       {/* Personal Records History */}

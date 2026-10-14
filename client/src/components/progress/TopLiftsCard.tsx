@@ -2,6 +2,60 @@ import { exercisePhotos, type TopLiftSummary } from '@fuellog/shared';
 import { Link } from 'react-router-dom';
 import { ExercisePhoto } from '../workout/ExercisePhoto';
 
+function Sparkline({ points = [], trend }: { points?: number[]; trend: 'up' | 'flat' | 'down' }) {
+  if (points.length < 2) return null;
+
+  const width = 48;
+  const height = 20;
+  const pad = 2;
+
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+
+  const strokeColor =
+    trend === 'up'
+      ? 'stroke-accent'
+      : trend === 'down'
+        ? 'stroke-danger'
+        : 'stroke-muted';
+
+  const fillColor =
+    trend === 'up'
+      ? 'fill-accent'
+      : trend === 'down'
+        ? 'fill-danger'
+        : 'fill-muted';
+
+  const pts = points.map((val, idx) => {
+    const x = pad + (idx / (points.length - 1)) * (width - pad * 2);
+    const y = pad + ((max - val) / range) * (height - pad * 2);
+    return { x, y };
+  });
+
+  const polylineStr = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const last = pts[pts.length - 1];
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      className="h-5 w-12 shrink-0 overflow-visible"
+      aria-hidden="true"
+    >
+      <polyline
+        fill="none"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={strokeColor}
+        vectorEffect="non-scaling-stroke"
+        points={polylineStr}
+      />
+      <circle cx={last.x} cy={last.y} r="2" className={fillColor} />
+    </svg>
+  );
+}
+
 export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
   if (!topLifts || topLifts.length === 0) {
     return (
@@ -54,7 +108,10 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {/* Sparkline visualization */}
+                  <Sparkline points={lift.sparkline} trend={lift.trend} />
+
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
                       isUp
@@ -81,3 +138,4 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
     </section>
   );
 }
+
