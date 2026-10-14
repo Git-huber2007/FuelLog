@@ -9,4 +9,5 @@ dev-dist/
 Thumbs.db
 test-results/
 playwright-report/
+*.tsbuildinfo
 .archify/

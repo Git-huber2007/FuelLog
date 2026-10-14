@@ -40,7 +40,7 @@ export default function Today() {
   const { targets, logs, check } = day.data;
   const totals = sumMacros(logs);
   const bodyKg = profile.data?.profile.weight_kg ?? day.data.weight_kg;
-  const workoutBurn = bodyKg ? workoutKcal(day.data.sets.map((s) => ({ cardio: s.cardio, logged: [s] })), bodyKg) : 0;
+  const workoutBurn = bodyKg ? workoutKcal(day.data.sets.map((s) => ({ kind: s.kind, cardio: s.cardio, logged: [s] })), bodyKg) : 0;
   const walkingBurn = bodyKg && check?.steps ? stepsKcal(check.steps, bodyKg) : 0;
   const totalBurn = workoutBurn + walkingBurn;
   const line = nudge({

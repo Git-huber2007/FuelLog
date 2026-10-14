@@ -21,6 +21,7 @@ const PROGRAM_DELTAS: Record<ProgramKey, { train: number; rest: number }> = {
   six_day: { train: 30, rest: -180 },
   upper_lower: { train: 45, rest: -60 },
   full_body: { train: 60, rest: -45 },
+  custom: { train: 0, rest: 0 },
 };
 
 /**

@@ -1,8 +1,8 @@
 // Shapes of database rows and API responses, shared so the client and server cannot drift apart.
 import type { Advice } from './advice';
-import type { CheckInput, CoachResult, Goal, LogSource, Meal, MeasureInput, Sex } from './schemas';
+import type { CheckInput, CoachResult, Goal, LogSource, Meal, MeasureInput, RoutineExerciseInput, Sex } from './schemas';
 import type { Level } from './library';
-import type { Exercise, MuscleGroup, ProgramKey } from './split';
+import type { Exercise, ExerciseKind, MuscleGroup, ProgramKey } from './split';
 import type { MacroTotals, Targets } from './targets';
 
 export interface Profile {
@@ -55,6 +55,8 @@ export interface WorkoutSet {
   incline_pct: number | null;
   /** True for cardio exercises from the library. */
   cardio?: boolean;
+  kind?: ExerciseKind;
+  is_pr?: boolean;
 }
 
 export type Measurements = MeasureInput & { log_date: string };
@@ -123,6 +125,7 @@ export interface ProgressResponse {
   measurements: Record<keyof MeasureInput, MeasureDelta | null>;
   streak: number;
   advice: Advice;
+  topLifts?: TopLiftSummary[];
 }
 
 export interface Photo {
@@ -137,3 +140,50 @@ export interface AiParseResponse {
 }
 
 export type CoachResponse = CoachResult;
+
+export interface RoutineDayRow {
+  weekday: number;
+  title: string;
+  exercises: RoutineExerciseInput[];
+}
+
+export interface ExerciseHistoryPoint {
+  date: string;
+  metric: number;
+  formatted: string;
+}
+
+export interface ExercisePRMilestone {
+  date: string;
+  value: number;
+  formatted: string;
+}
+
+export interface ExerciseSessionHistory {
+  date: string;
+  sets: WorkoutSet[];
+  bestMetric: number;
+  volumeKg: number;
+}
+
+export interface ExerciseHistoryResponse {
+  key: string;
+  name: string;
+  kind: ExerciseKind;
+  metricName: string;
+  metricUnit: string;
+  chartPoints: ExerciseHistoryPoint[];
+  prs: ExercisePRMilestone[];
+  recentSessions: ExerciseSessionHistory[];
+}
+
+export interface TopLiftSummary {
+  key: string;
+  name: string;
+  kind: ExerciseKind;
+  totalSessions: number;
+  latestDate: string;
+  latestMetric: string;
+  trend: 'up' | 'flat' | 'down';
+  trendDelta: string;
+}

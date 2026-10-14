@@ -16,6 +16,8 @@ const Signup = lazy(() => import('./pages/Signup'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Today = lazy(() => import('./pages/Today'));
 const Workout = lazy(() => import('./pages/Workout'));
+const Routine = lazy(() => import('./pages/Routine'));
+const ExerciseHistory = lazy(() => import('./pages/ExerciseHistory'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -43,6 +45,8 @@ export default function App() {
               <Route element={<AppShell />}>
                 <Route path="/" element={<Today />} />
                 <Route path="/workout" element={<Workout />} />
+                <Route path="/routine" element={<Routine />} />
+                <Route path="/exercise/:key" element={<ExerciseHistory />} />
                 <Route path="/progress" element={<Progress />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>

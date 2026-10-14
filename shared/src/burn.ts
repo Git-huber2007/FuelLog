@@ -1,6 +1,7 @@
 import type { WorkoutSet } from './api';
+import type { ExerciseKind } from './split';
 
-type Logged = Pick<WorkoutSet, 'weight_kg' | 'reps' | 'incline_pct'>;
+type Logged = Pick<WorkoutSet, 'weight_kg' | 'reps'> & { incline_pct?: number | null };
 
 const KCAL_PER_ML_O2 = 0.005;
 const MIN_PER_LIFT_SET = 3; // the set itself plus the rest after it
@@ -22,18 +23,19 @@ export const stepsKcal = (steps: number, bodyKg: number): number => Math.round(s
 
 /**
  * Estimated energy burned by the sets logged in one workout, in kcal.
- * shortcut: lifting is a flat 3.5 MET for three minutes a set and all cardio uses the walking and running equations,
- * so cycling, rowing and very heavy lifting are rough; use heart-rate data if the app ever reads a wearable.
+ * Bodyweight and duration sets count toward the estimate as lifting sets.
+ * Cardio uses ACSM speed and incline equations or flat MET when distance is zero.
  */
-export function workoutKcal(exercises: readonly { cardio?: boolean; logged: readonly Logged[] }[], bodyKg: number): number {
+export function workoutKcal(exercises: readonly { kind?: ExerciseKind; cardio?: boolean; logged: readonly Logged[] }[], bodyKg: number): number {
   let kcal = 0;
   for (const exercise of exercises) {
+    const isCardio = exercise.kind !== undefined ? exercise.kind === 'cardio' : Boolean(exercise.cardio);
     for (const set of exercise.logged) {
       if (set.reps <= 0) continue;
       // Cardio rows hold kilometres in weight_kg and minutes in reps.
-      const perMinute = !exercise.cardio ? LIFT_MET * 3.5
+      const perMinute = !isCardio ? LIFT_MET * 3.5
         : set.weight_kg > 0 ? vo2((set.weight_kg * 1000) / set.reps, (set.incline_pct ?? 0) / 100) : CARDIO_MET * 3.5;
-      kcal += perMinute * bodyKg * KCAL_PER_ML_O2 * (exercise.cardio ? set.reps : MIN_PER_LIFT_SET);
+      kcal += perMinute * bodyKg * KCAL_PER_ML_O2 * (isCardio ? set.reps : MIN_PER_LIFT_SET);
     }
   }
   return Math.round(kcal);

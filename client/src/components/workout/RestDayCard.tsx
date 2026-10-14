@@ -1,13 +1,21 @@
 import { Link } from 'react-router-dom';
 
-export function RestDayCard({ programName, delta, sunday }: { programName?: string; delta?: number; sunday?: boolean }) {
+export function RestDayCard({ programName, program, delta, sunday }: { programName?: string; program?: string; delta?: number; sunday?: boolean }) {
   const lower = delta !== undefined ? delta < 0 : sunday;
   const amount = delta !== undefined ? Math.abs(delta) : 180;
   return (
     <section className="card space-y-2" aria-labelledby="rest-title">
       {programName && (
         <p className="text-sm text-muted">
-          <span>{programName}</span> · <Link to="/profile" className="link">Change</Link>
+          <span>{programName}</span>
+          {program === 'custom' && (
+            <>
+              {' · '}
+              <Link to="/routine" className="link font-medium">Edit routine</Link>
+            </>
+          )}
+          {' · '}
+          <Link to="/profile" className="link">Change</Link>
         </p>
       )}
       <h2 id="rest-title" className="mt-1 text-[1.75rem] leading-tight">Rest day</h2>

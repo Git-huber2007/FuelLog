@@ -11,14 +11,23 @@ export const MUSCLE_LABELS: Record<MuscleGroup, string> = {
   core: 'Core', lowerback: 'Lower back', quads: 'Quads', hamstrings: 'Hamstrings', calves: 'Calves',
 };
 
+export const EXERCISE_KINDS = [
+  'weight_reps',
+  'bodyweight_reps',
+  'weighted_bodyweight',
+  'assisted_bodyweight',
+  'duration',
+  'cardio',
+] as const;
+export type ExerciseKind = (typeof EXERCISE_KINDS)[number];
+
 export interface Exercise {
   key: string;
   name: string;
   sets: number;
   topReps: number;
   prescription: string;
-  /** Logged as distance and minutes, not weight and reps. */
-  cardio?: boolean;
+  kind: ExerciseKind;
   /** Muscle and level, shown on exercises added from the library. */
   detail?: string;
 }
@@ -29,12 +38,13 @@ export interface SplitDay {
   exercises: Exercise[];
 }
 
-const ex = (day: string, name: string, sets: number, topReps: number, reps = String(topReps)): Exercise => ({
+const ex = (day: string, name: string, sets: number, topReps: number, reps = String(topReps), kind: ExerciseKind = 'weight_reps'): Exercise => ({
   key: `${day}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
   name,
   sets,
   topReps,
   prescription: `${sets}×${reps}`,
+  kind,
 });
 
 /** Indexed by weekday: 0 = Sunday … 6 = Saturday. */
@@ -67,11 +77,11 @@ export const SPLIT: readonly SplitDay[] = [
     muscles: ['biceps', 'triceps', 'core'],
     exercises: [
       ex('wed', 'EZ-bar curl', 3, 10),
-      ex('wed', 'Close-grip bench or dips', 3, 10),
+      ex('wed', 'Close-grip bench or dips', 3, 10, '10', 'weight_reps'),
       ex('wed', 'Incline dumbbell curl', 3, 12),
       ex('wed', 'Rope pushdown', 3, 12),
-      ex('wed', 'Plank', 3, 45, '30–45 s'),
-      ex('wed', 'Hanging knee raise', 3, 10),
+      ex('wed', 'Plank', 3, 45, '30–45 s', 'duration'),
+      ex('wed', 'Hanging knee raise', 3, 10, '10', 'bodyweight_reps'),
       ex('wed', 'Cable crunch', 3, 12),
     ],
   },
@@ -91,9 +101,9 @@ export const SPLIT: readonly SplitDay[] = [
     muscles: ['back', 'lowerback', 'shoulders'],
     exercises: [
       ex('fri', 'Barbell or dumbbell row', 3, 10, '8–10'),
-      ex('fri', 'Assisted pull-up or pulldown', 3, 10),
+      ex('fri', 'Assisted pull-up or pulldown', 3, 10, '10', 'assisted_bodyweight'),
       ex('fri', 'Rear delt fly', 3, 15),
-      ex('fri', 'Back extension', 2, 12),
+      ex('fri', 'Back extension', 2, 12, '12', 'bodyweight_reps'),
       ex('fri', 'Shrugs', 3, 12),
     ],
   },
@@ -116,12 +126,13 @@ export const EXERCISE_KEYS: ReadonlySet<string> = new Set(ALL_EXERCISES.map((e) 
 export const EXERCISE_NAMES: ReadonlyMap<string, string> = new Map(ALL_EXERCISES.map((e) => [e.key, e.name]));
 
 // The shorter programs reuse the six-day exercises under the same keys, so photos, history and overload hints carry over when a user switches.
-const BY_KEY = new Map(ALL_EXERCISES.map((e) => [e.key, e]));
+export const SPLIT_EXERCISES_BY_KEY: ReadonlyMap<string, Exercise> = new Map(ALL_EXERCISES.map((e) => [e.key, e]));
+const BY_KEY = SPLIT_EXERCISES_BY_KEY;
 const day = (title: string, muscles: MuscleGroup[], ...keys: string[]): SplitDay => ({ title, muscles, exercises: keys.map((k) => BY_KEY.get(k)!) });
 const REST = SPLIT[0];
 const LEGS = ['sat-squat-or-leg-press', 'sat-romanian-deadlift', 'sat-walking-lunge', 'sat-leg-extension', 'sat-leg-curl', 'sat-calf-raise'];
 
-export const PROGRAM_KEYS = ['full_body', 'upper_lower', 'six_day'] as const;
+export const PROGRAM_KEYS = ['full_body', 'upper_lower', 'six_day', 'custom'] as const;
 export type ProgramKey = (typeof PROGRAM_KEYS)[number];
 
 export interface Program {
@@ -168,10 +179,16 @@ export const PROGRAMS: Record<ProgramKey, Program> = {
     summary: 'Monday to Saturday, one focus a day. The most volume, for people who already train regularly.',
     days: SPLIT,
   },
+  custom: {
+    name: 'Custom routine',
+    summary: 'Your personalized workout routine built day by day.',
+    days: [REST, REST, REST, REST, REST, REST, REST],
+  },
 };
 
 /** The program suggested for a training level. The user can still pick any of them. */
 export const recommendedProgram = (level: 'beginner' | 'intermediate' | 'expert'): ProgramKey =>
   level === 'beginner' ? 'full_body' : level === 'intermediate' ? 'upper_lower' : 'six_day';
 
-export const splitFor = (iso: string, program: ProgramKey = 'six_day'): SplitDay => PROGRAMS[program].days[weekdayOf(iso)];
+export const splitFor = (iso: string, program: ProgramKey = 'six_day', customDay?: SplitDay | null): SplitDay =>
+  program === 'custom' ? (customDay ?? { title: 'Rest', muscles: [], exercises: [] }) : PROGRAMS[program].days[weekdayOf(iso)];

@@ -6,10 +6,10 @@ export const exercisePhotosRouter = Router();
 const photoCache = new Map<string, { buffer: Buffer; expiresAt: number }>();
 const MAX_CACHE = 250;
 
-exercisePhotosRouter.get('/exercises/:key/:frame', async (req, res) => {
+exercisePhotosRouter.get('/exercises/:key/:frame', async (req, res, next) => {
   const { key, frame } = req.params;
   if (!/^[\w.-]+$/.test(key) || !/^[01]\.jpg$/.test(frame)) {
-    return res.status(400).send('Invalid exercise or frame parameter');
+    return next();
   }
 
   const cacheKey = `${key}/${frame}`;
