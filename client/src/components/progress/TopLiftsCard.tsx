@@ -86,19 +86,19 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
             <li key={lift.key}>
               <Link
                 to={`/exercise/${encodeURIComponent(lift.key)}`}
-                className="group flex items-center justify-between gap-3 py-3 transition-colors hover:text-accent"
+                className="group flex items-center justify-between gap-2 min-[380px]:gap-3 py-3 transition-colors hover:text-accent"
                 aria-label={`View ${lift.name} history. Trend: ${lift.trendDelta}`}
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-2.5 min-[380px]:gap-3 min-w-0 flex-1">
                   <ExercisePhoto
                     src={exercisePhotos(lift.key)[0]}
                     alt=""
                     loading="lazy"
                     width={48}
                     height={36}
-                    className="h-9 w-12 shrink-0 rounded-lg bg-line object-cover border border-line"
+                    className="h-8 w-11 min-[380px]:h-9 min-[380px]:w-12 shrink-0 rounded-lg bg-line object-cover border border-line"
                   />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-sm text-text group-hover:text-accent transition-colors">
                       {lift.name}
                     </p>
@@ -108,9 +108,11 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 shrink-0">
+                <div className="flex items-center gap-1.5 min-[380px]:gap-2.5 shrink-0">
                   {/* Sparkline visualization */}
-                  <Sparkline points={lift.sparkline} trend={lift.trend} />
+                  <div className="hidden min-[400px]:block">
+                    <Sparkline points={lift.sparkline} trend={lift.trend} />
+                  </div>
 
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${

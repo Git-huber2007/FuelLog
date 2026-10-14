@@ -2,11 +2,11 @@ import type { ProgressResponse } from '@fuellog/shared';
 
 export function WeekSummaryCard({ summary }: { summary: ProgressResponse['summary'] }) {
   const stats: [string, string][] = [
-    ['Average calories', summary.avgKcal === null ? '–' : `${summary.avgKcal} kcal`],
-    ['Protein target hit', summary.daysLogged ? `${summary.proteinHitDays} of ${summary.daysLogged} days` : '–'],
-    ['Workouts logged', String(summary.workouts)],
-    ['Average sleep', summary.avgSleep === null ? '–' : `${summary.avgSleep} h`],
-    ['Average steps', summary.avgSteps === null ? '–' : `${summary.avgSteps.toLocaleString()} steps`],
+    ['Average calories', summary?.avgKcal != null ? `${summary.avgKcal} kcal` : '–'],
+    ['Protein target hit', summary?.daysLogged ? `${summary.proteinHitDays ?? 0} of ${summary.daysLogged} days` : '–'],
+    ['Workouts logged', String(summary?.workouts ?? 0)],
+    ['Average sleep', summary?.avgSleep != null ? `${summary.avgSleep} h` : '–'],
+    ['Average steps', summary?.avgSteps != null ? `${summary.avgSteps.toLocaleString()} steps` : '–'],
   ];
   return (
     <section className="card" aria-labelledby="week-title">

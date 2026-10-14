@@ -13,7 +13,7 @@ export function RestTimer() {
   const strokeDashoffset = CIRCUMFERENCE * (1 - fraction);
 
   return (
-    <section className="card flex items-center justify-between gap-4" aria-label="Rest timer">
+    <section className="card p-3.5 min-[380px]:p-5 flex items-center justify-between gap-3 min-[380px]:gap-4" aria-label="Rest timer">
       <div className="flex items-center gap-3.5">
         {/* Circular Progress Ring */}
         <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">

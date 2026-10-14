@@ -2,14 +2,20 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DateSwitcher } from './DateSwitcher';
 
-const TITLES: Record<string, string> = { '/': 'Today', '/workout': 'Workout', '/progress': 'Progress', '/profile': 'Profile' };
+const TITLES: Record<string, string> = {
+  '/': 'Today',
+  '/workout': 'Workout',
+  '/routine': 'Weekly Routine',
+  '/progress': 'Progress',
+  '/profile': 'Profile',
+};
 
 /** A floating glass bar, set in from the edges, that stays in view while the page scrolls. */
 export function StickyHeader() {
   const { pathname } = useLocation();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const isFirstRender = useRef(true);
-  const title = TITLES[pathname] ?? 'FuelLog';
+  const title = pathname.startsWith('/exercise/') ? 'Exercise History' : (TITLES[pathname] ?? 'FuelLog');
 
   useEffect(() => {
     document.title = `${title} · FuelLog`;

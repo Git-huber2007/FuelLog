@@ -18,7 +18,7 @@
   --danger: 185 28 28;
   --carbs: 29 78 216;
   --fat: 180 83 9;
-  --gold: 217 119 6;
+  --gold: 180 83 9;
   --highlight: 0.9; /* top inner edge of a surface */
   --shadow: 0.14; /* ambient shadow strength */
   --glow: 0.1; /* accent wash behind the page */
@@ -81,7 +81,7 @@
   --danger: 185 28 28;
   --carbs: 29 78 216;
   --fat: 180 83 9;
-  --gold: 217 119 6;
+  --gold: 180 83 9;
   --highlight: 0.9;
   --shadow: 0.14;
   --glow: 0.1;

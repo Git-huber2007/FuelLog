@@ -22,7 +22,7 @@ export function WorkoutHeader({
   const percent = totalSets > 0 ? Math.min(100, Math.round((setsDone / totalSets) * 100)) : 0;
 
   return (
-    <section className="card space-y-4" aria-labelledby="workout-title">
+    <section className="card p-3.5 min-[380px]:p-5 space-y-4" aria-labelledby="workout-title">
       <div>
         <p className="text-sm text-muted">
           <span>{programName}</span>

@@ -75,6 +75,7 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
   const [title, setTitle] = useState(initialTitle);
   const [exercises, setExercises] = useState<RoutineExerciseItem[]>(initialExercises);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
 
   const weekdayInfo = WEEKDAYS.find((w) => w.weekday === weekday) ?? { name: `Day ${weekday}` };
 
@@ -120,13 +121,16 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
     const next = [...exercises, newItem];
     setExercises(next);
     run({ title, exercises: next });
+    setAnnouncement(`${lib.name} added at position ${next.length} of ${next.length}`);
     setPickerOpen(false);
   }
 
   function handleRemove(index: number) {
+    const removedName = exerciseName(exercises[index]?.key);
     const next = exercises.filter((_, i) => i !== index);
     setExercises(next);
     run({ title, exercises: next });
+    setAnnouncement(`${removedName} removed`);
   }
 
   function handleMove(index: number, direction: 'up' | 'down') {
@@ -138,6 +142,8 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
     next[targetIndex] = temp;
     setExercises(next);
     run({ title, exercises: next });
+    const exName = exerciseName(temp.key);
+    setAnnouncement(`${exName} moved to position ${targetIndex + 1} of ${next.length}`);
   }
 
   function handleUpdateSets(index: number, delta: number) {
@@ -242,6 +248,9 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
 
             {/* Exercise List */}
             <div className="space-y-3">
+              <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+                {announcement}
+              </div>
               <div className="flex items-center justify-between">
                 <h3 className="card-title">Exercises ({exercises.length}/15)</h3>
                 {exercises.length > 0 && (
@@ -302,22 +311,22 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
                             <button
                               type="button"
                               className="icon-btn h-8 w-8 text-muted"
-                              aria-label={`Move ${name} up`}
+                              aria-label={`Move ${name} up, currently position ${index + 1} of ${exercises.length}`}
                               disabled={index === 0}
                               onClick={() => handleMove(index, 'up')}
                             >
-                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                 <path d="M12 19V5M5 12l7-7 7 7" />
                               </svg>
                             </button>
                             <button
                               type="button"
                               className="icon-btn h-8 w-8 text-muted"
-                              aria-label={`Move ${name} down`}
+                              aria-label={`Move ${name} down, currently position ${index + 1} of ${exercises.length}`}
                               disabled={index === exercises.length - 1}
                               onClick={() => handleMove(index, 'down')}
                             >
-                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                 <path d="M12 5v14M19 12l-7 7-7-7" />
                               </svg>
                             </button>
@@ -549,7 +558,7 @@ export default function Routine() {
   const editingDay = editingWeekday !== null ? dayMap.get(editingWeekday) : null;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 px-3 min-[380px]:px-4">
       {/* Top Banner if custom is not active */}
       {!isCustomProgram && (
         <section className="card border-accent/40 bg-accent/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" aria-labelledby="active-program-alert">

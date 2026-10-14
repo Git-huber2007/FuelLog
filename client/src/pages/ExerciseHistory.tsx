@@ -6,8 +6,10 @@ import {
   todayISO,
   type ExerciseHistoryPoint,
   type ExerciseHistoryResponse,
+  type ExercisePRMilestone,
 } from '@fuellog/shared';
 import { useQuery } from '@tanstack/react-query';
+import { useId } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EmptyState, ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
@@ -27,7 +29,7 @@ function MetricLineChart({
   points: ExerciseHistoryPoint[];
   unit: string;
   metricName: string;
-  prs?: { date: string }[];
+  prs?: ExercisePRMilestone[];
 }) {
   if (points.length === 0) {
     return (
@@ -58,9 +60,30 @@ function MetricLineChart({
   const today = todayISO();
   const mid = Math.round(((min + max) / 2) * 10) / 10;
   const prDates = new Set(prs.map((p) => p.date));
+  const summaryId = useId();
+
+  const delta = last.metric - first.metric;
+  const pctChange = first.metric > 0 ? Math.round((delta / first.metric) * 100) : 0;
+  const trendDescription =
+    delta > 0
+      ? `improved by ${delta.toFixed(1)} ${unit} (+${pctChange}%)`
+      : delta < 0
+        ? `decreased by ${Math.abs(delta).toFixed(1)} ${unit} (${pctChange}%)`
+        : 'remained steady';
+  const prSummary = prs && prs.length > 0 ? ` All-time personal record is ${prs[0].formatted}.` : '';
+  const textSummary = `Chart tracking ${metricName} across ${points.length} ${
+    points.length === 1 ? 'session' : 'sessions'
+  } from ${formatDayLabel(first.date, today)} (${first.formatted}) to ${formatDayLabel(
+    last.date,
+    today
+  )} (${last.formatted}). Performance has ${trendDescription}.${prSummary}`;
 
   return (
     <div>
+      <p id={summaryId} className="sr-only">
+        {textSummary}
+      </p>
+
       <div className="sr-only">
         <table>
           <caption>{metricName} progression over time</caption>
@@ -88,6 +111,7 @@ function MetricLineChart({
         className="w-full min-h-[180px] overflow-visible"
         role="img"
         aria-label={`${metricName} chart over ${points.length} sessions. Latest: ${last.formatted}.`}
+        aria-describedby={summaryId}
       >
         {/* Horizontal grid guide lines and labels */}
         {[min, mid, max].map((val) => (
@@ -201,13 +225,16 @@ export default function ExerciseHistory() {
   if (isPending) return <LoadingSkeleton />;
   if (error || !data) return <ErrorState error={error ?? new Error('Exercise not found')} onRetry={() => refetch()} />;
 
-  const { name, kind, metricName, metricUnit, chartPoints, prs, recentSessions } = data;
+  const { name, kind, metricName, metricUnit } = data;
+  const chartPoints = data.chartPoints ?? [];
+  const prs = data.prs ?? [];
+  const recentSessions = data.recentSessions ?? [];
   const bestAllTime = prs.length ? prs[0] : null;
   const latestSession = recentSessions.length ? recentSessions[0] : null;
   const today = todayISO();
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 px-3 min-[380px]:px-4">
       {/* Back Link & Header */}
       <div>
         <Link to="/workout" className="inline-flex items-center gap-1 text-sm text-muted hover:text-text transition-colors">

@@ -33,15 +33,24 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
 
   const colClass = isSingle
     ? exercise.sets === 1
-      ? 'grid-cols-[4.5rem_1fr_2.75rem]'
-      : 'grid-cols-[2.25rem_4.5rem_1fr_2.75rem]'
+      ? 'grid-cols-[3.75rem_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_2.75rem]'
+      : 'grid-cols-[1.75rem_3.75rem_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_2.75rem]'
     : incline
       ? exercise.sets === 1
-        ? 'grid-cols-[4.5rem_1fr_1fr_1fr_2.75rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.75rem]'
+        ? 'grid-cols-[3.5rem_1fr_1fr_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_1fr_1fr_2.75rem]'
+        : 'grid-cols-[1.5rem_3.5rem_1fr_1fr_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.75rem]'
       : exercise.sets === 1
-        ? 'grid-cols-[4.5rem_1fr_1fr_2.75rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_2.75rem]';
+        ? 'grid-cols-[3.75rem_1fr_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_1fr_2.75rem]'
+        : 'grid-cols-[1.75rem_3.75rem_1fr_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_1fr_2.75rem]';
+
+  const weightHeaderLabel =
+    exercise.kind === 'weighted_bodyweight'
+      ? 'Added weight in kg'
+      : exercise.kind === 'assisted_bodyweight'
+        ? 'Assistance in kg'
+        : isCardio
+          ? 'Distance in km'
+          : 'Weight in kg';
 
   // Parse default target reps from prescription (e.g. 3×8–12 -> 12, 3×8 -> 8, default 8 or 30s)
   const targetMatch = exercise.prescription?.match(/\d+×(\d+)(?:–(\d+))?/);
@@ -68,7 +77,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
   });
 
   return (
-    <section className="card space-y-3.5" aria-label={exercise.name}>
+    <section className="card p-3.5 min-[380px]:p-5 space-y-3.5" aria-label={exercise.name}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
@@ -102,7 +111,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
 
       {/* Hevy-style Table Column Headers */}
       <div
-        className={`grid items-center gap-2 px-2.5 text-xs font-semibold text-muted ${colClass}`}
+        className={`grid items-center gap-1.5 min-[380px]:gap-2 px-1.5 min-[380px]:px-2.5 text-xs font-semibold text-muted ${colClass}`}
         aria-hidden="true"
       >
         {exercise.sets !== 1 && <span className="text-center uppercase tracking-[0.08em]">Set</span>}
@@ -111,7 +120,9 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
           <span className="text-center uppercase tracking-[0.08em]">{repsHeader}</span>
         ) : (
           <>
-            <span className="text-center uppercase tracking-[0.08em]">{weightHeader}</span>
+            <span className="text-center uppercase tracking-[0.08em]" title={weightHeaderLabel}>
+              {weightHeader}
+            </span>
             <span className="text-center uppercase tracking-[0.08em]">{repsHeader}</span>
             {incline && <span className="text-center uppercase tracking-[0.08em]">incline %</span>}
           </>

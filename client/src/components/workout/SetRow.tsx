@@ -162,32 +162,55 @@ export function SetRow({
         ? 'sec'
         : 'reps';
 
+  const weightSrLabel =
+    kind === 'weighted_bodyweight'
+      ? `${name} added weight in kg`
+      : kind === 'assisted_bodyweight'
+        ? `${name} assistance in kg`
+        : kind === 'cardio'
+          ? `${name} distance in km`
+          : `${name} weight in kg`;
+
+  const repsSrLabel =
+    kind === 'cardio'
+      ? `${name} duration in minutes`
+      : kind === 'duration'
+        ? `${name} hold time in seconds`
+        : `${name} reps`;
+
+  function handleInputFocus(e: React.FocusEvent<HTMLInputElement>) {
+    e.target.select();
+    setTimeout(() => {
+      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 150);
+  }
+
   const colClass = isSingle
     ? single
-      ? 'grid-cols-[4.5rem_1fr_2.75rem]'
-      : 'grid-cols-[2.25rem_4.5rem_1fr_2.75rem]'
+      ? 'grid-cols-[3.75rem_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_2.75rem]'
+      : 'grid-cols-[1.75rem_3.75rem_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_2.75rem]'
     : incline
       ? single
-        ? 'grid-cols-[4.5rem_1fr_1fr_1fr_2.75rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.75rem]'
+        ? 'grid-cols-[3.5rem_1fr_1fr_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_1fr_1fr_2.75rem]'
+        : 'grid-cols-[1.5rem_3.5rem_1fr_1fr_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.75rem]'
       : single
-        ? 'grid-cols-[4.5rem_1fr_1fr_2.75rem]'
-        : 'grid-cols-[2.25rem_4.5rem_1fr_1fr_2.75rem]';
+        ? 'grid-cols-[3.75rem_1fr_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_1fr_2.75rem]'
+        : 'grid-cols-[1.75rem_3.75rem_1fr_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_1fr_2.75rem]';
 
   return (
     <li
-      className={`grid items-center gap-2 px-2.5 py-1.5 rounded-2xl border transition-[background-color,border-color] ${colClass} ${
+      className={`grid items-center gap-1.5 min-[380px]:gap-2 px-1.5 min-[380px]:px-2.5 py-1.5 rounded-2xl border transition-[background-color,border-color] ${colClass} ${
         isDone
-          ? 'bg-accent/[0.04] dark:bg-accent/[0.07] border-accent/25'
+          ? 'bg-accent/[0.04] dark:bg-accent/[0.08] border-accent/35 dark:border-accent/40'
           : 'border-line/40 hover:border-line'
       }`}
     >
       {!single && (
-        <div className="flex flex-col items-center justify-center w-9 shrink-0">
+        <div className="flex flex-col items-center justify-center w-7 min-[380px]:w-9 shrink-0">
           <span className="text-xs font-semibold text-muted">{setNumber}</span>
           {isPr && (
             <span
-              className="mt-0.5 rounded px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase tracking-wider bg-gold/15 text-gold border border-gold/30 motion-safe:animate-rise-in motion-reduce:transition-none motion-reduce:animate-none"
+              className="mt-0.5 rounded px-1 min-[380px]:px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase tracking-wider bg-gold/15 text-gold border border-gold/40 motion-safe:animate-rise-in motion-reduce:transition-none motion-reduce:animate-none"
               title="Personal Record!"
               aria-label="Personal record set"
             >
@@ -197,32 +220,34 @@ export function SetRow({
         </div>
       )}
 
-      {/* Previous hint pill with tap-to-copy (touch target >= 44px) */}
+      {/* Previous hint pill with tap-to-copy (touch target >= 44px, tabIndex -1 so keyboard Tab moves kg -> reps -> ✓) */}
       <button
         type="button"
+        tabIndex={-1}
         disabled={!previous || prevHint === '—'}
         onClick={copyPrevious}
-        className="h-11 min-h-[44px] px-1 text-center text-xs font-semibold text-muted rounded-xl bg-bg border border-line/60 hover:border-accent/60 hover:text-text active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40 truncate transition-transform"
+        className="h-11 min-h-[44px] min-w-0 px-0.5 min-[380px]:px-1 text-center text-[11px] min-[380px]:text-xs font-semibold text-muted rounded-xl bg-bg border border-line/60 hover:border-accent/60 hover:text-text active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40 truncate transition-transform"
         title={previous && prevHint !== '—' ? `Previous: ${prevHint}. Tap to copy` : 'No previous set'}
         aria-label={previous && prevHint !== '—' ? `Previous set ${prevHint}. Tap to copy` : 'No previous set'}
       >
         {prevHint}
       </button>
 
-      {/* Kind input fields (touch targets >= 44px, select contents on focus) */}
+      {/* Kind input fields (touch targets >= 44px, select contents on focus, centered on mobile keyboard) */}
       {isSingle ? (
         <div>
           <label htmlFor={`${id}-r`} className="sr-only">
-            {name} {repsPlaceholder}
+            {repsSrLabel}
           </label>
           <input
             id={`${id}-r`}
-            className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+            aria-label={repsSrLabel}
+            className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
             inputMode="numeric"
             autoComplete="off"
             placeholder={repsPlaceholder}
             value={reps}
-            onFocus={(e) => e.target.select()}
+            onFocus={handleInputFocus}
             onChange={(e) => change('', e.target.value)}
             aria-invalid={invalid}
           />
@@ -231,32 +256,34 @@ export function SetRow({
         <>
           <div>
             <label htmlFor={`${id}-w`} className="sr-only">
-              {name} {weightPlaceholder}
+              {weightSrLabel}
             </label>
             <input
               id={`${id}-w`}
-              className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+              aria-label={weightSrLabel}
+              className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
               inputMode="decimal"
               autoComplete="off"
               placeholder={weightPlaceholder}
               value={weight}
-              onFocus={(e) => e.target.select()}
+              onFocus={handleInputFocus}
               onChange={(e) => change(e.target.value, reps)}
               aria-invalid={invalid}
             />
           </div>
           <div>
             <label htmlFor={`${id}-r`} className="sr-only">
-              {name} {repsPlaceholder}
+              {repsSrLabel}
             </label>
             <input
               id={`${id}-r`}
-              className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+              aria-label={repsSrLabel}
+              className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
               inputMode="numeric"
               autoComplete="off"
               placeholder={repsPlaceholder}
               value={reps}
-              onFocus={(e) => e.target.select()}
+              onFocus={handleInputFocus}
               onChange={(e) => change(weight, e.target.value)}
               aria-invalid={invalid}
             />
@@ -271,11 +298,12 @@ export function SetRow({
           </label>
           <input
             id={`${id}-g`}
-            className="input h-11 min-h-[44px] px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+            aria-label={`${name} incline in percent`}
+            className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
             autoComplete="off"
             placeholder="0"
             value={grade}
-            onFocus={(e) => e.target.select()}
+            onFocus={handleInputFocus}
             onChange={(e) => change(weight, reps, e.target.value)}
             aria-invalid={invalid}
           />

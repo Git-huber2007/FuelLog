@@ -107,8 +107,8 @@ export default function WorkoutPreview() {
   const setsDone = exercises.reduce((n, e) => n + e.logged.filter((s) => s.reps > 0).length, 0);
 
   return (
-    <div className="mx-auto min-h-dvh max-w-[1120px] px-4 py-6 md:px-6">
-      <div className="grid grid-cols-1 md:grid-cols-12 md:gap-6 items-start space-y-5 md:space-y-0 pb-28 md:pb-6">
+    <div className="mx-auto min-h-dvh max-w-[1120px] px-3 min-[380px]:px-4 py-6 md:px-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 md:gap-6 items-start space-y-5 md:space-y-0 pb-40 md:pb-6">
         {/* Main Column */}
         <div className="md:col-span-7 lg:col-span-8 space-y-5">
           <WorkoutHeader

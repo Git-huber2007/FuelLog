@@ -14,9 +14,9 @@ export function MobileWorkoutBar({ setsDone, totalSets }: Props) {
   return (
     <aside
       aria-label="Workout status bar"
-      className="md:hidden fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] inset-x-0 z-20 px-3 pointer-events-none"
+      className="md:hidden fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] inset-x-0 z-20 px-2 min-[360px]:px-3 pointer-events-none"
     >
-      <div className="glass pointer-events-auto mx-auto flex max-w-[26rem] items-center justify-between gap-3 rounded-full px-4 py-1.5 shadow-xl border border-line">
+      <div className="glass pointer-events-auto mx-auto flex max-w-[26rem] items-center justify-between gap-1.5 min-[360px]:gap-3 rounded-full px-2.5 min-[360px]:px-4 py-1.5 shadow-xl border border-line">
         {/* Rest Timer display */}
         <div className="flex items-center gap-2">
           <span
