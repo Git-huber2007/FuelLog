@@ -17,6 +17,8 @@ import { profileRouter } from './routes/profile';
 import { progressRouter } from './routes/progress';
 import { savedMealsRouter } from './routes/savedMeals';
 import { workoutRouter } from './routes/workout';
+import { routineRouter } from './routes/routine';
+import { exercisesRouter } from './routes/exercises';
 import { clientErrorsRouter } from './routes/clientErrors';
 import { exercisePhotosRouter } from './routes/exercisePhotos';
 import { checkRequiredSchema } from './lib/schemaCheck';
@@ -72,7 +74,7 @@ app.get('/api/health', async (_req, res) => {
 
 app.use('/api', clientErrorsRouter);
 app.use('/api', exercisePhotosRouter);
-app.use('/api', auth, userRateLimit, profileRouter, foodsRouter, daysRouter, workoutRouter, savedMealsRouter, progressRouter, photosRouter, aiRouter, exportRouter, notFound);
+app.use('/api', auth, userRateLimit, profileRouter, foodsRouter, daysRouter, workoutRouter, routineRouter, exercisesRouter, savedMealsRouter, progressRouter, photosRouter, aiRouter, exportRouter, notFound);
 
 // Serves the built client when it is there (single-service deploy). With the client on Vercel it is not built here, and this is skipped.
 const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');

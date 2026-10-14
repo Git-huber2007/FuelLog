@@ -10,6 +10,7 @@ import { PhotoUploadButton } from '../components/progress/PhotoUploadButton';
 import { WeekSummaryCard } from '../components/progress/WeekSummaryCard';
 import { WeightChart } from '../components/progress/WeightChart';
 import { WeightForm } from '../components/progress/WeightForm';
+import { TopLiftsCard } from '../components/progress/TopLiftsCard';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { useDay } from '../hooks/useDay';
@@ -36,13 +37,15 @@ export default function Progress() {
   }
   if (progress.isError) return <ErrorState error={progress.error} onRetry={() => progress.refetch()} />;
 
-  const { weights, calories, summary, measurements, advice } = progress.data;
+  const { weights, calories, summary, measurements, advice, topLifts } = progress.data;
   const todayWeight = weights.find((w) => w.log_date === today)?.weight_kg;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
       <div className="space-y-5">
         <WeekSummaryCard summary={summary} />
+
+        <TopLiftsCard topLifts={topLifts} />
 
         <section className="card space-y-4" aria-labelledby="weight-title">
           <h2 id="weight-title" className="card-title">Weight</h2>

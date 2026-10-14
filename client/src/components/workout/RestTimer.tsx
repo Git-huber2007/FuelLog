@@ -1,40 +1,39 @@
-import { useEffect, useState } from 'react';
-import { useToast } from '../ui/Toast';
-
-const REST_SECONDS = 90;
+import { useRestTimer } from '../../hooks/useRestTimer';
 
 export function RestTimer() {
-  const toast = useToast();
-  const [endsAt, setEndsAt] = useState<number | null>(null);
-  const [left, setLeft] = useState(REST_SECONDS);
+  const { running, left, start, stop, addSeconds } = useRestTimer();
 
-  useEffect(() => {
-    if (endsAt === null) return;
-    // Counting from a fixed end time stays accurate when the phone throttles a backgrounded tab.
-    const tick = () => {
-      const remaining = Math.ceil((endsAt - Date.now()) / 1000);
-      if (remaining > 0) return setLeft(remaining);
-      setEndsAt(null);
-      navigator.vibrate?.([200, 100, 200]);
-      toast('Rest over. Next set.');
-    };
-    tick();
-    const timer = window.setInterval(tick, 250);
-    return () => window.clearInterval(timer);
-  }, [endsAt, toast]);
+  const formatted = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
 
-  const running = endsAt !== null;
   return (
     <section className="card flex items-center justify-between gap-3" aria-label="Rest timer">
       <div>
         <p className="card-title">Rest timer</p>
         <p className="stat mt-1.5" role="timer" aria-live="off">
-          {running ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : '1:30'}
+          {running ? formatted : '1:30'}
         </p>
       </div>
-      {running
-        ? <button type="button" className="btn" onClick={() => setEndsAt(null)}>Stop</button>
-        : <button type="button" className="btn-primary" onClick={() => setEndsAt(Date.now() + REST_SECONDS * 1000)}>Start 90 s rest</button>}
+      <div className="flex items-center gap-2">
+        {running ? (
+          <>
+            <button
+              type="button"
+              className="btn px-3 text-xs font-semibold text-muted hover:text-text"
+              onClick={() => addSeconds(30)}
+              title="Add 30 seconds"
+            >
+              +30s
+            </button>
+            <button type="button" className="btn text-danger hover:border-danger/40" onClick={stop}>
+              Stop
+            </button>
+          </>
+        ) : (
+          <button type="button" className="btn-primary" onClick={() => start(90)}>
+            Start 90 s rest
+          </button>
+        )}
+      </div>
     </section>
   );
 }

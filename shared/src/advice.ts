@@ -1,6 +1,7 @@
 import type { Goal } from './schemas';
 import type { Targets } from './targets';
 import { addDays, daysBetween } from './dates';
+import type { ExerciseKind } from './split';
 
 export interface Weigh {
   log_date: string;
@@ -93,6 +94,16 @@ export function streak(loggedDates: Iterable<string>, today: string): number {
   return count;
 }
 
-export function overloadHint(lastSets: readonly { weight_kg: number; reps: number }[], exercise: { sets: number; topReps: number }): boolean {
-  return lastSets.length >= exercise.sets && lastSets.every((s) => s.weight_kg > 0 && s.reps >= exercise.topReps);
+export function overloadHint(
+  lastSets: readonly { weight_kg: number; reps: number }[],
+  exercise: { sets: number; topReps: number; kind?: ExerciseKind },
+): boolean {
+  const kind = exercise.kind ?? 'weight_reps';
+  if (kind === 'cardio') return false;
+  if (lastSets.length < exercise.sets) return false;
+  if (kind === 'weight_reps' || kind === 'weighted_bodyweight') {
+    return lastSets.every((s) => s.weight_kg > 0 && s.reps >= exercise.topReps);
+  }
+  return lastSets.every((s) => s.reps >= exercise.topReps);
 }
+

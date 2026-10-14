@@ -1,5 +1,6 @@
 import { LEVEL_LABELS, LEVELS, ProfileInput, PROGRAM_KEYS, PROGRAMS, recommendedProgram, type Level, type Profile, type ProgramKey } from '@fuellog/shared';
 import { useId, useRef, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { useSaveProfile } from '../../hooks/useProfile';
 import { numberOrNull } from '../../lib/entries';
 import { NumberField } from '../ui/NumberField';
@@ -79,7 +80,14 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
           </div>
         </div>
         <div>
-          <label htmlFor={`${id}-program`} className="label">Weekly program</label>
+          <div className="flex items-center justify-between">
+            <label htmlFor={`${id}-program`} className="label">Weekly program</label>
+            {program === 'custom' && (
+              <Link to="/routine" className="text-xs font-semibold text-accent hover:underline">
+                Edit routine →
+              </Link>
+            )}
+          </div>
           <select
             id={`${id}-program`}
             className="input"
@@ -98,7 +106,10 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
           </select>
           <p id={`${id}-program-help`} className="mt-1.5 text-xs text-muted">
             {PROGRAMS[program].summary}
-            {program !== suggested && ` For ${LEVEL_LABELS[level].toLowerCase()} level we recommend ${PROGRAMS[suggested].name}.`}
+            {program !== suggested && program !== 'custom' && ` For ${LEVEL_LABELS[level].toLowerCase()} level we recommend ${PROGRAMS[suggested].name}.`}
+            {program === 'custom' && (
+              <> <Link to="/routine" className="link font-medium">Configure exercises for each day</Link>.</>
+            )}
           </p>
         </div>
       </fieldset>

@@ -53,7 +53,7 @@ export const SetInput      = z.object({
   exercise_key: z.string().max(60),
   set_number: z.number().int().min(1).max(10),
   weight_kg: z.number().min(0).max(500),
-  reps: z.number().int().min(0).max(200),
+  reps: z.number().int().min(0).max(3600),
   // Cardio only: treadmill or hill gradient in percent, negative for a decline.
   incline_pct: z.number().min(-15).max(40).nullable().optional(),
 }).refine(s => isKnownExercise(s.exercise_key), { message: 'Unknown exercise', path: ['exercise_key'] });
@@ -86,6 +86,7 @@ export const CoachResult = z.object({
 export const DateParams       = z.object({ date: DateParam });
 export const IdParams         = z.object({ id: z.string().uuid() });
 export const ExerciseParams   = z.object({ date: DateParam, key: z.string().max(60).refine(isKnownExercise, 'Unknown exercise') });
+export const ExerciseKeyParam  = z.object({ key: z.string().max(60).refine(isKnownExercise, 'Unknown exercise') });
 export const BarcodeParams    =z.object({ code: BarcodeParam });
 export const FoodQuery        = z.object({ q: z.string().trim().max(80).default('') });
 export const LogSavedMealBody = z.object({ date: DateParam, meal: Meal });
@@ -96,6 +97,22 @@ export const PhotoBody        = z.object({
 export const Credentials      = z.object({
   email: z.string().trim().email('Enter a valid email'),
   password: z.string().min(8, 'Use at least 8 characters'),
+});
+
+export const RoutineExerciseInput = z.object({
+  key: z.string().max(60).refine(isKnownExercise, 'Unknown exercise'),
+  sets: z.number().int().min(1).max(10),
+  reps_low: z.number().int().min(1).max(3600),
+  reps_high: z.number().int().min(1).max(3600),
+}).refine((e) => e.reps_high >= e.reps_low, { message: 'reps_high must be greater than or equal to reps_low', path: ['reps_high'] });
+
+export const RoutineDayInput = z.object({
+  title: z.string().trim().max(40),
+  exercises: z.array(RoutineExerciseInput).max(15),
+});
+
+export const WeekdayParams = z.object({
+  weekday: z.coerce.number().int().min(0).max(6),
 });
 
 export type Meal = z.infer<typeof Meal>;
@@ -111,3 +128,7 @@ export type MeasureInput = z.infer<typeof MeasureInput>;
 export type SetInput = z.infer<typeof SetInput>;
 export type AiItems = z.infer<typeof AiItems>;
 export type CoachResult = z.infer<typeof CoachResult>;
+export type RoutineExerciseInput = z.infer<typeof RoutineExerciseInput>;
+export type RoutineDayInput = z.infer<typeof RoutineDayInput>;
+export type WeekdayParams = z.infer<typeof WeekdayParams>;
+

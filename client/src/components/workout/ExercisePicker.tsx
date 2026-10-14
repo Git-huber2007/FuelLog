@@ -1,4 +1,4 @@
-import { EXERCISE_TYPES, exercisePhotos, LEVEL_LABELS, LEVELS, LIBRARY, LIBRARY_MUSCLES, type ExerciseType, type Level, type LibraryExercise } from '@fuellog/shared';
+import { EXERCISE_TYPES, exercisePhotos, LEVEL_LABELS, LEVELS, LIBRARY, LIBRARY_EQUIPMENTS, LIBRARY_MUSCLES, type ExerciseType, type Level, type LibraryExercise } from '@fuellog/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useProfile } from '../../hooks/useProfile';
@@ -9,6 +9,20 @@ import { ExercisePhoto } from './ExercisePhoto';
 const LEVEL_KEY = 'fuellog.level';
 const SHOWN = 40;
 const TYPE_LABELS: Record<ExerciseType, string> = { strength: 'Strength', cardio: 'Cardio', stretching: 'Stretching', plyometrics: 'Plyometrics' };
+const EQUIPMENT_LABELS: Record<string, string> = {
+  'body only': 'Bodyweight only',
+  barbell: 'Barbell',
+  dumbbell: 'Dumbbell',
+  cable: 'Cable',
+  machine: 'Machine',
+  kettlebells: 'Kettlebell',
+  bands: 'Bands',
+  'e-z curl bar': 'EZ bar',
+  'exercise ball': 'Exercise ball',
+  'foam roll': 'Foam roll',
+  'medicine ball': 'Medicine ball',
+  other: 'Other',
+};
 
 const savedLevel = (fallback: Level = 'beginner'): Level | 'all' => {
   let value: string | null = null;
@@ -21,20 +35,23 @@ const savedLevel = (fallback: Level = 'beginner'): Level | 'all' => {
 };
 
 interface Props {
-  date: string;
+  date?: string;
   /** Exercises already on this day, which cannot be added twice. */
   onDay: ReadonlySet<string>;
   onClose: () => void;
+  /** When provided, selecting an exercise calls onSelect instead of logging a set. */
+  onSelect?: (exercise: LibraryExercise) => void;
 }
 
-/** Browse the exercise library by type, muscle and level, and add any exercise to the day. */
-export function ExercisePicker({ date, onDay, onClose }: Props) {
+/** Browse the exercise library by type, muscle, level and equipment, and add any exercise to the day. */
+export function ExercisePicker({ date, onDay, onClose, onSelect }: Props) {
   const id = useId();
   const qc = useQueryClient();
   const profile = useProfile();
   const dialog = useRef<HTMLDialogElement>(null);
   const [type, setType] = useState<ExerciseType | 'all'>('all');
   const [muscle, setMuscle] = useState('all');
+  const [equipment, setEquipment] = useState('all');
   const [level, setLevel] = useState<Level | 'all'>(() => savedLevel(profile.data?.profile.level)); // the chosen level is remembered on this device
   const [search, setSearch] = useState('');
 
@@ -45,21 +62,27 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
   const matches = useMemo(() => {
     const words = search.toLowerCase().split(/\s+/).filter(Boolean);
     return LIBRARY.filter((e) =>
-      (type === 'all' || e.type === type) && (muscle === 'all' || e.muscle === muscle) && (level === 'all' || e.level === level)
+      (type === 'all' || e.type === type)
+      && (muscle === 'all' || e.muscle === muscle)
+      && (level === 'all' || e.level === level)
+      && (equipment === 'all' || (equipment === 'body only' ? e.equipment === 'body only' : e.equipment === equipment))
       && words.every((w) => e.name.toLowerCase().includes(w)));
-  }, [type, muscle, level, search]);
+  }, [type, muscle, level, equipment, search]);
 
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   const add = useMutation({
     // An exercise is on a day once it has a set there, so adding it is saving an empty first set.
     mutationFn: (exercise: LibraryExercise) => {
+      if (!date) return Promise.resolve();
       setPendingId(exercise.id);
       return api(`/days/${date}/sets`, { method: 'PUT', body: { exercise_key: exercise.id, set_number: 1, weight_kg: 0, reps: 0 } });
     },
     onSettled: () => setPendingId(null),
     // Returning the refetch keeps the buttons disabled until the row reads "Added". Toasts sit behind a modal, so errors show inline.
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['workout', date] }),
+    onSuccess: () => {
+      if (date) qc.invalidateQueries({ queryKey: ['workout', date] });
+    },
   });
 
   function chooseLevel(next: Level | 'all') {
@@ -95,7 +118,7 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div>
               <label htmlFor={`${id}-level`} className="label">Level</label>
               <select id={`${id}-level`} className="input" value={level} onChange={(e) => chooseLevel(e.target.value as Level | 'all')}>
@@ -108,6 +131,16 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
               <select id={`${id}-muscle`} className="input" value={muscle} onChange={(e) => setMuscle(e.target.value)}>
                 <option value="all">Any muscle</option>
                 {LIBRARY_MUSCLES.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor={`${id}-equipment`} className="label">Equipment</label>
+              <select id={`${id}-equipment`} className="input" value={equipment} onChange={(e) => setEquipment(e.target.value)}>
+                <option value="all">Any equipment</option>
+                <option value="body only">Bodyweight only</option>
+                {LIBRARY_EQUIPMENTS.filter((eq) => eq !== 'body only').map((eq) => (
+                  <option key={eq} value={eq}>{EQUIPMENT_LABELS[eq] ?? eq}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -141,7 +174,14 @@ export function ExercisePicker({ date, onDay, onClose }: Props) {
                         </p>
                       </div>
                       <button type="button" className={added ? 'btn shrink-0' : 'btn-primary shrink-0'} disabled={added || isBusy}
-                        aria-label={added ? `Added, ${exercise.name}` : isBusy ? `Adding ${exercise.name}` : `Add ${exercise.name}`} onClick={() => add.mutate(exercise)}>
+                        aria-label={added ? `Added, ${exercise.name}` : isBusy ? `Adding ${exercise.name}` : `Add ${exercise.name}`}
+                        onClick={() => {
+                          if (onSelect) {
+                            onSelect(exercise);
+                          } else {
+                            add.mutate(exercise);
+                          }
+                        }}>
                         {added ? 'Added' : isBusy ? 'Adding…' : 'Add'}
                       </button>
                     </li>

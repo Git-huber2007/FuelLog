@@ -22,6 +22,7 @@ export default {
         protein: token('protein'),
         carbs: token('carbs'),
         fat: token('fat'),
+        gold: token('gold'),
       },
     },
   },

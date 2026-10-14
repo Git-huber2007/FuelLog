@@ -1,8 +1,9 @@
 import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  addDays, adjustmentAdvice, asExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, EXERCISE_KEYS, exercisePhotos, LIBRARY, libraryExercise, nudge,
-  overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, SetInput, SPLIT, splitFor, stepsKcal, streak, supportsIncline, weekdayOf, workoutKcal, type Weigh,
+  addDays, adjustmentAdvice, asExercise, buildCustomExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, deriveExerciseKind, EXERCISE_KEYS, EXERCISE_KINDS,
+  exercisePhotos, LIBRARY, libraryExercise, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
+  stepsKcal, streak, supportsIncline, weekdayOf, workoutKcal, type ExerciseKind, type MuscleGroup, type Weigh,
 } from '../index';
 
 const me = { sex: 'male', age: 22, height_cm: 175, weight_kg: 75, goal: 'maintain' } as const;
@@ -116,6 +117,30 @@ describe('overload hint', () => {
     expect(overloadHint([set(40, 10), set(40, 10)], bench)).toBe(false);
     expect(overloadHint([set(0, 10), set(0, 10), set(0, 10)], bench)).toBe(false);
   });
+  it('handles overloadHint per kind', () => {
+    const weightedLift = { sets: 3, topReps: 10, kind: 'weight_reps' as ExerciseKind };
+    expect(overloadHint([set(50, 10), set(50, 10), set(50, 10)], weightedLift)).toBe(true);
+    expect(overloadHint([set(0, 10), set(0, 10), set(0, 10)], weightedLift)).toBe(false);
+
+    const weightedDip = { sets: 3, topReps: 8, kind: 'weighted_bodyweight' as ExerciseKind };
+    expect(overloadHint([set(10, 8), set(10, 8), set(10, 8)], weightedDip)).toBe(true);
+    expect(overloadHint([set(0, 8), set(0, 8), set(0, 8)], weightedDip)).toBe(false);
+
+    const pushup = { sets: 3, topReps: 15, kind: 'bodyweight_reps' as ExerciseKind };
+    expect(overloadHint([set(0, 15), set(0, 15), set(0, 16)], pushup)).toBe(true);
+    expect(overloadHint([set(0, 15), set(0, 15), set(0, 14)], pushup)).toBe(false);
+
+    const assistedPullup = { sets: 3, topReps: 10, kind: 'assisted_bodyweight' as ExerciseKind };
+    expect(overloadHint([set(20, 10), set(20, 10), set(20, 10)], assistedPullup)).toBe(true);
+    expect(overloadHint([set(20, 10), set(20, 9), set(20, 10)], assistedPullup)).toBe(false);
+
+    const plank = { sets: 3, topReps: 45, kind: 'duration' as ExerciseKind };
+    expect(overloadHint([set(0, 45), set(0, 50), set(0, 45)], plank)).toBe(true);
+    expect(overloadHint([set(0, 45), set(0, 40), set(0, 45)], plank)).toBe(false);
+
+    const run = { sets: 1, topReps: 0, kind: 'cardio' as ExerciseKind };
+    expect(overloadHint([set(5, 30)], run)).toBe(false);
+  });
 });
 
 describe('nudge', () => {
@@ -194,9 +219,41 @@ describe('split', () => {
     expect(LIBRARY.every((e) => e.id.length <= 60 && e.name && e.muscle)).toBe(true);
     expect(LIBRARY.some((e) => EXERCISE_KEYS.has(e.id))).toBe(false); // a clash would make a library pick look like a plan exercise
     const run = asExercise(libraryExercise('Running_Treadmill')!);
-    expect(run).toMatchObject({ cardio: true, sets: 1 });
+    expect(run).toMatchObject({ kind: 'cardio', sets: 1 });
     expect(SetInput.safeParse({ exercise_key: run.key, set_number: 1, weight_kg: 5, reps: 30 }).success).toBe(true);
-    expect(asExercise(libraryExercise('Dumbbell_Bicep_Curl')!)).toMatchObject({ sets: 3, topReps: 12, detail: 'Biceps · Beginner' });
+    expect(asExercise(libraryExercise('Dumbbell_Bicep_Curl')!)).toMatchObject({ kind: 'weight_reps', sets: 3, topReps: 12, detail: 'Biceps · Beginner' });
+  });
+  it('derives exercise kind from a library row', () => {
+    expect(deriveExerciseKind({ type: 'cardio', name: 'Running', equipment: null })).toBe('cardio');
+    expect(deriveExerciseKind({ type: 'strength', name: 'Plank', equipment: 'body only' })).toBe('duration');
+    expect(deriveExerciseKind({ type: 'strength', name: 'Wall Sit', equipment: 'body only' })).toBe('duration');
+    expect(deriveExerciseKind({ type: 'strength', name: 'Side Plank Hold', equipment: 'body only' })).toBe('duration');
+    expect(deriveExerciseKind({ type: 'stretching', name: 'Hamstring Stretch', equipment: null })).toBe('duration');
+    expect(deriveExerciseKind({ type: 'strength', name: 'Push-up', equipment: 'body only' })).toBe('bodyweight_reps');
+    expect(deriveExerciseKind({ type: 'strength', name: 'Bench Press', equipment: 'barbell' })).toBe('weight_reps');
+
+    const plank = asExercise(libraryExercise('Plank')!);
+    expect(plank.kind).toBe('duration');
+  });
+  it('tags split exercises with expected kinds while preserving keys', () => {
+    expect(EXERCISE_KINDS).toEqual(['weight_reps', 'bodyweight_reps', 'weighted_bodyweight', 'assisted_bodyweight', 'duration', 'cardio']);
+    expect(SPLIT_EXERCISES_BY_KEY.get('wed-plank')?.kind).toBe('duration');
+    expect(SPLIT_EXERCISES_BY_KEY.get('wed-hanging-knee-raise')?.kind).toBe('bodyweight_reps');
+    expect(SPLIT_EXERCISES_BY_KEY.get('fri-back-extension')?.kind).toBe('bodyweight_reps');
+    expect(SPLIT_EXERCISES_BY_KEY.get('fri-assisted-pull-up-or-pulldown')?.kind).toBe('assisted_bodyweight');
+    expect(SPLIT_EXERCISES_BY_KEY.get('wed-close-grip-bench-or-dips')?.kind).toBe('weight_reps');
+    expect(SPLIT_EXERCISES_BY_KEY.get('mon-bench-press')?.kind).toBe('weight_reps');
+  });
+  it('accepts up to 3600 seconds in SetInput', () => {
+    expect(SetInput.safeParse({ exercise_key: 'wed-plank', set_number: 1, weight_kg: 0, reps: 600 }).success).toBe(true);
+    expect(SetInput.safeParse({ exercise_key: 'wed-plank', set_number: 1, weight_kg: 0, reps: 3600 }).success).toBe(true);
+    expect(SetInput.safeParse({ exercise_key: 'wed-plank', set_number: 1, weight_kg: 0, reps: 3601 }).success).toBe(false);
+  });
+  it('calculates workoutKcal for bodyweight and duration sets with weight 0', () => {
+    const set = (weight_kg: number, reps: number, incline_pct: number | null = null) => ({ weight_kg, reps, incline_pct });
+    expect(workoutKcal([{ kind: 'bodyweight_reps', logged: [set(0, 10)] }], 70)).toBe(13);
+    expect(workoutKcal([{ kind: 'duration', logged: [set(0, 45)] }], 70)).toBe(13);
+    expect(workoutKcal([{ kind: 'bodyweight_reps', logged: [set(0, 0)] }], 70)).toBe(0);
   });
   it('serves plan photos from the app and library photos from the pinned CDN', () => {
     expect(exercisePhotos('mon-bench-press')[0]).toBe('/exercises/mon-bench-press-0.jpg');
@@ -229,3 +286,85 @@ describe('split', () => {
     expect(supportsIncline('Bench press')).toBe(false);
   });
 });
+
+describe('custom routines', () => {
+  it('validates RoutineExerciseInput constraints (sets 1–10, reps 1–3600, reps_high >= reps_low, known keys)', () => {
+    // Valid entry
+    expect(RoutineExerciseInput.safeParse({ key: 'mon-bench-press', sets: 3, reps_low: 8, reps_high: 12 }).success).toBe(true);
+    expect(RoutineExerciseInput.safeParse({ key: 'Plank', sets: 3, reps_low: 30, reps_high: 60 }).success).toBe(true);
+    expect(RoutineExerciseInput.safeParse({ key: 'mon-bench-press', sets: 1, reps_low: 10, reps_high: 10 }).success).toBe(true);
+
+    // Rejects unknown exercises
+    expect(RoutineExerciseInput.safeParse({ key: 'unknown-exercise', sets: 3, reps_low: 8, reps_high: 12 }).success).toBe(false);
+
+    // Rejects invalid sets
+    expect(RoutineExerciseInput.safeParse({ key: 'mon-bench-press', sets: 0, reps_low: 8, reps_high: 12 }).success).toBe(false);
+    expect(RoutineExerciseInput.safeParse({ key: 'mon-bench-press', sets: 11, reps_low: 8, reps_high: 12 }).success).toBe(false);
+
+    // Rejects invalid reps
+    expect(RoutineExerciseInput.safeParse({ key: 'mon-bench-press', sets: 3, reps_low: 0, reps_high: 12 }).success).toBe(false);
+    expect(RoutineExerciseInput.safeParse({ key: 'mon-bench-press', sets: 3, reps_low: 8, reps_high: 3601 }).success).toBe(false);
+    expect(RoutineExerciseInput.safeParse({ key: 'mon-bench-press', sets: 3, reps_low: 15, reps_high: 10 }).success).toBe(false); // reps_high < reps_low
+  });
+
+  it('validates RoutineDayInput (title <= 40, exercises <= 15)', () => {
+    const validExercise = { key: 'mon-bench-press', sets: 3, reps_low: 8, reps_high: 12 };
+
+    // Valid inputs
+    expect(RoutineDayInput.safeParse({ title: 'Push Day', exercises: [validExercise] }).success).toBe(true);
+    expect(RoutineDayInput.safeParse({ title: '', exercises: [] }).success).toBe(true);
+
+    // Title length limit
+    expect(RoutineDayInput.safeParse({ title: 'a'.repeat(40), exercises: [] }).success).toBe(true);
+    expect(RoutineDayInput.safeParse({ title: 'a'.repeat(41), exercises: [] }).success).toBe(false);
+
+    // Exercise count limit (max 15)
+    const fifteen = Array.from({ length: 15 }, () => validExercise);
+    expect(RoutineDayInput.safeParse({ title: 'Long day', exercises: fifteen }).success).toBe(true);
+
+    const sixteen = Array.from({ length: 16 }, () => validExercise);
+    expect(RoutineDayInput.safeParse({ title: 'Too many', exercises: sixteen }).success).toBe(false);
+  });
+
+  it('builds Exercise objects for custom entries with correct kind and prescription', () => {
+    const bench = buildCustomExercise({ key: 'mon-bench-press', sets: 4, reps_low: 6, reps_high: 8 });
+    expect(bench).toMatchObject({
+      key: 'mon-bench-press',
+      name: 'Bench press',
+      sets: 4,
+      topReps: 8,
+      prescription: '4×6–8',
+      kind: 'weight_reps',
+    });
+
+    const plank = buildCustomExercise({ key: 'Plank', sets: 3, reps_low: 30, reps_high: 45 });
+    expect(plank).toMatchObject({
+      key: 'Plank',
+      sets: 3,
+      topReps: 45,
+      prescription: '3×30–45 s',
+      kind: 'duration',
+    });
+
+    const singleRep = buildCustomExercise({ key: 'mon-bench-press', sets: 3, reps_low: 5, reps_high: 5 });
+    expect(singleRep.prescription).toBe('3×5');
+  });
+
+  it('splitFor returns customDay when program is custom, defaulting to rest if null', () => {
+    const customSplitDay = {
+      title: 'Custom Push',
+      muscles: ['chest', 'triceps'] as MuscleGroup[],
+      exercises: [buildCustomExercise({ key: 'mon-bench-press', sets: 3, reps_low: 8, reps_high: 12 })],
+    };
+
+    // When custom day is provided
+    const day = splitFor('2026-10-12', 'custom', customSplitDay);
+    expect(day.title).toBe('Custom Push');
+    expect(day.exercises).toHaveLength(1);
+
+    // When custom day is null/omitted -> Rest day
+    const rest = splitFor('2026-10-12', 'custom', null);
+    expect(rest).toEqual({ title: 'Rest', muscles: [], exercises: [] });
+  });
+});
+

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, IdParams, libraryExercise, MeasureInput, SetInput, WeightInput,
+  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, IdParams, isNewPR, lookupExerciseKind, MeasureInput, SetInput, WeightInput,
   type DayResponse, type FoodLog, type LogSource, type RecentFood, type WorkoutSet,
 } from '@fuellog/shared';
 import { h, HttpError, unwrap } from '../middleware/errors';
@@ -32,7 +32,10 @@ daysRouter.get('/days/:date', date, h(async (req, res) => {
     check: checkOf(unwrap(check)),
     weight_kg: unwrap(weight)?.weight_kg ?? null,
     measurements: unwrap(measurements),
-    sets: unwrap<WorkoutSet[]>(sets).map((s) => ({ ...s, cardio: libraryExercise(s.exercise_key)?.type === 'cardio' })),
+    sets: unwrap<WorkoutSet[]>(sets).map((s) => {
+      const kind = lookupExerciseKind(s.exercise_key);
+      return { ...s, kind, cardio: kind === 'cardio' };
+    }),
     targets: requireTargets(profile, dayDeltaFor(d, profile.program)),
     proteinFoods: unwrap(proteinFoods),
   };
@@ -80,7 +83,25 @@ daysRouter.put('/days/:date/measurements', date, validate({ body: MeasureInput }
 
 daysRouter.put('/days/:date/sets', date, validate({ body: SetInput }), notFuture, h(async (req, res) => {
   const row = { ...req.body, user_id: req.userId, log_date: req.params.date };
-  res.json(unwrap(await req.sb.from('workout_sets').upsert(row).select('log_date,exercise_key,set_number,weight_kg,reps,incline_pct').single()));
+  const saved = unwrap<WorkoutSet>(await req.sb.from('workout_sets').upsert(row).select('log_date,exercise_key,set_number,weight_kg,reps,incline_pct').single());
+
+  let is_pr = false;
+  if (saved.reps > 0) {
+    const kind = lookupExerciseKind(saved.exercise_key);
+    const [pastRows, profile] = await Promise.all([
+      req.sb
+        .from('workout_sets')
+        .select('log_date,exercise_key,set_number,weight_kg,reps,incline_pct')
+        .eq('exercise_key', saved.exercise_key)
+        .lt('log_date', req.params.date)
+        .gt('reps', 0)
+        .then(unwrap<WorkoutSet[]>),
+      loadProfile(req.sb, req.userId),
+    ]);
+    is_pr = isNewPR(saved, pastRows, kind, 8, profile.weight_kg ?? 70);
+  }
+
+  res.json({ ...saved, is_pr });
 }));
 
 // Takes an exercise off a day by removing its sets. Adding one is a PUT of an empty first set.
