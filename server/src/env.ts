@@ -18,7 +18,7 @@ const Env = z.object({
   SUPABASE_URL: z.string().url().default('https://placeholder.supabase.co'),
   SUPABASE_ANON_KEY: z.string().min(1).default('placeholder-anon-key'),
   GEMINI_API_KEY: z.string().default(''),
-  GEMINI_MODEL: z.string().min(1).default('gemini-3.5-flash'),
+  GEMINI_MODEL: z.string().min(1).default('gemini-3.5-flash-lite'),
   AI_DAILY_LIMIT: z.coerce.number().int().positive().default(40),
 });
 
