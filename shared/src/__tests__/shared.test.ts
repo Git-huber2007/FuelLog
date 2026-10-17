@@ -188,6 +188,28 @@ describe('split', () => {
     expect(splitFor('2026-10-13', 'full_body').exercises).toHaveLength(0); // Tuesday is a rest day on three days a week
     expect(splitFor('2026-10-13').title).toBe('Pull · back width'); // the default stays the six-day plan
   });
+  it('provides the Arnold 6-day split with matching daily targets and muscle focuses', () => {
+    const p = PROGRAMS.arnold_six_day;
+    expect(p.days).toHaveLength(7);
+    expect(p.days[0].title).toBe('Rest');
+    expect(p.days[1].title).toBe('Chest & Triceps');
+    expect(p.days[1].muscles).toEqual(['chest', 'triceps']);
+    expect(p.days[2].title).toBe('Back & Biceps');
+    expect(p.days[2].muscles).toEqual(['back', 'biceps']);
+    expect(p.days[3].title).toBe('Shoulder & Abs');
+    expect(p.days[3].muscles).toEqual(['shoulders', 'core']);
+    expect(p.days[4].title).toBe('Chest & Triceps');
+    expect(p.days[4].muscles).toEqual(['chest', 'triceps']);
+    expect(p.days[5].title).toBe('Back & Biceps');
+    expect(p.days[5].muscles).toEqual(['back', 'biceps']);
+    expect(p.days[6].title).toBe('Legs & Abs');
+    expect(p.days[6].muscles).toEqual(['quads', 'hamstrings', 'calves', 'core']);
+
+    expect(splitFor('2026-10-13', 'arnold_six_day').title).toBe('Back & Biceps');
+    expect(dayDeltaFor('2026-10-13', 'arnold_six_day')).toBe(30);
+    expect(splitFor('2026-10-11', 'arnold_six_day').title).toBe('Rest');
+    expect(dayDeltaFor('2026-10-11', 'arnold_six_day')).toBe(-180);
+  });
   it('estimates calories burned from sets, distance, time and incline', () => {
     const set = (weight_kg: number, reps: number, incline_pct: number | null = null) => ({ weight_kg, reps, incline_pct });
     expect(workoutKcal([], 70)).toBe(0);

@@ -132,7 +132,7 @@ const day = (title: string, muscles: MuscleGroup[], ...keys: string[]): SplitDay
 const REST = SPLIT[0];
 const LEGS = ['sat-squat-or-leg-press', 'sat-romanian-deadlift', 'sat-walking-lunge', 'sat-leg-extension', 'sat-leg-curl', 'sat-calf-raise'];
 
-export const PROGRAM_KEYS = ['full_body', 'upper_lower', 'six_day', 'custom'] as const;
+export const PROGRAM_KEYS = ['full_body', 'upper_lower', 'six_day', 'arnold_six_day', 'custom'] as const;
 export type ProgramKey = (typeof PROGRAM_KEYS)[number];
 
 export interface Program {
@@ -178,6 +178,25 @@ export const PROGRAMS: Record<ProgramKey, Program> = {
     name: 'Push / pull / arms / legs · 6 days',
     summary: 'Monday to Saturday, one focus a day. The most volume, for people who already train regularly.',
     days: SPLIT,
+  },
+  arnold_six_day: {
+    name: 'Arnold split · 6 days',
+    summary: 'Chest & Triceps, Back & Biceps, Shoulder & Abs rotated twice a week with Saturday Legs & Abs. Sunday rest.',
+    days: [
+      REST,
+      day('Chest & Triceps', ['chest', 'triceps'],
+        'mon-bench-press', 'mon-incline-dumbbell-press', 'thu-chest-fly', 'mon-triceps-pushdown', 'thu-overhead-triceps-extension'),
+      day('Back & Biceps', ['back', 'biceps'],
+        'tue-lat-pulldown', 'tue-seated-cable-row', 'fri-barbell-or-dumbbell-row', 'tue-dumbbell-curl', 'tue-hammer-curl'),
+      day('Shoulder & Abs', ['shoulders', 'core'],
+        'thu-overhead-press', 'mon-lateral-raise', 'tue-face-pull', 'fri-rear-delt-fly', 'wed-cable-crunch', 'wed-hanging-knee-raise', 'wed-plank'),
+      day('Chest & Triceps', ['chest', 'triceps'],
+        'thu-incline-bench-or-machine-press', 'mon-bench-press', 'wed-close-grip-bench-or-dips', 'wed-rope-pushdown', 'thu-overhead-triceps-extension'),
+      day('Back & Biceps', ['back', 'biceps'],
+        'fri-barbell-or-dumbbell-row', 'fri-assisted-pull-up-or-pulldown', 'fri-shrugs', 'wed-ez-bar-curl', 'wed-incline-dumbbell-curl'),
+      day('Legs & Abs', ['quads', 'hamstrings', 'calves', 'core'],
+        ...LEGS, 'wed-hanging-knee-raise'),
+    ],
   },
   custom: {
     name: 'Custom routine',

@@ -30,10 +30,11 @@ const WEEKDAYS = [
   { weekday: 0, name: 'Sunday', short: 'Sun' },
 ] as const;
 
-const TEMPLATES: { key: 'full_body' | 'upper_lower' | 'six_day'; name: string; summary: string }[] = [
+const TEMPLATES: { key: 'full_body' | 'upper_lower' | 'six_day' | 'arnold_six_day'; name: string; summary: string }[] = [
   { key: 'full_body', name: PROGRAMS.full_body.name, summary: PROGRAMS.full_body.summary },
   { key: 'upper_lower', name: PROGRAMS.upper_lower.name, summary: PROGRAMS.upper_lower.summary },
   { key: 'six_day', name: PROGRAMS.six_day.name, summary: PROGRAMS.six_day.summary },
+  { key: 'arnold_six_day', name: PROGRAMS.arnold_six_day.name, summary: PROGRAMS.arnold_six_day.summary },
 ];
 
 function parseTemplateExercise(ex: Exercise): RoutineExerciseItem {
@@ -502,7 +503,7 @@ export default function Routine() {
   const activeProgram = profile.data?.profile.program;
   const isCustomProgram = activeProgram === 'custom';
 
-  async function applyTemplate(templateKey: 'full_body' | 'upper_lower' | 'six_day') {
+  async function applyTemplate(templateKey: 'full_body' | 'upper_lower' | 'six_day' | 'arnold_six_day') {
     setApplyingTemplate(true);
     try {
       const template = PROGRAMS[templateKey];
