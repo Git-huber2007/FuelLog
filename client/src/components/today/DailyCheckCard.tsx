@@ -1,4 +1,4 @@
-import { CheckInput, stepsKcal, type DayResponse } from '@fuellog/shared';
+import { CheckInput, type DayResponse } from '@fuellog/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { dayKey } from '../../hooks/useDay';
@@ -15,12 +15,10 @@ interface Props {
   date: string;
   initial: CheckInput | null;
   waterTargetMl: number;
-  /** Body weight for the walking estimate; null until the profile has loaded. */
-  bodyKg: number | null;
 }
 
 /** Water, sleep, steps and supplements. Mount with key={date} so each day starts from its own saved values. */
-export function DailyCheckCard({ date, initial, waterTargetMl, bodyKg }: Props) {
+export function DailyCheckCard({ date, initial, waterTargetMl }: Props) {
   const qc = useQueryClient();
   const [check, setCheck] = useState<CheckInput>(initial ?? EMPTY);
   const [sleep, setSleep] = useState(initial?.sleep_hours?.toString() ?? '');
@@ -79,17 +77,12 @@ export function DailyCheckCard({ date, initial, waterTargetMl, bodyKg }: Props) 
       </div>
       <WaterCounter ml={check.water_ml} targetMl={waterTargetMl} onChange={(water_ml) => update({ water_ml })} />
       <NumberField label="Sleep last night" suffix="hours" value={sleep} onChange={changeSleep} error={sleepError} placeholder="7.5" />
-      <div>
-        <NumberField label="Steps today" inputMode="numeric" value={steps} onChange={changeSteps} error={stepsError} placeholder="8000" />
-        {!!check.steps && bodyKg && (
-          <p className="mt-1.5 text-sm text-muted">About {stepsKcal(check.steps, bodyKg)} kcal burned walking. An estimate; it does not change your calorie target.</p>
-        )}
-      </div>
+      <NumberField label="Steps today" inputMode="numeric" value={steps} onChange={changeSteps} error={stepsError} placeholder="8000" />
       <div className="grid grid-cols-2 gap-2">
         {([['creatine', 'Creatine'], ['protein_shake', 'Protein shake']] as const).map(([key, label]) => (
           <label key={key} className="flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-2xl border border-line px-3.5 text-sm transition-colors duration-200 has-[:checked]:border-accent/60 has-[:checked]:bg-accent/10 has-[:checked]:font-medium has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent">
             <input type="checkbox" className="peer sr-only" checked={check[key]} onChange={(e) => update({ [key]: e.target.checked })} />
-            <span className="order-first flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-input-line text-transparent transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-checked:text-onaccent" aria-hidden>
+            <span className="order-first flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border border-input-line text-transparent transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-checked:text-onaccent" aria-hidden>
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10" /></svg>
             </span>
             {label}

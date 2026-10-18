@@ -8,7 +8,7 @@ export function DateSwitcher() {
       <button className="icon-btn" aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 6l-6 6 6 6" /></svg>
       </button>
-      <span className="text-center text-[0.9375rem] font-semibold tabular-nums" aria-live="polite">{formatDayLabel(date, today)}</span>
+      <span className="cond text-center text-lg font-extrabold uppercase tracking-[0.03em]" aria-live="polite">{formatDayLabel(date, today)}</span>
       <button className="icon-btn" aria-label="Next day" disabled={isToday} onClick={() => setDate(addDays(date, 1))}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 6l6 6-6 6" /></svg>
       </button>

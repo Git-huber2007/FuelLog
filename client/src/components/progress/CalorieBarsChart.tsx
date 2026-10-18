@@ -3,7 +3,7 @@ import { EmptyState } from '../ui/EmptyState';
 
 const W = 320;
 const H = 160;
-const PAD = { left: 34, right: 6, top: 12, bottom: 12 };
+const PAD = { left: 42, right: 6, top: 12, bottom: 12 };
 
 /** Calories eaten on each of the last 14 days as bars, with each day's target as a stepped line. */
 export function CalorieBarsChart({ days }: { days: ProgressResponse['calories'] }) {

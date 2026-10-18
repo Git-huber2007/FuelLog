@@ -68,7 +68,7 @@ export default function Privacy() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">6. Contact</h2>
         <p className="text-sm text-muted leading-relaxed">
-          For privacy questions, corrections, or data inquiries, contact us at: <span className="font-mono font-medium text-foreground">CONTACT_EMAIL</span>.
+          For privacy questions, corrections, or data inquiries, contact us at: <span className="font-mono font-medium text-text">CONTACT_EMAIL</span>.
         </p>
       </section>
 

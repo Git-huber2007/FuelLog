@@ -19,7 +19,6 @@ export default function Onboarding() {
   return (
     <main className="stagger mx-auto w-full max-w-[560px] space-y-5 px-4 py-10">
       <div>
-        <p className="eyebrow">Set up</p>
         <h1 className="mt-4 text-4xl">Set up your targets</h1>
         <p className="mt-3 text-lg text-muted">Pick your training level first and we suggest a weekly program. Then five details set your targets, which re-tune weekly from your weight.</p>
       </div>

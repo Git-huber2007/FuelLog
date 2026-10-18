@@ -65,14 +65,14 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
 
         {/* Worked muscles only: drawn over the clean silhouette, glow on dark theme only */}
         {highlighted.includes('shoulders') && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             <rect x="22" y="41" width="17" height="15" rx="7.5" />
             <rect x="81" y="41" width="17" height="15" rx="7.5" />
           </g>
         )}
 
         {view === 'front' && highlighted.includes('chest') && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             {CHEST_PATHS.map((d, i) => (
               <path key={i} d={d} />
             ))}
@@ -86,12 +86,12 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
             width={FRONT_CORE[2]}
             height={FRONT_CORE[3]}
             rx="9"
-            className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]"
+            className="fill-accent"
           />
         )}
 
         {view === 'front' && highlighted.includes('biceps') && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             <g transform="rotate(-8 28 42)">
               <rect x="23" y="58" width="10" height="26" rx="5" />
             </g>
@@ -102,7 +102,7 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
         )}
 
         {view === 'back' && highlighted.includes('back') && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             {BACK_SHAPES.back!.map(([x, y, w, h], i) => (
               <rect key={i} x={x} y={y} width={w} height={h} rx="9" />
             ))}
@@ -110,7 +110,7 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
         )}
 
         {view === 'back' && highlighted.includes('lowerback') && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             {BACK_SHAPES.lowerback!.map(([x, y, w, h], i) => (
               <rect key={i} x={x} y={y} width={w} height={h} rx="9" />
             ))}
@@ -118,7 +118,7 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
         )}
 
         {view === 'back' && highlighted.includes('triceps') && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             <g transform="rotate(-8 28 42)">
               <rect x="23" y="58" width="10" height="26" rx="5" />
             </g>
@@ -129,7 +129,7 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
         )}
 
         {((view === 'front' && highlighted.includes('quads')) || (view === 'back' && highlighted.includes('hamstrings'))) && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             {mirrored(LIMBS[view === 'front' ? 'quads' : 'hamstrings']!).map(([x, y, w, h], i) => (
               <rect key={i} x={x} y={y} width={w} height={h} rx="7.5" />
             ))}
@@ -137,14 +137,14 @@ export function MuscleFigure({ view, highlighted }: { view: 'front' | 'back'; hi
         )}
 
         {highlighted.includes('calves') && (
-          <g className="fill-accent dark:drop-shadow-[0_0_6px_rgb(var(--accent)/0.55)]">
+          <g className="fill-accent">
             {mirrored(LIMBS.calves!).map(([x, y, w, h], i) => (
               <rect key={i} x={x} y={y} width={w} height={h} rx="6" />
             ))}
           </g>
         )}
       </svg>
-      <figcaption className="mt-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+      <figcaption className="mt-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
         {view === 'front' ? 'Front' : 'Back'}
       </figcaption>
     </figure>

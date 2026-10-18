@@ -9,7 +9,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { SessionProvider } from './hooks/useSession';
 import { ApiError } from './lib/apiClient';
 import { reportClientError } from './lib/reportClientError';
-import '@fontsource-variable/geist';
+import '@fontsource-variable/archivo/wdth.css';
 import './index.css';
 
 registerSW({ immediate: true });

@@ -24,7 +24,10 @@ export function WorkoutHeader({
   return (
     <section className="card p-3.5 min-[380px]:p-5 space-y-4" aria-labelledby="workout-title">
       <div>
-        <p className="text-sm text-muted">
+        <h1 id="workout-title" className="cond text-[2.25rem] font-extrabold uppercase leading-none tracking-[0.01em] text-text">
+          {title}
+        </h1>
+        <p className="mt-1.5 text-sm text-muted">
           <span>{programName}</span>
           {program === 'custom' && (
             <>
@@ -35,13 +38,10 @@ export function WorkoutHeader({
             </>
           )}
           {' · '}
-          <Link to="/profile" className="link">
+          <Link to="/profile" className="link inline-flex min-h-6 items-center">
             Change
           </Link>
         </p>
-        <h1 id="workout-title" className="mt-1 text-[1.75rem] font-bold leading-tight text-text">
-          {title}
-        </h1>
       </div>
 
       {/* Progress Bar for Sets Done / Sets Planned */}
@@ -53,9 +53,9 @@ export function WorkoutHeader({
               {setsDone} of {totalSets} sets ({percent}%)
             </span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-bg border border-line/60">
+          <div className="h-2 w-full overflow-hidden rounded-sm bg-bg border border-line/60">
             <div
-              className="h-full rounded-full bg-accent transition-[width] duration-300 ease-spring motion-reduce:transition-none"
+              className="h-full rounded-sm bg-accent transition-[width] duration-300 ease-spring motion-reduce:transition-none"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -67,7 +67,7 @@ export function WorkoutHeader({
           {muscles.map((m) => (
             <li
               key={m}
-              className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent"
+              className="rounded-sm bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent"
             >
               {MUSCLE_LABELS[m]}
             </li>

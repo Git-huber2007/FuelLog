@@ -1,11 +1,10 @@
 import { nudge, stepsKcal, sumMacros, workoutKcal } from '@fuellog/shared';
 import { AddFoodCard } from '../components/today/AddFoodCard';
-import { CalorieRing } from '../components/today/CalorieRing';
 import { DailyCheckCard } from '../components/today/DailyCheckCard';
 import { EatenList } from '../components/today/EatenList';
 import { MacroBars } from '../components/today/MacroBars';
 import { NudgeLine } from '../components/today/NudgeLine';
-import { StreakBadge } from '../components/today/StreakBadge';
+import { Scoreboard } from '../components/today/Scoreboard';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { useDay } from '../hooks/useDay';
@@ -54,43 +53,23 @@ export default function Today() {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
-      <div className="space-y-5">
+    // Below md the column wrappers dissolve (contents), so the daily check can drop under the food cards on a phone
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 items-start">
+      <div className="contents md:block md:space-y-5">
         {userName && (
-          <div className="px-1 -mb-1">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted">
-              {isToday ? 'Welcome back' : 'Viewing log'}
-            </span>
-            <p className="text-lg font-bold tracking-tight text-foreground">
-              {userName}
-            </p>
-          </div>
+          <p className="px-1 text-base font-semibold">{isToday ? `Hi ${userName}` : `${userName}'s log`}</p>
         )}
-        <div className="bezel">
-          <section className="card space-y-4 rounded-[1.75rem]" aria-label="Calories and macros">
-            <div className="flex flex-col min-[360px]:flex-row items-center gap-5">
-              <CalorieRing eaten={totals.kcal} target={targets.kcal} />
-              <MacroBars totals={totals} targets={targets} />
-            </div>
-            <dl className="grid grid-cols-3 gap-2">
-              {([['Eaten', Math.round(totals.kcal)], ['Target', targets.kcal], ['Burned', totalBurn]] as const).map(([label, value]) => (
-                <div key={label} className="tile px-3 py-2.5">
-                  <dt className="tile-label">{label}</dt>
-                  <dd className="tile-value text-lg">
-                    {value.toLocaleString()}
-                    <span className="sr-only"> kcal</span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            {totalBurn > 0 && <p className="text-sm text-muted">Burned is an estimate: workout {workoutBurn}, walking {walkingBurn}.</p>}
-            <NudgeLine text={line} />
-            <StreakBadge days={progress.data?.streak} />
-          </section>
+        <Scoreboard eaten={totals.kcal} target={targets.kcal} burned={totalBurn} streak={progress.data?.streak} />
+        <section className="card space-y-4" aria-label="Macros">
+          <MacroBars totals={totals} targets={targets} />
+          {totalBurn > 0 && <p className="text-sm text-muted">Burned is an estimate: workout {workoutBurn}, walking {walkingBurn}. It does not change your calorie target.</p>}
+          <NudgeLine text={line} />
+        </section>
+        <div className="order-last md:order-none">
+          <DailyCheckCard key={`check-${date}`} date={date} initial={check} waterTargetMl={targets.water_ml} />
         </div>
-        <DailyCheckCard key={`check-${date}`} date={date} initial={check} waterTargetMl={targets.water_ml} bodyKg={profile.data?.profile.weight_kg ?? null} />
       </div>
-      <div className="space-y-5">
+      <div className="contents md:block md:space-y-5">
         <AddFoodCard key={`add-${date}`} date={date} />
         <EatenList date={date} logs={logs} />
       </div>

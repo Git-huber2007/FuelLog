@@ -9,18 +9,18 @@ const BARS = [
 
 export function MacroBars({ totals, targets }: { totals: MacroTotals; targets: Targets }) {
   return (
-    <ul className="min-w-0 flex-1 space-y-2">
+    <ul className="grid min-w-0 flex-1 grid-cols-2 gap-x-5 gap-y-3">
       {BARS.map(({ key, label, color }) => {
         const eaten = Math.round(totals[key]);
         const target = targets[key];
         return (
           <li key={key}>
-            <div className="flex justify-between gap-2 text-sm">
-              <span>{label}</span>
-              <span className="whitespace-nowrap text-[0.8125rem] tabular-nums text-muted">{eaten} / {target} g</span>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="cond text-xs font-bold uppercase tracking-[0.06em] text-muted">{label}</span>
+              <span className="whitespace-nowrap text-sm"><span className="font-bold">{eaten}</span><span className="text-muted"> / {target} g</span></span>
             </div>
-            <div className="mt-1 h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={target} aria-valuenow={eaten}>
-              <div className={`h-full w-full rounded-full origin-left transition-transform duration-500 ease-out ${color}`} style={{ transform: `scaleX(${target ? Math.min(1, eaten / target) : 0})` }} />
+            <div className="mt-1.5 h-2 overflow-hidden rounded-sm bg-line" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={target} aria-valuenow={eaten}>
+              <div className={`h-full w-full origin-left transition-transform duration-500 ease-out ${color}`} style={{ transform: `scaleX(${target ? Math.min(1, eaten / target) : 0})` }} />
             </div>
           </li>
         );

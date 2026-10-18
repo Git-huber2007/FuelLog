@@ -28,7 +28,6 @@ export function AuthPage({ title, children, footer }: { title: string; children:
           FuelLog
         </Link>
         <div className="hidden lg:block">
-          <p className="eyebrow mt-8">Calories · Macros · Training</p>
           <p className="display mt-5">Eat for your goal. Train with a plan.</p>
           <p className="mt-4 text-lg text-muted">A calorie, macro and gym tracker built for people who have just started lifting.</p>
         </div>
@@ -36,7 +35,7 @@ export function AuthPage({ title, children, footer }: { title: string; children:
 
       <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
         <div className="bezel">
-          <section className="card rounded-[1.75rem] p-6" aria-labelledby="auth-title">
+          <section className="card rounded-md p-6" aria-labelledby="auth-title">
             <h1 ref={headingRef} id="auth-title" tabIndex={-1} className="mb-5 text-2xl outline-none">{title}</h1>
             {children}
           </section>

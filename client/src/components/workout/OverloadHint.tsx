@@ -15,7 +15,7 @@ export function OverloadHint({ show, kind = 'weight_reps' }: { show: boolean; ki
 
   return (
     <p
-      className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent border border-accent/30 motion-safe:transition-opacity motion-reduce:transition-none"
+      className="inline-flex items-center gap-1.5 rounded-sm bg-accent/15 px-3 py-1 text-xs font-semibold text-accent border border-accent/30 motion-safe:transition-opacity motion-reduce:transition-none"
       role="status"
       aria-label={`Progressive overload hint: ${message}`}
     >

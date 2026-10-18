@@ -23,7 +23,17 @@ export default {
         carbs: token('carbs'),
         fat: token('fat'),
         gold: token('gold'),
+        board: token('board'),
+        'on-board': token('on-board'),
+        'board-muted': token('board-muted'),
+        'board-line': token('board-line'),
+        digit: token('digit'),
+        'board-alert': token('board-alert'),
       },
+    },
+    // One corner language: scoreboard panels are near-square, so every named radius stays small; full is only for dots.
+    borderRadius: {
+      none: '0', sm: '2px', DEFAULT: '3px', md: '4px', lg: '6px', xl: '4px', '2xl': '4px', '3xl': '6px', full: '9999px',
     },
   },
   future: { hoverOnlyWhenSupported: true }, // hover styles would otherwise stick after a tap on a phone

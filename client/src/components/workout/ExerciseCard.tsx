@@ -101,12 +101,19 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
           </Link>
           {exercise.detail && <p className="text-sm text-muted">{exercise.detail}</p>}
         </div>
-        <span className="shrink-0 rounded-full bg-bg px-2.5 py-1 text-xs font-medium tabular-nums text-muted">
+        <span className="shrink-0 rounded-sm bg-bg px-2.5 py-1 text-xs font-medium tabular-nums text-muted">
           {exercise.prescription}
         </span>
       </div>
 
-      <ExerciseDemo name={exercise.name} photos={exercisePhotos(exercise.key)} />
+      {/* Open until the first set is logged, then folded so the set rows sit closer together; open is only re-applied when it changes */}
+      <details open={!exercise.logged.some((s) => s.reps > 0)} className="group">
+        <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-muted hover:text-text [&::-webkit-details-marker]:hidden">
+          <svg viewBox="0 0 12 12" className="h-3 w-3 fill-current transition-transform group-open:rotate-90" aria-hidden><path d="M4 2l5 4-5 4z" /></svg>
+          Form demo
+        </summary>
+        <ExerciseDemo name={exercise.name} photos={exercisePhotos(exercise.key)} />
+      </details>
       <OverloadHint show={exercise.overload} kind={exercise.kind} />
 
       {/* Hevy-style Table Column Headers */}
@@ -127,7 +134,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
             {incline && <span className="text-center uppercase tracking-[0.08em]">incline %</span>}
           </>
         )}
-        <span className="text-center uppercase tracking-[0.08em]">✓</span>
+        <span className="flex justify-center"><svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12l5 5L20 7" /></svg><span className="sr-only">Done</span></span>
       </div>
 
       <ul className="space-y-1.5">

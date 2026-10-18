@@ -10,14 +10,14 @@ export function MeasurementDeltas({ deltas }: { deltas: ProgressResponse['measur
     return <EmptyState title="No measurements yet" hint="Measure waist, chest or arm once a week and save it below. Changes since your first entry show here." />;
   }
   return (
-    <dl className="grid grid-cols-3 gap-2">
+    <dl className="divide-y divide-line">
       {keys.map((key) => {
         const d = deltas[key]!;
         return (
-          <div key={key} className="tile p-3">
-            <dt className="tile-label">{LABELS[key]}</dt>
-            <dd className="tile-value text-base">{d.latest} cm</dd>
-            <dd className="text-xs tabular-nums text-muted">{d.delta === 0 ? 'No change' : `${d.delta > 0 ? '+' : '−'}${Math.abs(d.delta)} cm`}</dd>
+          <div key={key} className="flex items-baseline gap-3 py-2.5">
+            <dt className="tile-label flex-1">{LABELS[key]}</dt>
+            <dd className="cond text-2xl font-bold leading-none">{d.latest} cm</dd>
+            <dd className="w-20 text-right text-sm text-muted">{d.delta === 0 ? 'No change' : `${d.delta > 0 ? '+' : '−'}${Math.abs(d.delta)} cm`}</dd>
           </div>
         );
       })}

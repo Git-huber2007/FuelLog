@@ -115,7 +115,7 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
                   </div>
 
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-semibold ${
                       isUp
                         ? 'bg-accent/15 text-accent'
                         : isDown
@@ -123,9 +123,9 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
                           : 'bg-line/60 text-muted'
                     }`}
                   >
-                    {isUp && '↑'}
-                    {isDown && '↓'}
-                    {!isUp && !isDown && '→'}
+                    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d={isUp ? 'M12 19V5M6 11l6-6 6 6' : isDown ? 'M12 5v14M6 13l6 6 6-6' : 'M5 12h14M13 6l6 6-6 6'} />
+                    </svg>
                     <span>{lift.trendDelta}</span>
                   </span>
                   <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

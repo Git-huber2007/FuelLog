@@ -129,7 +129,7 @@ function MetricLineChart({
               x={PAD.left - 6}
               y={y(val) + 4}
               textAnchor="end"
-              className="fill-muted text-[10px] font-medium"
+              className="fill-muted text-[11px] font-medium"
             >
               {val}
             </text>
@@ -314,7 +314,7 @@ export default function ExerciseHistory() {
                   <p className="text-xs text-muted">{formatDayLabel(pr.date, today)}</p>
                 </div>
                 {index === 0 && (
-                  <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-accent border border-accent/30">
+                  <span className="rounded-sm bg-accent/15 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-accent border border-accent/30">
                     Current PR
                   </span>
                 )}

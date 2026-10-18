@@ -29,7 +29,7 @@ export function SavedMealChips({ date, meal }: { date: string; meal: Meal }) {
         <h3 className="label">Saved meals</h3>
         <div className="flex flex-wrap gap-2">
           {[140, 160].map((w, i) => (
-            <div key={i} className="h-11 shrink-0 rounded-full bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
+            <div key={i} className="h-11 shrink-0 rounded-sm bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
           ))}
         </div>
       </div>
@@ -42,7 +42,7 @@ export function SavedMealChips({ date, meal }: { date: string; meal: Meal }) {
       <h3 className="label">Saved meals</h3>
       <ul className="flex flex-wrap gap-2">
         {meals.data.map((saved) => (
-          <li key={saved.id} className="flex max-w-full rounded-full border border-line bg-bg">
+          <li key={saved.id} className="flex max-w-full rounded-sm border border-line bg-bg">
             <button type="button" className="min-h-[44px] min-w-0 truncate rounded-l-full pl-4 pr-2 text-sm disabled:opacity-50" disabled={log.isPending} onClick={() => log.mutate(saved)}
               title={`${saved.name} · ${Math.round(saved.items.reduce((sum, item) => sum + item.kcal, 0))} kcal`}>
               {saved.name} · {Math.round(saved.items.reduce((sum, item) => sum + item.kcal, 0))} kcal

@@ -84,7 +84,7 @@ export function ProfileForm({ profile, submitLabel, onSaved }: { profile: Profil
             <label htmlFor={`${id}-program`} className="label">Weekly program</label>
             {program === 'custom' && (
               <Link to="/routine" className="text-xs font-semibold text-accent hover:underline">
-                Edit routine →
+                Edit routine <svg viewBox="0 0 24 24" className="inline h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 6l6 6-6 6" /></svg>
               </Link>
             )}
           </div>

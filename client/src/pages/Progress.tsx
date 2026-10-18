@@ -43,14 +43,11 @@ export default function Progress() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
       <div className="space-y-5">
-        <WeekSummaryCard summary={summary} />
-
-        <TopLiftsCard topLifts={topLifts} />
-
+        {/* The weight trend owns this page, so it leads */}
         <section className="card space-y-4" aria-labelledby="weight-title">
           <h2 id="weight-title" className="card-title">Weight</h2>
           {weights.length > 0 && (
-            <p className="stat">
+            <p className="stat text-[3.5rem]">
               {weights[weights.length - 1].avg7}<span className="stat-unit">kg · 7-day average</span>
             </p>
           )}
@@ -58,6 +55,11 @@ export default function Progress() {
           <WeightChart weights={weights} />
           {weights.length > 0 && <p className="text-sm text-muted">Dots are weigh-ins. The line is your 7-day average.</p>}
         </section>
+
+        <WeekSummaryCard summary={summary} />
+
+        <TopLiftsCard topLifts={topLifts} />
+
 
         <AdviceCard advice={advice} />
 

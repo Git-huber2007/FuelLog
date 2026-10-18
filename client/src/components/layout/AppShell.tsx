@@ -19,7 +19,7 @@ function getOnlineSnapshot() {
 }
 
 /**
- * One column on a phone, two packed columns from tablet width, with the navigation as a floating pill:
+ * One column on a phone, two packed columns from tablet width, with the navigation as a scoreboard band:
  * along the bottom on small screens, down the left edge on large ones.
  */
 export function AppShell() {
@@ -38,7 +38,7 @@ export function AppShell() {
       {statusText && (
         <div
           role="status"
-          className="border-b border-line bg-card/95 px-4 py-2 text-center text-xs font-medium text-muted backdrop-blur"
+          className="border-b border-line bg-card px-4 py-2 text-center text-xs font-medium text-muted"
         >
           {statusText}
         </div>

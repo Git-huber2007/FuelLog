@@ -97,7 +97,7 @@ export default function Profile() {
             <h2 className="card-title">Account</h2>
             <div className="space-y-0.5">
               {currentName && (
-                <p className="text-base font-semibold text-foreground">{currentName}</p>
+                <p className="text-base font-semibold text-text">{currentName}</p>
               )}
               <p className="break-all text-sm text-muted">Signed in as {session?.user.email}</p>
             </div>
@@ -148,9 +148,9 @@ export default function Profile() {
             </div>
 
             <div className="flex items-center justify-center gap-4 pt-2 text-xs text-muted">
-              <Link to="/privacy" className="link text-xs">Privacy Policy</Link>
-              <span>•</span>
-              <Link to="/terms" className="link text-xs">Terms of Service</Link>
+              <Link to="/privacy" className="link inline-flex min-h-6 items-center text-xs">Privacy Policy</Link>
+              <span aria-hidden>•</span>
+              <Link to="/terms" className="link inline-flex min-h-6 items-center text-xs">Terms of Service</Link>
             </div>
           </section>
         </div>
@@ -159,7 +159,7 @@ export default function Profile() {
       {/* Native dialog for account deletion */}
       <dialog
         ref={dialogRef}
-        className="backdrop:bg-black/60 rounded-2xl bg-card p-6 text-foreground shadow-2xl border border-line max-w-md w-full m-auto"
+        className="backdrop:bg-black/60 rounded-2xl bg-card p-6 text-text shadow-2xl border border-line max-w-md w-full m-auto"
         onClose={() => setConfirmText('')}
       >
         <div className="space-y-4">
@@ -182,7 +182,7 @@ export default function Profile() {
 
           <div className="space-y-2">
             <label htmlFor="confirm-delete" className="block text-xs font-medium text-muted">
-              Type <strong className="text-foreground">DELETE</strong> to confirm:
+              Type <strong className="text-text">DELETE</strong> to confirm:
             </label>
             <input
               id="confirm-delete"

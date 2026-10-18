@@ -15,7 +15,7 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
         <h3 className="label">Recent</h3>
         <div className="flex flex-wrap gap-2">
           {[80, 110, 95, 120].map((w, i) => (
-            <div key={i} className="h-9 shrink-0 rounded-full bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
+            <div key={i} className="h-9 shrink-0 rounded-sm bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
           ))}
         </div>
       </div>

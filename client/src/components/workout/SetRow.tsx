@@ -207,7 +207,7 @@ export function SetRow({
     >
       {!single && (
         <div className="flex flex-col items-center justify-center w-7 min-[380px]:w-9 shrink-0">
-          <span className="text-xs font-semibold text-muted">{setNumber}</span>
+          <span className="cond text-base font-bold text-muted">{setNumber}</span>
           {isPr && (
             <span
               className="mt-0.5 rounded px-1 min-[380px]:px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase tracking-wider bg-gold/15 text-gold border border-gold/40 motion-safe:animate-rise-in motion-reduce:transition-none motion-reduce:animate-none"
@@ -322,7 +322,7 @@ export function SetRow({
           }
           className={`h-11 w-11 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl font-bold transition-transform active:scale-[0.96] ${
             isDone
-              ? 'bg-accent text-onaccent shadow-sm'
+              ? 'border border-board-line bg-board text-digit'
               : 'bg-bg text-muted border border-input-line hover:border-accent hover:text-accent'
           }`}
           title={isDone ? 'Completed! Tap to restart rest timer' : 'Tap to log set and start rest timer'}

@@ -557,6 +557,7 @@ export default function Routine() {
   if (error && !routineDays) return <ErrorState error={error} onRetry={() => refetch()} />;
 
   const editingDay = editingWeekday !== null ? dayMap.get(editingWeekday) : null;
+  const anyPlanned = [...dayMap.values()].some((d) => d.exercises.length > 0);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 px-3 min-[380px]:px-4">
@@ -583,14 +584,9 @@ export default function Routine() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <Link to="/workout" className="text-sm text-muted hover:text-text">
-              ← Workout
-            </Link>
-            <span className="text-xs text-muted">/</span>
-            <span className="text-xs font-semibold text-accent uppercase tracking-wider">Routine Builder</span>
-          </div>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Weekly Routine</h1>
+          <Link to="/workout" className="inline-flex min-h-6 items-center text-sm text-muted hover:text-text">
+            ← Workout
+          </Link>
           <p className="text-sm text-muted mt-0.5">
             Configure your training split day by day. Sets and rep targets drive your daily workout page.
           </p>
@@ -598,7 +594,7 @@ export default function Routine() {
 
         <button
           type="button"
-          className="btn shrink-0 text-sm"
+          className={`btn shrink-0 text-sm ${anyPlanned ? '' : 'btn-primary'}`}
           onClick={() => setShowTemplates(true)}
         >
           Start from template
@@ -631,30 +627,27 @@ export default function Routine() {
               <div className="flex items-center gap-4 min-w-0">
                 <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-2xl bg-bg border border-line">
                   <span className="text-[0.6875rem] font-bold uppercase text-muted tracking-wide">{short}</span>
-                  <span className="text-xs font-semibold tabular-nums text-text">{weekday}</span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-base text-text truncate">{name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    <span className={`text-xs px-2 py-0.5 rounded-sm font-medium ${
                       hasExercises ? 'bg-accent/10 text-accent' : 'bg-line/60 text-muted'
                     }`}>
                       {hasExercises ? `${dayData.exercises.length} ${dayData.exercises.length === 1 ? 'exercise' : 'exercises'}` : 'Rest'}
                     </span>
                   </div>
-                  <p className="text-sm text-muted truncate mt-0.5">
-                    {hasExercises ? (
-                      dayData.exercises.map((e) => exerciseName(e.key)).join(', ')
-                    ) : (
-                      'Rest & recovery'
-                    )}
-                  </p>
+                  {hasExercises && (
+                    <p className="text-sm text-muted truncate mt-0.5">
+                      {dayData.exercises.map((e) => exerciseName(e.key)).join(', ')}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
                 <span className="text-sm font-medium text-accent hover:underline sm:inline">
-                  Edit →
+                  Edit <svg viewBox="0 0 24 24" className="inline h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 6l6 6-6 6" /></svg>
                 </span>
               </div>
             </div>

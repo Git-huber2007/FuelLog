@@ -11,3 +11,6 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 .archify/
+
+.impeccable/
+!.impeccable/design.json
