@@ -59,6 +59,6 @@ routineRouter.put(
 // DELETE /routine/:weekday: deletes a weekday's routine (making it a rest day)
 routineRouter.delete('/routine/:weekday', validate({ params: WeekdayParams }), h(async (req, res) => {
   const weekday = Number(req.params.weekday);
-  await req.sb.from('routine_days').delete().eq('weekday', weekday);
+  unwrap(await req.sb.from('routine_days').delete().eq('weekday', weekday));
   res.status(204).end();
 }));

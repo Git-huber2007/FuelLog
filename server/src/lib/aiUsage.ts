@@ -13,21 +13,19 @@ export async function getRecentAiCount(sb: SupabaseClient): Promise<number> {
   return count ?? 0;
 }
 
-/** Refuses request without inserting a row when user is already at the limit. */
-export async function checkAiQuota(sb: SupabaseClient): Promise<void> {
+/**
+ * Before recording a use (`afterInsert` false) refuses at the limit, so no row is added;
+ * after recording it allows the row just inserted, which catches concurrent burst calls.
+ */
+async function quota(sb: SupabaseClient, afterInsert: boolean): Promise<void> {
   const count = await getRecentAiCount(sb);
-  if (count >= env.AI_DAILY_LIMIT) {
+  if (count > env.AI_DAILY_LIMIT - (afterInsert ? 0 : 1)) {
     throw new HttpError(429, 'ai_limit', `You have used all ${env.AI_DAILY_LIMIT} AI requests for today. You can still log manually, and AI is back tomorrow.`);
   }
 }
 
-/** Re-check quota after inserting usage row to guard against concurrent burst calls. */
-export async function assertAiQuota(sb: SupabaseClient): Promise<void> {
-  const count = await getRecentAiCount(sb);
-  if (count > env.AI_DAILY_LIMIT) {
-    throw new HttpError(429, 'ai_limit', `You have used all ${env.AI_DAILY_LIMIT} AI requests for today. You can still log manually, and AI is back tomorrow.`);
-  }
-}
+export const checkAiQuota = (sb: SupabaseClient) => quota(sb, false);
+export const assertAiQuota = (sb: SupabaseClient) => quota(sb, true);
 
 export async function recordAiUse(sb: SupabaseClient, userId: string, kind: AiKind): Promise<void> {
   unwrap(await sb.from('ai_usage').insert({ user_id: userId, kind }));

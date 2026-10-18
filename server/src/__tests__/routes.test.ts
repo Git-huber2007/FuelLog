@@ -325,6 +325,31 @@ describe('Server Route Tests', () => {
     assert.deepEqual(callOrder, ['storage.remove', 'rpc.delete_my_account']);
   });
 
+  it('account deletion: pages past the 100-file list limit so every photo is removed', async () => {
+    const all = Array.from({ length: 150 }, (_, i) => ({ name: `pic${i}.jpg` }));
+    let removedPaths: string[] = [];
+    const stubStorage = {
+      from() {
+        return {
+          list(_folder: string, opts: { limit: number; offset: number }) {
+            return Promise.resolve({ data: all.slice(opts.offset, opts.offset + opts.limit), error: null });
+          },
+          remove(paths: string[]) {
+            removedPaths = paths;
+            return Promise.resolve({ data: paths, error: null });
+          },
+        };
+      },
+    };
+    setClientFactory(() => createStubClient(undefined, stubStorage, () => Promise.resolve({ data: null, error: null })));
+
+    const res = await fetch(`${baseUrl}/api/account`, { method: 'DELETE', headers: { Authorization: 'Bearer test-token' } });
+
+    assert.equal(res.status, 204);
+    assert.equal(removedPaths.length, 150);
+    assert.equal(removedPaths[149], 'test-user-123/pic149.jpg');
+  });
+
   it('account deletion: a storage failure means the function is never called', async () => {
     let rpcCalled = false;
 
@@ -708,21 +733,7 @@ describe('Server Route Tests', () => {
                 },
               };
             },
-            select() {
-              return {
-                eq() {
-                  return {
-                    lt() {
-                      return {
-                        gt() {
-                          return Promise.resolve({ data: pastSets, error: null });
-                        },
-                      };
-                    },
-                  };
-                },
-              };
-            },
+            select: () => createStubQuery({ data: pastSets, error: null }),
           };
         }
         return createStubQuery({ data: [], error: null });
@@ -779,27 +790,8 @@ describe('Server Route Tests', () => {
           return createStubQuery({ data: { id: 'test-user-123', weight_kg: 75, program: 'six_day' }, error: null });
         }
         if (table === 'workout_sets') {
-          return {
-            select() {
-              return {
-                eq() {
-                  return {
-                    gt() {
-                      return {
-                        order() {
-                          return {
-                            order() {
-                              return Promise.resolve({ data: historyRows, error: null });
-                            },
-                          };
-                        },
-                      };
-                    },
-                  };
-                },
-              };
-            },
-          };
+          // The route asks for newest first, so the stub answers that way
+          return createStubQuery({ data: [...historyRows].reverse(), error: null });
         }
         return createStubQuery({ data: [], error: null });
       }),
@@ -822,7 +814,9 @@ describe('Server Route Tests', () => {
     assert.equal(data.name, 'Bench press');
     assert.equal(data.kind, 'weight_reps');
     assert.equal(data.chartPoints.length, 3);
+    assert.equal(data.chartPoints[0].date, '2026-09-01', 'chart runs oldest to newest');
     assert.equal(data.recentSessions.length, 3);
+    assert.equal(data.recentSessions[0].date, '2026-09-15', 'recent sessions are newest first');
     assert.ok(data.prs.length >= 1);
   });
 

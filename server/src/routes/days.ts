@@ -53,6 +53,7 @@ daysRouter.delete('/food-logs/:id', validate({ params: IdParams }), h(async (req
   res.status(204).end();
 }));
 
+// shortcut: check-then-insert, so two near-simultaneous copies (two devices, a network retry) can both pass; move into one SQL function if doubled days show up
 daysRouter.post('/days/:date/copy-previous', date, notFuture, h(async (req, res) => {
   const existing: Array<{ id: string }> = unwrap(await req.sb.from('food_logs').select('id').eq('log_date', req.params.date).limit(1));
   if (existing.length) throw new HttpError(400, 'already_logged', 'This day already has food logged.');
@@ -95,6 +96,8 @@ daysRouter.put('/days/:date/sets', date, validate({ body: SetInput }), notFuture
         .eq('exercise_key', saved.exercise_key)
         .lt('log_date', req.params.date)
         .gt('reps', 0)
+        .order('log_date', { ascending: false })
+        .limit(1000)
         .then(unwrap<WorkoutSet[]>),
       loadProfile(req.sb, req.userId),
     ]);

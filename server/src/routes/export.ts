@@ -86,12 +86,9 @@ exportRouter.get('/export.json', h(async (req, res) => {
       sb.from('progress_photos').select('*').order('log_date').range(from, to)),
   ]);
 
-  const photos = await Promise.all(
-    photoRows.map(async (p) => {
-      const { data } = await sb.storage.from('progress-photos').createSignedUrl(p.storage_path, 3600);
-      return { ...p, signed_url: data?.signedUrl ?? null };
-    }),
-  );
+  const signed = photoRows.length ? await sb.storage.from('progress-photos').createSignedUrls(photoRows.map((p) => p.storage_path), 3600) : null;
+  const urls = new Map((signed?.data ?? []).map((s) => [s.path, s.signedUrl]));
+  const photos = photoRows.map((p) => ({ ...p, signed_url: urls.get(p.storage_path) ?? null }));
 
   const payload = {
     exported_at: new Date().toISOString(),

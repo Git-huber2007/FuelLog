@@ -22,17 +22,20 @@ export const exercisesRouter = Router();
 
 exercisesRouter.get('/exercises/:key/history', validate({ params: ExerciseKeyParam }), h(async (req, res) => {
   const { key } = req.params;
-  const [profile, rows] = await Promise.all([
+  const [profile, newestFirst] = await Promise.all([
     loadProfile(req.sb, req.userId),
+    // Newest first so Supabase's 1000-row cap drops the oldest sets, not the latest
     req.sb
       .from('workout_sets')
       .select('log_date,exercise_key,set_number,weight_kg,reps,incline_pct')
       .eq('exercise_key', key)
       .gt('reps', 0)
-      .order('log_date', { ascending: true })
-      .order('set_number', { ascending: true })
+      .order('log_date', { ascending: false })
+      .order('set_number', { ascending: false })
+      .limit(1000)
       .then(unwrap<WorkoutSet[]>),
   ]);
+  const rows = newestFirst.reverse();
 
   const kind = lookupExerciseKind(key);
   const name = exerciseName(key);

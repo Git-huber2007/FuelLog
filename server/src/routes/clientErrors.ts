@@ -18,8 +18,9 @@ clientErrorsRouter.post(
   clientErrorsRateLimit,
   validate({ body: ClientErrorBody }),
   h(async (req, res) => {
+    const oneLine = (s: string) => s.replace(/[\r\n]+/g, ' '); // a line break would let a caller forge log lines
     const { name, message, route, version } = req.body;
-    console.warn(`[Client Crash] app=${version} route=${route} error=${name}: ${message}`);
+    console.warn(`[Client Crash] app=${oneLine(version)} route=${oneLine(route)} error=${oneLine(name)}: ${oneLine(message)}`);
     res.status(204).end();
   }),
 );

@@ -52,13 +52,18 @@ profileRouter.post('/profile/adjustment', h(async (req, res) => {
 }));
 
 profileRouter.delete('/account', h(async (req, res) => {
-  const { data: files, error: listError } = await req.sb.storage.from('progress-photos').list(req.userId);
-  if (listError) {
-    throw new HttpError(500, 'storage_error', 'Could not inspect stored photos. Account was not deleted.');
+  const PAGE = 100; // Storage list() returns at most this many by default, so page until a short batch
+  const paths: string[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const { data: files, error: listError } = await req.sb.storage.from('progress-photos').list(req.userId, { limit: PAGE, offset });
+    if (listError) {
+      throw new HttpError(500, 'storage_error', 'Could not inspect stored photos. Account was not deleted.');
+    }
+    paths.push(...(files ?? []).map((f) => `${req.userId}/${f.name}`));
+    if (!files || files.length < PAGE) break;
   }
 
-  if (files && files.length > 0) {
-    const paths = files.map((f) => `${req.userId}/${f.name}`);
+  if (paths.length > 0) {
     const { error: removeError } = await req.sb.storage.from('progress-photos').remove(paths);
     if (removeError) {
       throw new HttpError(500, 'storage_error', 'Could not remove stored photos. Account was not deleted.');
