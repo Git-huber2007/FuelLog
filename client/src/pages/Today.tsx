@@ -61,7 +61,9 @@ export default function Today() {
           <p className="px-1 text-base font-semibold">{isToday ? `Hi ${userName}` : `${userName}'s log`}</p>
         )}
         <Scoreboard eaten={totals.kcal} target={targets.kcal} burned={totalBurn} streak={progress.data?.streak} />
-        {!!progress.data?.calories.length && <WeekStrip days={progress.data.calories} selected={date} onSelect={setDate} />}
+        {progress.data?.calories && progress.data.calories.length > 0 ? (
+          <WeekStrip days={progress.data.calories} selected={date} onSelect={setDate} />
+        ) : null}
         <section className="card space-y-4" aria-label="Macros">
           <MacroBars totals={totals} targets={targets} />
           {totalBurn > 0 && <p className="text-sm text-muted">Burned is an estimate: workout {workoutBurn}, walking {walkingBurn}. It does not change your calorie target.</p>}

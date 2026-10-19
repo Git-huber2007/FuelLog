@@ -108,6 +108,7 @@ test('open /welcome, sign in with a fake session, see the Today page, add a rece
         contentType: 'application/json',
         body: JSON.stringify({
           streak: 5,
+          calories: [],
         }),
       });
     }
