@@ -1,8 +1,11 @@
 import { todayISO } from '@fuellog/shared';
+import { ActivityCalendar } from '../components/progress/ActivityCalendar';
 import { AdviceCard } from '../components/progress/AdviceCard';
 import { CalorieBarsChart } from '../components/progress/CalorieBarsChart';
 import { CoachCard } from '../components/progress/CoachCard';
 import { ExportButton } from '../components/progress/ExportButton';
+import { MuscleSetsCard } from '../components/progress/MuscleSetsCard';
+import { TopFoodsCard } from '../components/progress/TopFoodsCard';
 import { MeasurementDeltas } from '../components/progress/MeasurementDeltas';
 import { MeasurementsForm } from '../components/progress/MeasurementsForm';
 import { PhotoGrid } from '../components/progress/PhotoGrid';
@@ -37,7 +40,7 @@ export default function Progress() {
   }
   if (progress.isError) return <ErrorState error={progress.error} onRetry={() => progress.refetch()} />;
 
-  const { weights, calories, summary, measurements, advice, topLifts } = progress.data;
+  const { weights, calories, summary, measurements, advice, topLifts, muscleSets, topFoods } = progress.data;
   const todayWeight = weights.find((w) => w.log_date === today)?.weight_kg;
 
   return (
@@ -56,10 +59,13 @@ export default function Progress() {
           {weights.length > 0 && <p className="text-sm text-muted">Dots are weigh-ins. The line is your 7-day average.</p>}
         </section>
 
+        <ActivityCalendar days={calories} />
+
         <WeekSummaryCard summary={summary} />
 
         <TopLiftsCard topLifts={topLifts} />
 
+        <MuscleSetsCard muscleSets={muscleSets} />
 
         <AdviceCard advice={advice} />
 
@@ -73,8 +79,10 @@ export default function Progress() {
       <div className="space-y-5">
         <section className="card space-y-3" aria-labelledby="calories-title">
           <h2 id="calories-title" className="card-title">Calories, last 14 days</h2>
-          <CalorieBarsChart days={calories} />
+          <CalorieBarsChart days={calories.slice(-14)} />
         </section>
+
+        <TopFoodsCard topFoods={topFoods} />
 
         <section className="card space-y-4" aria-labelledby="measure-title">
           <h2 id="measure-title" className="card-title">Measurements</h2>

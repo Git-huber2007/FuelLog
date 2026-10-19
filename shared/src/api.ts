@@ -111,7 +111,12 @@ export interface MeasureDelta {
 
 export interface ProgressResponse {
   weights: { log_date: string; weight_kg: number; avg7: number }[];
-  calories: { date: string; kcal: number; target: number }[];
+  /** The last 35 days, oldest first: the calendar uses all of them, the calorie chart the last 14. */
+  calories: { date: string; kcal: number; target: number; protein: number; proteinTarget: number; trained: boolean }[];
+  /** Working sets per muscle over the last 7 days, most first. */
+  muscleSets: { muscle: MuscleGroup; sets: number }[];
+  /** The foods that gave the most calories and protein over the last 7 days, top 3 each. */
+  topFoods: { kcal: { name: string; value: number }[]; protein: { name: string; value: number }[] };
   summary: {
     daysLogged: number;
     avgKcal: number | null;

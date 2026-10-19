@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  addDays, adjustmentAdvice, asExercise, buildCustomExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, deriveExerciseKind, EXERCISE_KEYS, EXERCISE_KINDS,
+  addDays, adjustmentAdvice, asExercise, buildCustomExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, deriveExerciseKind, EXERCISE_KEYS, exerciseMuscle, EXERCISE_KINDS,
   exercisePhotos, LIBRARY, libraryExercise, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
   stepsKcal, streak, supportsIncline, weekdayOf, workoutKcal, type ExerciseKind, type MuscleGroup, type Weigh,
 } from '../index';
@@ -390,3 +390,11 @@ describe('custom routines', () => {
   });
 });
 
+
+describe('exerciseMuscle', () => {
+  it('maps every program exercise and library muscles to a muscle group', () => {
+    for (const key of EXERCISE_KEYS) expect(exerciseMuscle(key), key).not.toBeNull();
+    expect(exerciseMuscle('Ab_Roller')).toBe('core');
+    expect(exerciseMuscle('nope')).toBeNull();
+  });
+});

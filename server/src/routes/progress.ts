@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
-  addDays, adjustmentAdvice, bestSet, calculateKindMetric, dayDeltaFor, exerciseName, formatPreviousHint, lookupExerciseKind, streak,
-  type MeasureDelta, type Measurements, type Profile, type ProgressResponse, type TopLiftSummary, type WorkoutSet,
+  addDays, adjustmentAdvice, bestSet, calculateKindMetric, dayDeltaFor, exerciseMuscle, exerciseName, formatPreviousHint, lookupExerciseKind, streak,
+  type MeasureDelta, type Measurements, type MuscleGroup, type Profile, type ProgressResponse, type TopLiftSummary, type WorkoutSet,
 } from '@fuellog/shared';
 import { h, unwrap } from '../middleware/errors';
 import { loadProfile, loadWeights, requireTargets } from './profile';
@@ -14,13 +14,13 @@ const round = (n: number | null, digits = 0) => (n === null ? null : Math.round(
 const PROTEIN_HIT = 0.9;
 
 export async function buildProgress(sb: SupabaseClient, userId: string, today: string): Promise<{ profile: Profile; progress: ProgressResponse }> {
-  const from14 = addDays(today, -13);
+  const from35 = addDays(today, -34);
   const from7 = addDays(today, -6);
   const [profile, weights, logs, checks, sets, measurements, logDates, allWorkoutSets] = await Promise.all([
     loadProfile(sb, userId),
     loadWeights(sb, today),
-    sb.from('food_logs').select('log_date,kcal,protein_g').gte('log_date', from14).lte('log_date', today)
-      .then(unwrap<{ log_date: string; kcal: number; protein_g: number }[]>),
+    sb.from('food_logs').select('log_date,name,kcal,protein_g').gte('log_date', from35).lte('log_date', today)
+      .then(unwrap<{ log_date: string; name: string; kcal: number; protein_g: number }[]>),
     sb.from('daily_checks').select('sleep_hours,water_ml,steps').gte('log_date', from7).lte('log_date', today)
       .then(unwrap<{ sleep_hours: number | null; water_ml: number; steps?: number | null }[]>),
     sb.from('workout_sets').select('log_date').gte('log_date', from7).lte('log_date', today).gt('reps', 0)
@@ -40,11 +40,29 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
     day.protein += log.protein_g;
     byDay.set(log.log_date, day);
   }
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const date = addDays(from14, i);
+  const days = Array.from({ length: 35 }, (_, i) => {
+    const date = addDays(from35, i);
     return { date, eaten: byDay.get(date), targets: requireTargets(profile, dayDeltaFor(date, profile.program)) };
   });
-  const week = days.slice(7).filter((d) => d.eaten);
+  const week = days.slice(-7).filter((d) => d.eaten);
+  const trainedDays = new Set(allWorkoutSets.map((s) => s.log_date));
+
+  const muscleCount = new Map<MuscleGroup, number>();
+  for (const s of allWorkoutSets) {
+    const muscle = s.log_date >= from7 ? exerciseMuscle(s.exercise_key) : null;
+    if (muscle) muscleCount.set(muscle, (muscleCount.get(muscle) ?? 0) + 1);
+  }
+
+  const foods = new Map<string, { kcal: number; protein: number }>();
+  for (const log of logs) {
+    if (log.log_date < from7) continue;
+    const food = foods.get(log.name) ?? { kcal: 0, protein: 0 };
+    food.kcal += log.kcal;
+    food.protein += log.protein_g;
+    foods.set(log.name, food);
+  }
+  const top = (field: 'kcal' | 'protein') => [...foods].map(([name, f]) => ({ name, value: Math.round(f[field]) }))
+    .filter((f) => f.value > 0).sort((a, b) => b.value - a.value).slice(0, 3);
 
   const delta = (field: 'waist_cm' | 'chest_cm' | 'arm_cm'): MeasureDelta | null => {
     const values = measurements.map((m) => m[field]).filter((v): v is number => v !== null);
@@ -122,7 +140,12 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
       ...w,
       avg7: round(mean(weights.filter((o) => o.log_date > addDays(w.log_date, -7) && o.log_date <= w.log_date).map((o) => o.weight_kg)), 2)!,
     })),
-    calories: days.map((d) => ({ date: d.date, kcal: Math.round(d.eaten?.kcal ?? 0), target: d.targets.kcal })),
+    calories: days.map((d) => ({
+      date: d.date, kcal: Math.round(d.eaten?.kcal ?? 0), target: d.targets.kcal,
+      protein: Math.round(d.eaten?.protein ?? 0), proteinTarget: d.targets.protein_g, trained: trainedDays.has(d.date),
+    })),
+    muscleSets: [...muscleCount].map(([muscle, sets]) => ({ muscle, sets })).sort((a, b) => b.sets - a.sets),
+    topFoods: { kcal: top('kcal'), protein: top('protein') },
     summary: {
       daysLogged: week.length,
       avgKcal: round(mean(week.map((d) => d.eaten!.kcal))),

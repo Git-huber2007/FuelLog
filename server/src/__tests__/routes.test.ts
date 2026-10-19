@@ -1,3 +1,4 @@
+import type { ProgressResponse } from '@fuellog/shared';
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -821,7 +822,9 @@ describe('Server Route Tests', () => {
   });
 
   it('GET /api/progress includes topLifts with 4-session trend analysis', async () => {
+    const T = new Date().toISOString().slice(0, 10);
     const mockSets = [
+      { exercise_key: 'mon-bench-press', log_date: T, set_number: 1, weight_kg: 80, reps: 10, incline_pct: null },
       { exercise_key: 'mon-bench-press', log_date: '2026-09-01', set_number: 1, weight_kg: 60, reps: 10, incline_pct: null },
       { exercise_key: 'mon-bench-press', log_date: '2026-09-08', set_number: 1, weight_kg: 65, reps: 10, incline_pct: null },
       { exercise_key: 'mon-bench-press', log_date: '2026-09-15', set_number: 1, weight_kg: 70, reps: 10, incline_pct: null },
@@ -856,7 +859,7 @@ describe('Server Route Tests', () => {
                 gte() {
                   return {
                     lte() {
-                      return Promise.resolve({ data: [], error: null });
+                      return Promise.resolve({ data: [{ log_date: T, name: 'Paneer', kcal: 300, protein_g: 20 }, { log_date: T, name: 'Rice', kcal: 400, protein_g: 8 }], error: null });
                     },
                   };
                 },
@@ -948,6 +951,12 @@ describe('Server Route Tests', () => {
     assert.equal(data.topLifts.length, 1);
     assert.equal(data.topLifts[0].key, 'mon-bench-press');
     assert.equal(data.topLifts[0].trend, 'up', 'Bench press increased across 4 sessions -> trend up');
+    const more = data as unknown as ProgressResponse;
+    assert.equal(more.calories.length, 35);
+    assert.equal(more.calories.at(-1)!.trained, true);
+    assert.deepEqual(more.muscleSets, [{ muscle: 'chest', sets: 1 }]);
+    assert.equal(more.topFoods.kcal[0].name, 'Rice');
+    assert.equal(more.topFoods.protein[0].name, 'Paneer');
   });
 });
 

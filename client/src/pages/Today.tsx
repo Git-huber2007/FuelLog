@@ -4,6 +4,7 @@ import { DailyCheckCard } from '../components/today/DailyCheckCard';
 import { EatenList } from '../components/today/EatenList';
 import { MacroBars } from '../components/today/MacroBars';
 import { NudgeLine } from '../components/today/NudgeLine';
+import { DailyLine } from '../components/today/DailyLine';
 import { Scoreboard } from '../components/today/Scoreboard';
 import { WeekStrip } from '../components/today/WeekStrip';
 import { ErrorState } from '../components/ui/EmptyState';
@@ -57,9 +58,10 @@ export default function Today() {
     // Below md the column wrappers dissolve (contents), so the daily check can drop under the food cards on a phone
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 items-start">
       <div className="contents md:block md:space-y-5">
-        {userName && (
-          <p className="px-1 text-base font-semibold">{isToday ? `Hi ${userName}` : `${userName}'s log`}</p>
-        )}
+        <div className="contents md:block md:space-y-1">
+          {userName && <p className="px-1 text-base font-semibold">{isToday ? `Hi ${userName}` : `${userName}'s log`}</p>}
+          <DailyLine date={date} />
+        </div>
         <Scoreboard eaten={totals.kcal} target={targets.kcal} burned={totalBurn} streak={progress.data?.streak} />
         {progress.data?.calories && progress.data.calories.length > 0 ? (
           <WeekStrip days={progress.data.calories} selected={date} onSelect={setDate} />

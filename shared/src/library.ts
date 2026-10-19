@@ -144,3 +144,23 @@ export const supportsIncline = (name: string): boolean => {
   const lower = name.toLowerCase();
   return INCLINE_KEYWORDS.some((kw) => lower.includes(kw));
 };
+
+const SPLIT_MUSCLE: Record<string, MuscleGroup> = {
+  'Assisted pull-up or pulldown': 'back', 'Back extension': 'lowerback', 'Barbell or dumbbell row': 'back', 'Bench press': 'chest',
+  'Cable crunch': 'core', 'Calf raise': 'calves', 'Chest fly': 'chest', 'Close-grip bench or dips': 'triceps', 'Dumbbell curl': 'biceps',
+  'EZ-bar curl': 'biceps', 'Face pull': 'shoulders', 'Hammer curl': 'biceps', 'Hanging knee raise': 'core', 'Incline bench or machine press': 'chest',
+  'Incline dumbbell curl': 'biceps', 'Incline dumbbell press': 'chest', 'Lat pulldown': 'back', 'Lateral raise': 'shoulders', 'Leg curl': 'hamstrings',
+  'Leg extension': 'quads', 'Overhead press': 'shoulders', 'Overhead triceps extension': 'triceps', 'Plank': 'core', 'Rear delt fly': 'shoulders',
+  'Romanian deadlift': 'hamstrings', 'Rope pushdown': 'triceps', 'Seated cable row': 'back', 'Shoulder press': 'shoulders', 'Shrugs': 'back',
+  'Squat or leg press': 'quads', 'Triceps pushdown': 'triceps', 'Walking lunge': 'quads',
+};
+const LIBRARY_MUSCLE: Record<string, MuscleGroup> = {
+  Back: 'back', Biceps: 'biceps', Calves: 'calves', Chest: 'chest', Core: 'core', Hamstrings: 'hamstrings', 'Lower back': 'lowerback', Quads: 'quads', Shoulders: 'shoulders', Triceps: 'triceps',
+};
+
+/** The main muscle an exercise trains, or null for forearms, glutes, neck and unknown keys. */
+export const exerciseMuscle = (key: string): MuscleGroup | null => {
+  const name = EXERCISE_NAMES.get(key);
+  if (name) return SPLIT_MUSCLE[name] ?? null;
+  return LIBRARY_MUSCLE[BY_ID.get(key)?.muscle ?? ''] ?? null;
+};
