@@ -563,7 +563,7 @@ export default function Routine() {
     <div className="max-w-2xl mx-auto space-y-6 px-3 min-[380px]:px-4">
       {/* Top Banner if custom is not active */}
       {!isCustomProgram && (
-        <section className="card border-accent/40 bg-accent/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" aria-labelledby="active-program-alert">
+        <section className="card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" aria-labelledby="active-program-alert">
           <div>
             <h2 id="active-program-alert" className="font-semibold text-sm text-text">Custom routine is not currently active</h2>
             <p className="text-xs text-muted mt-0.5">
@@ -632,7 +632,7 @@ export default function Routine() {
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-base text-text truncate">{name}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      hasExercises ? 'bg-accent/10 text-accent' : 'bg-line/60 text-muted'
+                      hasExercises ? 'bg-field text-text' : 'bg-field text-muted'
                     }`}>
                       {hasExercises ? `${dayData.exercises.length} ${dayData.exercises.length === 1 ? 'exercise' : 'exercises'}` : 'Rest'}
                     </span>

@@ -8,7 +8,7 @@ export function WaterCounter({ ml, targetMl, onChange }: { ml: number; targetMl:
         <p className="label mb-0">Water</p>
         <p className="tabular-nums" aria-live="polite"><span className="text-xl font-semibold tracking-tight">{(ml / 1000).toFixed(2)}</span><span className="stat-unit">of {(targetMl / 1000).toFixed(1)} L</span></p>
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line" aria-hidden>
-          <div className="h-full w-full rounded-full bg-carbs origin-left transition-transform duration-500 ease-out" style={{ transform: `scaleX(${targetMl ? Math.min(1, ml / targetMl) : 0})` }} />
+          <div className="h-full w-full rounded-full bg-text/70 origin-left transition-transform duration-500 ease-out" style={{ transform: `scaleX(${targetMl ? Math.min(1, ml / targetMl) : 0})` }} />
         </div>
       </div>
       <div className="flex gap-2">

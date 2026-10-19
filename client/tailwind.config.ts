@@ -6,6 +6,7 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      animation: { 'rise-in': 'rise-in 300ms cubic-bezier(0.16, 1, 0.3, 1)' },
       transitionTimingFunction: { spring: 'cubic-bezier(0.32, 0.72, 0, 1)' }, // settles like a mass on a spring; used for every interactive transition
       colors: {
         bg: token('bg'),

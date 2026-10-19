@@ -79,10 +79,6 @@ export default function Landing() {
 
   return (
     <div className="relative overflow-x-clip">
-      {/* Two fixed-size glows behind the hero. Absolutely placed and inert, so scrolling never repaints them. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[56rem]"
-        style={{ background: 'radial-gradient(48rem 30rem at 18% 8%, rgb(var(--accent) / var(--glow)), transparent 70%), radial-gradient(40rem 28rem at 92% 30%, rgb(var(--carbs) / calc(var(--glow) * 0.7)), transparent 70%)' }} />
-
       <header className="sticky top-0 z-20 px-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <nav aria-label="Main" className="mx-auto flex min-h-[56px] max-w-[1200px] items-center justify-between gap-2 rounded-full border border-line bg-card py-1.5 pl-4 pr-1.5">
           <Link to="/welcome" className="flex min-h-[44px] items-center gap-2.5 font-semibold">
@@ -209,7 +205,6 @@ export default function Landing() {
         <section className="mx-auto max-w-[1200px] px-5 pb-24 md:pb-32">
           <div className="reveal bezel">
             <div className="card relative overflow-hidden px-6 py-16 text-center md:py-24">
-              <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(36rem 20rem at 50% 0%, rgb(var(--accent) / var(--glow)), transparent 70%)' }} />
               <h2 className="display-2 relative mx-auto max-w-[36rem]">Start with today&apos;s breakfast.</h2>
               <p className="relative mx-auto mt-4 max-w-[30rem] text-lg text-muted">Create an account, answer five questions, and your targets and first workout are ready.</p>
               <div className="relative mt-9 flex justify-center"><Cta>Create your account</Cta></div>

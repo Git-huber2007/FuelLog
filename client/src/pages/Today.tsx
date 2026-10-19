@@ -5,6 +5,7 @@ import { EatenList } from '../components/today/EatenList';
 import { MacroBars } from '../components/today/MacroBars';
 import { NudgeLine } from '../components/today/NudgeLine';
 import { Scoreboard } from '../components/today/Scoreboard';
+import { WeekStrip } from '../components/today/WeekStrip';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { useDay } from '../hooks/useDay';
@@ -16,7 +17,7 @@ import { useSession } from '../hooks/useSession';
 export default function Today() {
   const { session } = useSession();
   const userName = ((session?.user.user_metadata?.name ?? session?.user.user_metadata?.full_name ?? '') as string) || '';
-  const { date, isToday } = useSelectedDate();
+  const { date, isToday, setDate } = useSelectedDate();
   const day = useDay(date);
   const progress = useProgress();
   const profile = useProfile();
@@ -60,6 +61,7 @@ export default function Today() {
           <p className="px-1 text-base font-semibold">{isToday ? `Hi ${userName}` : `${userName}'s log`}</p>
         )}
         <Scoreboard eaten={totals.kcal} target={targets.kcal} burned={totalBurn} streak={progress.data?.streak} />
+        {!!progress.data?.calories.length && <WeekStrip days={progress.data.calories} selected={date} onSelect={setDate} />}
         <section className="card space-y-4" aria-label="Macros">
           <MacroBars totals={totals} targets={targets} />
           {totalBurn > 0 && <p className="text-sm text-muted">Burned is an estimate: workout {workoutBurn}, walking {walkingBurn}. It does not change your calorie target.</p>}
