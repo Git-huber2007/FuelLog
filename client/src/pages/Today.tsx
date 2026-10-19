@@ -62,7 +62,7 @@ export default function Today() {
           {userName && <p className="px-1 text-base font-semibold">{isToday ? `Hi ${userName}` : `${userName}'s log`}</p>}
           <DailyLine date={date} />
         </div>
-        <Scoreboard eaten={totals.kcal} target={targets.kcal} burned={totalBurn} streak={progress.data?.streak} />
+        <Scoreboard eaten={totals.kcal} target={targets.kcal} burned={totalBurn} streak={progress.data?.streak} rings={{ protein: totals.protein_g, proteinTarget: targets.protein_g, trained: day.data.sets.length > 0 }} />
         {progress.data?.calories && progress.data.calories.length > 0 ? (
           <WeekStrip days={progress.data.calories} selected={date} onSelect={setDate} />
         ) : null}

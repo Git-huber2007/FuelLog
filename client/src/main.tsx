@@ -14,6 +14,13 @@ import './index.css';
 
 registerSW({ immediate: true });
 
+// A fresh load or refresh always opens today; ?date= only lives while you move around inside the app.
+const url = new URL(window.location.href);
+if (url.searchParams.has('date')) {
+  url.searchParams.delete('date');
+  window.history.replaceState(null, '', url);
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {
     reportClientError(event.error ?? event.message);

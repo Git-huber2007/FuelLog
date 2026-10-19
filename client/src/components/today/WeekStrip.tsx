@@ -1,5 +1,4 @@
 import type { ProgressResponse } from '@fuellog/shared';
-import { Rings, ringsFor } from '../ui/Rings';
 
 type Day = ProgressResponse['calories'][number];
 
@@ -10,13 +9,20 @@ export function dayState({ kcal, target }: Pick<Day, 'kcal' | 'target'>): 'empty
   return kcal < target * 0.9 ? 'under' : 'on';
 }
 
+const DOT = {
+  empty: 'border border-dashed border-input-line text-muted',
+  under: 'bg-field text-text',
+  on: 'bg-accent text-onaccent',
+  over: 'bg-fat text-white',
+} as const;
+
 const WORD = { empty: 'nothing logged', under: 'under target', on: 'on target', over: 'over target' } as const;
 
 /** Spoken summary of one day's rings, shared by the week strip and the activity calendar. */
 export const dayLabel = (d: Day) =>
   `${new Date(`${d.date}T00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}: calories ${WORD[dayState(d)]}, ${d.protein} of ${d.proteinTarget} g protein${d.trained ? ', trained' : ''}`;
 
-/** The last 7 days as Apple-style rings; tap a day to open it. */
+/** The last 7 days at a glance; tap a day to open it. */
 export function WeekStrip({ days, selected, onSelect }: { days: Day[]; selected: string; onSelect: (date: string) => void }) {
   return (
     <nav aria-label="Last 7 days" className="grid grid-cols-7 gap-1 px-1">
@@ -33,7 +39,7 @@ export function WeekStrip({ days, selected, onSelect }: { days: Day[]; selected:
             className={`flex min-h-12 flex-col items-center gap-1 rounded-xl py-1.5 transition-colors ${isSelected ? 'bg-card shadow-[0_1px_3px_rgb(0_0_0/0.12)]' : 'hover:bg-field'}`}
           >
             <span className={`text-[0.6875rem] font-semibold ${isSelected ? 'text-text' : 'text-muted'}`}>{at.toLocaleDateString(undefined, { weekday: 'narrow' })}</span>
-            <Rings rings={ringsFor(d)} size={34} />
+            <span className={`grid h-8 w-8 place-items-center rounded-full text-xs font-bold ${DOT[dayState(d)]}`}>{at.getDate()}</span>
           </button>
         );
       })}
