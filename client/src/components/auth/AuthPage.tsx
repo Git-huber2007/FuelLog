@@ -35,7 +35,7 @@ export function AuthPage({ title, children, footer }: { title: string; children:
 
       <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
         <div className="bezel">
-          <section className="card rounded-md p-6" aria-labelledby="auth-title">
+          <section className="card p-6" aria-labelledby="auth-title">
             <h1 ref={headingRef} id="auth-title" tabIndex={-1} className="mb-5 text-2xl outline-none">{title}</h1>
             {children}
           </section>

@@ -77,7 +77,7 @@ export function CalorieBarsChart({ days }: { days: ProgressResponse['calories'] 
                 y={barY}
                 height={barH}
                 rx="2"
-                className={isOver ? 'fill-fat' : 'fill-kcal'}
+                className={isOver ? 'fill-fat' : 'fill-muted/60'}
               >
                 <title>{`${formatDayLabel(d.date, today)}: ${d.kcal ? `${Math.round(d.kcal)} kcal` : 'Not logged'} (Target: ${d.target} kcal)`}</title>
               </rect>

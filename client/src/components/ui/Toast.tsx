@@ -71,7 +71,7 @@ export function Toast({ message, kind, isExiting = false }: { message: string; k
     <div
       role={isError ? 'alert' : 'status'}
       aria-live={isError ? 'assertive' : 'polite'}
-      className={`max-w-[480px] rounded-md border bg-card px-4 py-3 text-sm shadow-xl transition-all duration-200 ${
+      className={`max-w-[480px] rounded-xl border bg-card px-4 py-3 text-sm shadow-xl transition-all duration-200 ${
         isExiting ? 'opacity-0 translate-y-2' : 'toast-in'
       } ${
         isError ? 'border-danger/60 text-danger bg-danger/10' : 'border-line text-text'

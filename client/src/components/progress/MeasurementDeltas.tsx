@@ -15,8 +15,8 @@ export function MeasurementDeltas({ deltas }: { deltas: ProgressResponse['measur
         const d = deltas[key]!;
         return (
           <div key={key} className="flex items-baseline gap-3 py-2.5">
-            <dt className="tile-label flex-1">{LABELS[key]}</dt>
-            <dd className="cond text-2xl font-bold leading-none">{d.latest} cm</dd>
+            <dt className="flex-1 text-sm text-muted">{LABELS[key]}</dt>
+            <dd className="text-xl font-bold leading-none tracking-[-0.01em]">{d.latest} cm</dd>
             <dd className="w-20 text-right text-sm text-muted">{d.delta === 0 ? 'No change' : `${d.delta > 0 ? '+' : '−'}${Math.abs(d.delta)} cm`}</dd>
           </div>
         );

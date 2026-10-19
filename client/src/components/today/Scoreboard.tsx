@@ -1,10 +1,10 @@
-/** Today's board, read like a run chase: what is still required, then the target, eaten and burned columns. */
+/** Today's scoreboard, the app's one signature: what is still to get, then the target, eaten and burned columns. */
 export function Scoreboard({ eaten, target, burned = 0, streak }: { eaten: number; target: number; burned?: number; streak?: number }) {
   const left = Math.round(target - eaten);
   const over = left < 0;
   const columns = [['Target', target], ['Eaten', Math.round(eaten)], ['Burned', burned]] as const;
   return (
-    <section className="board rounded-md p-4" aria-label="Calories">
+    <section className="board rounded-2xl p-5" aria-label="Calories">
       <div className="flex items-baseline justify-between gap-3">
         <p className="cond text-sm font-bold uppercase tracking-[0.08em] text-board-muted">{over ? 'Over by' : 'To get'}</p>
         {!!streak && (

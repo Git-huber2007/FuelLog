@@ -19,7 +19,7 @@ export function EatenList({ date, logs }: { date: string; logs: FoodLog[] }) {
         if (!entries.length) return null;
         return (
           <div key={meal}>
-            <h3 className="cond flex justify-between border-b border-line pb-1 text-sm font-bold uppercase tracking-[0.06em] text-muted">
+            <h3 className="flex justify-between border-b border-line pb-1.5 text-sm font-semibold text-muted">
               <span>{MEAL_LABELS[meal]}</span>
               <span className="text-text">{Math.round(entries.reduce((sum, l) => sum + l.kcal, 0))} kcal</span>
             </h3>

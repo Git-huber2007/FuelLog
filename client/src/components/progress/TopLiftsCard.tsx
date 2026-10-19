@@ -102,8 +102,8 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
                     <p className="truncate font-medium text-sm text-text group-hover:text-accent transition-colors">
                       {lift.name}
                     </p>
-                    <p className="text-xs text-muted truncate">
-                      {lift.totalSessions} {lift.totalSessions === 1 ? 'session' : 'sessions'} · Latest: {lift.latestMetric}
+                    <p className="text-xs text-muted">
+                      {lift.totalSessions} {lift.totalSessions === 1 ? 'session' : 'sessions'} · <span className="whitespace-nowrap">Latest: {lift.latestMetric}</span>
                     </p>
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export function TopLiftsCard({ topLifts }: { topLifts?: TopLiftSummary[] }) {
                   </div>
 
                   <span
-                    className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-semibold ${
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
                       isUp
                         ? 'bg-accent/15 text-accent'
                         : isDown

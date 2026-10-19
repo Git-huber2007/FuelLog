@@ -15,8 +15,8 @@ export function WeekSummaryCard({ summary }: { summary: ProgressResponse['summar
       <dl className="mt-2 divide-y divide-line">
         {stats.map(([label, value], i) => (
           <div key={label} className="flex items-baseline justify-between gap-3 py-2.5">
-            <dt className="tile-label">{label}</dt>
-            <dd className={`cond font-bold leading-none ${i === 0 ? 'text-[2rem]' : 'text-2xl'}`}>{value}</dd>
+            <dt className="text-sm text-muted">{label}</dt>
+            <dd className={`font-bold leading-none tracking-[-0.01em] ${i === 0 ? 'text-[1.75rem]' : 'text-xl'}`}>{value}</dd>
           </div>
         ))}
       </dl>

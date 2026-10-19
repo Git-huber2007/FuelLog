@@ -314,7 +314,7 @@ export default function ExerciseHistory() {
                   <p className="text-xs text-muted">{formatDayLabel(pr.date, today)}</p>
                 </div>
                 {index === 0 && (
-                  <span className="rounded-sm bg-accent/15 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-accent border border-accent/30">
+                  <span className="rounded-full bg-field px-2.5 py-0.5 text-xs font-semibold text-text">
                     Current PR
                   </span>
                 )}

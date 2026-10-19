@@ -16,10 +16,10 @@ export function MacroBars({ totals, targets }: { totals: MacroTotals; targets: T
         return (
           <li key={key}>
             <div className="flex items-baseline justify-between gap-2">
-              <span className="cond text-xs font-bold uppercase tracking-[0.06em] text-muted">{label}</span>
+              <span className="tile-label">{label}</span>
               <span className="whitespace-nowrap text-sm"><span className="font-bold">{eaten}</span><span className="text-muted"> / {target} g</span></span>
             </div>
-            <div className="mt-1.5 h-2 overflow-hidden rounded-sm bg-line" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={target} aria-valuenow={eaten}>
+            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={target} aria-valuenow={eaten}>
               <div className={`h-full w-full origin-left transition-transform duration-500 ease-out ${color}`} style={{ transform: `scaleX(${target ? Math.min(1, eaten / target) : 0})` }} />
             </div>
           </li>

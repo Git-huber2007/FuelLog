@@ -3,26 +3,28 @@
 @tailwind utilities;
 
 /*
- * The Run Chase: a night scoreboard over a printed scorecard.
- * Board tokens paint the shell bands (header, tab bar, Today's board) and stay dark in both themes;
- * the rest is the scorecard: white in light, green-black in dark.
+ * Calm neutral surfaces with one signature: Today's scoreboard.
+ * Board tokens paint only the scoreboard (and the rest timer) and stay dark green in both themes;
+ * everything else is neutral, with green kept for actions and done states.
  */
 :root {
   color-scheme: light dark;
-  --bg: 238 241 237;
+  --bg: 244 245 247;
   --card: 255 255 255;
-  --text: 14 30 22;
-  --muted: 70 86 77;
-  --line: 212 220 214;
-  --input-line: 124 140 131;
-  --accent: 21 104 60;
+  --field: 241 243 246;
+  --raised: 255 255 255;
+  --text: 17 20 24;
+  --muted: 88 96 108;
+  --line: 228 231 236;
+  --input-line: 160 166 176;
+  --accent: 21 128 61;
   --on-accent: 255 255 255;
   --board: 12 48 31;
   --on-board: 240 243 235;
   --board-muted: 156 186 167;
   --board-line: 36 84 60;
   --digit: 255 204 41;
-  --kcal: 21 104 60;
+  --kcal: 21 128 61;
   --protein: 190 24 93;
   --danger: 185 28 28;
   --carbs: 29 78 216;
@@ -35,18 +37,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: 8 24 16;
-    --card: 13 36 25;
-    --text: 234 240 229;
-    --muted: 148 174 158;
-    --line: 30 62 45;
-    --input-line: 72 108 89;
+    --bg: 14 17 22;
+    --card: 22 27 34;
+    --field: 31 38 48;
+    --raised: 52 61 75;
+    --text: 242 244 248;
+    --muted: 155 163 176;
+    --line: 38 44 54;
+    --input-line: 74 82 96;
     --accent: 74 222 128;
     --on-accent: 5 46 22;
-    --board: 4 16 10;
+    --board: 12 44 28;
     --on-board: 240 243 235;
-    --board-muted: 140 172 152;
-    --board-line: 28 60 43;
+    --board-muted: 150 182 162;
+    --board-line: 30 74 52;
     --digit: 255 210 63;
     --kcal: 74 222 128;
     --protein: 244 114 182;
@@ -59,18 +63,20 @@
 }
 
 :root.dark, :root[data-theme='dark'] {
-  --bg: 8 24 16;
-  --card: 13 36 25;
-  --text: 234 240 229;
-  --muted: 148 174 158;
-  --line: 30 62 45;
-  --input-line: 72 108 89;
+  --bg: 14 17 22;
+  --card: 22 27 34;
+  --field: 31 38 48;
+  --raised: 52 61 75;
+  --text: 242 244 248;
+  --muted: 155 163 176;
+  --line: 38 44 54;
+  --input-line: 74 82 96;
   --accent: 74 222 128;
   --on-accent: 5 46 22;
-  --board: 4 16 10;
+  --board: 12 44 28;
   --on-board: 240 243 235;
-  --board-muted: 140 172 152;
-  --board-line: 28 60 43;
+  --board-muted: 150 182 162;
+  --board-line: 30 74 52;
   --digit: 255 210 63;
   --kcal: 74 222 128;
   --protein: 244 114 182;
@@ -82,20 +88,22 @@
 }
 
 :root.light, :root[data-theme='light'] {
-  --bg: 238 241 237;
+  --bg: 244 245 247;
   --card: 255 255 255;
-  --text: 14 30 22;
-  --muted: 70 86 77;
-  --line: 212 220 214;
-  --input-line: 124 140 131;
-  --accent: 21 104 60;
+  --field: 241 243 246;
+  --raised: 255 255 255;
+  --text: 17 20 24;
+  --muted: 88 96 108;
+  --line: 228 231 236;
+  --input-line: 160 166 176;
+  --accent: 21 128 61;
   --on-accent: 255 255 255;
   --board: 12 48 31;
   --on-board: 240 243 235;
   --board-muted: 156 186 167;
   --board-line: 36 84 60;
   --digit: 255 204 41;
-  --kcal: 21 104 60;
+  --kcal: 21 128 61;
   --protein: 190 24 93;
   --danger: 185 28 28;
   --carbs: 29 78 216;
@@ -154,9 +162,9 @@
   .cond {
     font-stretch: 75%;
   }
-  /* A scorecard panel: hairline edge, square-ish corners, one short soft shadow. */
+  /* A surface: hairline edge, soft corners, one short soft shadow. */
   .card {
-    @apply rounded-md border border-line bg-card p-4;
+    @apply rounded-2xl border border-line bg-card p-5;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 10px 20px -16px rgb(0 0 0 / var(--shadow));
     break-inside: avoid;
   }
@@ -164,19 +172,19 @@
   .bezel {
     break-inside: avoid;
   }
-  /* A scoreboard band: the shell's header, tab bar and Today's board. Dark in both themes. */
+  /* The scoreboard surface: Today's board and the rest timer. Dark green in both themes. */
   .board {
     @apply border border-board-line bg-board text-on-board;
     box-shadow: 0 12px 24px -16px rgb(0 0 0 / 0.55);
   }
   .btn {
-    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-md border border-input-line/60 bg-card px-5 text-base font-semibold text-text transition-[transform,background-color,opacity] duration-150 ease-spring hover:bg-bg active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-xl border border-line bg-card px-5 text-base font-semibold text-text transition-[transform,background-color,opacity] duration-150 ease-spring hover:bg-bg active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-primary {
-    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-md bg-accent px-6 text-base font-bold text-onaccent transition-[transform,filter,opacity] duration-150 ease-spring hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-xl bg-accent px-6 text-base font-bold text-onaccent transition-[transform,filter,opacity] duration-150 ease-spring hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
   }
   .input {
-    @apply min-h-[48px] w-full min-w-0 rounded-md border border-input-line bg-card px-4 text-base text-text transition-[border-color,box-shadow] duration-200 ease-spring placeholder:text-muted;
+    @apply min-h-[48px] w-full min-w-0 rounded-xl border border-input-line/70 bg-field px-4 text-base text-text transition-[border-color,box-shadow] duration-200 ease-spring placeholder:text-muted;
   }
   .input[aria-invalid='true'] {
     border-color: rgb(var(--danger));
@@ -203,21 +211,20 @@
     border-color: rgb(var(--accent));
     box-shadow: 0 0 0 3px rgb(var(--accent) / 0.2);
   }
-  /* A card's heading: an innings head in the condensed cut. Column heads and subheads use .tile-label. */
+  /* A card's heading, in sentence case. Column heads and subheads use .tile-label. */
   .card-title {
-    @apply cond text-xl font-extrabold uppercase leading-tight tracking-[0.02em] text-text;
+    @apply text-lg font-bold leading-tight tracking-[-0.01em] text-text;
   }
-  /* A headline figure, in the condensed scoreboard cut. */
+  /* A headline figure. */
   .stat {
-    @apply cond text-[2rem] font-bold leading-none tracking-[-0.01em];
+    @apply text-[2rem] font-bold leading-none tracking-[-0.02em];
   }
   .stat-unit {
     @apply ml-1.5 text-sm font-medium tracking-normal text-muted;
-    font-stretch: 100%;
   }
   /* A borderless control for an icon: delete, step, previous, next. */
   .icon-btn {
-    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-text/[0.06] hover:text-text active:bg-text/10 disabled:opacity-40 disabled:pointer-events-none;
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-text/[0.06] hover:text-text active:bg-text/10 disabled:opacity-40 disabled:pointer-events-none;
   }
   .icon-btn svg {
     @apply h-5 w-5;
@@ -233,19 +240,20 @@
     content: '';
     @apply absolute left-0.5 top-[0.6em] h-1.5 w-1.5 bg-accent;
   }
-  /* One ruled scorecard cell inside a card, for one figure or one group of controls. */
+  /* A recessed cell inside a card, for one figure or one group of controls. */
   .tile {
-    @apply rounded-sm border border-line bg-bg/60 p-3;
+    @apply rounded-xl bg-field p-3;
   }
+  /* Small column label: the only uppercase text outside the scoreboard. */
   .tile-label {
-    @apply cond text-xs font-bold uppercase tracking-[0.06em] text-muted;
+    @apply text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted;
   }
   .tile-value {
-    @apply cond mt-1 text-2xl font-bold leading-none;
+    @apply mt-1 text-xl font-bold leading-none tracking-[-0.01em];
   }
   /* A secondary action shown as a tile: icon above its label, equal widths in a grid. */
   .action {
-    @apply flex min-h-[76px] cursor-pointer flex-col items-start justify-between gap-2 rounded-md border border-line bg-bg/60 p-3 text-left text-sm font-semibold text-text transition-[transform,background-color,border-color] duration-200 ease-spring hover:border-accent/50 active:scale-[0.97];
+    @apply flex min-h-[76px] cursor-pointer flex-col items-start justify-between gap-2 rounded-xl border border-line bg-field p-3 text-left text-sm font-semibold text-text transition-[transform,background-color,border-color] duration-200 ease-spring hover:border-accent/50 active:scale-[0.97];
   }
   .action[aria-pressed='true'] {
     border-color: rgb(var(--accent));
@@ -258,21 +266,21 @@
     @apply mb-1.5 block text-sm font-medium text-muted;
   }
   .chip {
-    @apply inline-flex min-h-[44px] max-w-full items-center rounded-md border border-line bg-card px-4 text-sm font-medium text-text transition-[transform,background-color,border-color,opacity] duration-150 ease-spring hover:border-input-line active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-line bg-card px-4 text-sm font-medium text-text transition-[transform,background-color,border-color,opacity] duration-150 ease-spring hover:border-input-line active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
   }
   .pressable {
     @apply transition-transform duration-150 ease-spring active:scale-[0.97];
   }
-  /* Segmented controls: the chosen option is lit in the brand green, in both themes. */
+  /* Segmented controls: the chosen option lifts out of the track as a card. */
   .segmented {
-    @apply flex w-full items-center gap-1 rounded-md border border-line bg-bg/60 p-1 text-sm;
+    @apply flex w-full items-center gap-1 rounded-xl bg-field p-1 text-sm;
   }
   .segmented-option {
-    @apply flex min-h-[40px] flex-1 cursor-pointer select-none items-center justify-center rounded-sm px-3 py-1.5 text-center text-sm font-semibold text-muted transition-[background-color,color] duration-150 ease-spring hover:text-text has-[:checked]:bg-accent has-[:checked]:text-onaccent has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent;
+    @apply flex min-h-[40px] flex-1 cursor-pointer select-none items-center justify-center rounded-lg px-3 py-1.5 text-center text-sm font-semibold text-muted transition-[background-color,color,box-shadow] duration-150 ease-spring hover:text-text has-[:checked]:bg-raised has-[:checked]:text-text has-[:checked]:shadow-[0_1px_3px_rgb(0_0_0/0.18)] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent;
   }
   /* A dialog sheet: centered modal on desktop, bottom sheet on phones */
   .sheet {
-    @apply fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] w-full max-w-lg rounded-t-lg border border-line bg-card p-5 text-text shadow-2xl transition-all sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-lg;
+    @apply fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] w-full max-w-lg rounded-t-3xl border border-line bg-card p-5 text-text shadow-2xl transition-all sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-3xl;
   }
   .field-error {
     @apply mt-1 text-sm text-danger;

@@ -32,7 +32,7 @@ function useReveal() {
 }
 
 const Arrow = () => (
-  <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-current/10 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-px">
+  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-current/10 transition-transform duration-500 ease-spring group-hover:translate-x-0.5 group-hover:-translate-y-px">
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17 17 7M9 7h8v8" /></svg>
   </span>
 );
@@ -45,7 +45,7 @@ const Cta = ({ children }: { children: ReactNode }) => (
 function Tile({ className = '', eyebrow, title, detail, children }: { className?: string; eyebrow: string; title: string; detail: string; children?: ReactNode }) {
   return (
     <li className={`reveal bezel flex ${className}`}>
-      <div className="card flex w-full flex-col justify-between gap-8 rounded-md p-6 md:p-8">
+      <div className="card flex w-full flex-col justify-between gap-8 p-6 md:p-8">
         {children && <div aria-hidden className="pointer-events-none select-none">{children}</div>}
         <div>
           <p className="card-title text-accent">{eyebrow}</p>
@@ -84,15 +84,15 @@ export default function Landing() {
         style={{ background: 'radial-gradient(48rem 30rem at 18% 8%, rgb(var(--accent) / var(--glow)), transparent 70%), radial-gradient(40rem 28rem at 92% 30%, rgb(var(--carbs) / calc(var(--glow) * 0.7)), transparent 70%)' }} />
 
       <header className="sticky top-0 z-20 px-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
-        <nav aria-label="Main" className="board mx-auto flex min-h-[56px] max-w-[1200px] items-center justify-between gap-2 rounded-sm py-1.5 pl-4 pr-1.5">
+        <nav aria-label="Main" className="mx-auto flex min-h-[56px] max-w-[1200px] items-center justify-between gap-2 rounded-full border border-line bg-card py-1.5 pl-4 pr-1.5">
           <Link to="/welcome" className="flex min-h-[44px] items-center gap-2.5 font-semibold">
             <img src="/icon-192.png" alt="" width={32} height={32} className="h-8 w-8 rounded-md" />
             FuelLog
           </Link>
           <div className="flex items-center gap-1">
-            <a href="#features" className="hidden min-h-[44px] items-center rounded-sm px-4 text-sm text-muted transition-colors hover:text-text sm:inline-flex">Features</a>
-            <a href="#how" className="hidden min-h-[44px] items-center rounded-sm px-4 text-sm text-muted transition-colors hover:text-text sm:inline-flex">How it works</a>
-            <Link to="/login" className="hidden min-[380px]:inline-flex min-h-[44px] items-center rounded-sm px-4 text-sm font-medium transition-colors hover:text-accent">Sign in</Link>
+            <a href="#features" className="hidden min-h-[44px] items-center rounded-full px-4 text-sm text-muted transition-colors hover:text-text sm:inline-flex">Features</a>
+            <a href="#how" className="hidden min-h-[44px] items-center rounded-full px-4 text-sm text-muted transition-colors hover:text-text sm:inline-flex">How it works</a>
+            <Link to="/login" className="hidden min-[380px]:inline-flex min-h-[44px] items-center rounded-full px-4 text-sm font-medium transition-colors hover:text-accent">Sign in</Link>
             <Link to="/signup" className="btn-primary px-5 text-sm">Get started</Link>
           </div>
         </nav>
@@ -127,7 +127,7 @@ export default function Landing() {
                   <p className="font-semibold">Bench press</p>
                   <p className="text-sm text-muted">Last time 57.5 kg × 10</p>
                 </div>
-                <span className="shrink-0 whitespace-nowrap rounded-sm bg-accent/15 px-3 py-1.5 text-sm font-semibold text-accent">Add 2.5 kg today</span>
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-accent/15 px-3 py-1.5 text-sm font-semibold text-accent">Add 2.5 kg today</span>
               </div>
             </div>
             <div className="reveal card relative z-10 -mt-4 w-[62%] lg:-ml-6 lg:-rotate-1" style={{ transitionDelay: '240ms' }}>
@@ -208,7 +208,7 @@ export default function Landing() {
 
         <section className="mx-auto max-w-[1200px] px-5 pb-24 md:pb-32">
           <div className="reveal bezel">
-            <div className="card relative overflow-hidden rounded-md px-6 py-16 text-center md:py-24">
+            <div className="card relative overflow-hidden px-6 py-16 text-center md:py-24">
               <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(36rem 20rem at 50% 0%, rgb(var(--accent) / var(--glow)), transparent 70%)' }} />
               <h2 className="display-2 relative mx-auto max-w-[36rem]">Start with today&apos;s breakfast.</h2>
               <p className="relative mx-auto mt-4 max-w-[30rem] text-lg text-muted">Create an account, answer five questions, and your targets and first workout are ready.</p>

@@ -82,7 +82,7 @@ export function DailyCheckCard({ date, initial, waterTargetMl }: Props) {
         {([['creatine', 'Creatine'], ['protein_shake', 'Protein shake']] as const).map(([key, label]) => (
           <label key={key} className="flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-2xl border border-line px-3.5 text-sm transition-colors duration-200 has-[:checked]:border-accent/60 has-[:checked]:bg-accent/10 has-[:checked]:font-medium has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent">
             <input type="checkbox" className="peer sr-only" checked={check[key]} onChange={(e) => update({ [key]: e.target.checked })} />
-            <span className="order-first flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border border-input-line text-transparent transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-checked:text-onaccent" aria-hidden>
+            <span className="order-first flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-input-line text-transparent transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-checked:text-onaccent" aria-hidden>
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10" /></svg>
             </span>
             {label}

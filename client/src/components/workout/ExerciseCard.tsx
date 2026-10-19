@@ -101,7 +101,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
           </Link>
           {exercise.detail && <p className="text-sm text-muted">{exercise.detail}</p>}
         </div>
-        <span className="shrink-0 rounded-sm bg-bg px-2.5 py-1 text-xs font-medium tabular-nums text-muted">
+        <span className="shrink-0 rounded-full bg-bg px-2.5 py-1 text-xs font-medium tabular-nums text-muted">
           {exercise.prescription}
         </span>
       </div>

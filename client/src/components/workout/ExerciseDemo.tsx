@@ -68,7 +68,7 @@ export function ExerciseDemo({ name, photos }: { name: string; photos: readonly 
       )}
       <span className="absolute left-2 top-2 rounded-md bg-black/60 px-2 py-0.5 text-xs font-medium text-white" aria-live="off">{finish ? 'End position' : 'Start position'}</span>
       <button type="button" onClick={toggle} aria-label={`${playing ? 'Pause' : 'Play'} demo of ${name}`}
-        className="pressable absolute bottom-2 right-2 inline-flex min-h-[44px] items-center gap-2 rounded-sm bg-black/70 px-4 text-sm font-semibold text-white">
+        className="pressable absolute bottom-2 right-2 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-black/70 px-4 text-sm font-semibold text-white">
         <svg viewBox="0 0 12 12" className="h-3 w-3 fill-current" aria-hidden>
           {/* the play triangle sits 1px right of centre, where it looks centred */}
           {playing ? <path d="M2 1h3v10H2zM7 1h3v10H7z" /> : <path d="M3 1l8 5-8 5z" />}

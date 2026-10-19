@@ -7,12 +7,12 @@ export function LoadingSkeleton({ cards = 3, variant = 'default' }: Props) {
   if (variant === 'hero') {
     return (
       <div role="status" aria-label="Loading" className="space-y-5">
-        <div className="board h-[12.5rem] rounded-md animate-pulse" />
+        <div className="board h-[12.5rem] rounded-2xl animate-pulse" />
         <div className="card grid grid-cols-2 gap-x-5 gap-y-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-1.5">
               <div className="h-3 w-1/3 rounded bg-line/60 animate-pulse" />
-              <div className="h-2 w-full rounded-sm bg-line/40 animate-pulse" />
+              <div className="h-2 w-full rounded-full bg-line/40 animate-pulse" />
             </div>
           ))}
         </div>

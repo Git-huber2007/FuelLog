@@ -15,7 +15,7 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
         <h3 className="label">Recent</h3>
         <div className="flex flex-wrap gap-2">
           {[80, 110, 95, 120].map((w, i) => (
-            <div key={i} className="h-9 shrink-0 rounded-sm bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
+            <div key={i} className="h-9 shrink-0 rounded-full bg-line/20 animate-pulse" style={{ width: `${w}px` }} />
           ))}
         </div>
       </div>
@@ -30,14 +30,15 @@ export function QuickAddChips({ date, meal }: { date: string; meal: Meal }) {
           <li key={food.name} className="max-w-full">
             <button
               type="button"
-              className="chip max-w-full py-1.5 text-left"
+              className="chip max-w-full sm:max-w-[20rem]"
               aria-label={`Add ${food.name}, ${Math.round(food.kcal)} kcal`}
               onClick={() => {
                 add.mutate([{ ...food, food_id: food.food_id ?? undefined, meal, servings: 1 }]);
                 toast(`Added ${food.name}.`);
               }}
             >
-              <span className="line-clamp-2" title={food.name}>{food.name}</span>
+              <span className="truncate" title={food.name}>{food.name}</span>
+              <span className="shrink-0 text-muted">{Math.round(food.kcal)}</span>
             </button>
           </li>
         ))}

@@ -631,7 +631,7 @@ export default function Routine() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-base text-text truncate">{name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-sm font-medium ${
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                       hasExercises ? 'bg-accent/10 text-accent' : 'bg-line/60 text-muted'
                     }`}>
                       {hasExercises ? `${dayData.exercises.length} ${dayData.exercises.length === 1 ? 'exercise' : 'exercises'}` : 'Rest'}
