@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   addDays, adjustmentAdvice, asExercise, buildCustomExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, deriveExerciseKind, EXERCISE_KEYS, exerciseMuscle, EXERCISE_KINDS,
-  exercisePhotos, LIBRARY, libraryExercise, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
+  exercisePhotos, LEAN_SIX_DAY_TEMPLATE, LIBRARY, libraryExercise, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
   stepsKcal, streak, supportsIncline, weekdayOf, workoutKcal, type ExerciseKind, type MuscleGroup, type Weigh,
 } from '../index';
 
@@ -387,6 +387,18 @@ describe('custom routines', () => {
     // When custom day is null/omitted -> Rest day
     const rest = splitFor('2026-10-12', 'custom', null);
     expect(rest).toEqual({ title: 'Rest', muscles: [], exercises: [] });
+  });
+
+  it('lean six-day template uses only library exercises and valid routine days', () => {
+    const { days } = LEAN_SIX_DAY_TEMPLATE;
+    expect(days).toHaveLength(7);
+    expect(days[0].exercises).toHaveLength(0);
+    for (const d of days) {
+      expect(RoutineDayInput.safeParse(d).success).toBe(true);
+      for (const e of d.exercises) expect(libraryExercise(e.key), e.key).toBeDefined();
+    }
+    expect(days[6].title).toBe('Legs');
+    expect(buildCustomExercise(days[3].exercises[4]).prescription).toBe('3×30–60 s');
   });
 });
 

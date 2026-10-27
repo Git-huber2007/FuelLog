@@ -1,6 +1,7 @@
 import {
   exerciseName,
   exercisePhotos,
+  LEAN_SIX_DAY_TEMPLATE,
   lookupExerciseKind,
   PROGRAMS,
   type Exercise,
@@ -14,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { useToast } from '../components/ui/Toast';
+import { CoachingGuide } from '../components/workout/CoachingGuide';
 import { ExercisePicker } from '../components/workout/ExercisePicker';
 import { ExercisePhoto } from '../components/workout/ExercisePhoto';
 import { useDebouncedMutation } from '../hooks/useDebouncedMutation';
@@ -30,11 +32,21 @@ const WEEKDAYS = [
   { weekday: 0, name: 'Sunday', short: 'Sun' },
 ] as const;
 
-const TEMPLATES: { key: 'full_body' | 'upper_lower' | 'six_day' | 'arnold_six_day'; name: string; summary: string }[] = [
-  { key: 'full_body', name: PROGRAMS.full_body.name, summary: PROGRAMS.full_body.summary },
-  { key: 'upper_lower', name: PROGRAMS.upper_lower.name, summary: PROGRAMS.upper_lower.summary },
-  { key: 'six_day', name: PROGRAMS.six_day.name, summary: PROGRAMS.six_day.summary },
-  { key: 'arnold_six_day', name: PROGRAMS.arnold_six_day.name, summary: PROGRAMS.arnold_six_day.summary },
+interface Template {
+  key: string;
+  name: string;
+  summary: string;
+  days: { title: string; exercises: RoutineExerciseItem[] }[];
+}
+
+const TEMPLATES: Template[] = [
+  ...(['full_body', 'upper_lower', 'six_day', 'arnold_six_day'] as const).map((key) => ({
+    key,
+    name: PROGRAMS[key].name,
+    summary: PROGRAMS[key].summary,
+    days: PROGRAMS[key].days.map((d) => ({ title: d.title, exercises: d.exercises.map(parseTemplateExercise) })),
+  })),
+  { key: 'lean_six_day', ...LEAN_SIX_DAY_TEMPLATE },
 ];
 
 function parseTemplateExercise(ex: Exercise): RoutineExerciseItem {
@@ -299,7 +311,7 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
                             className="h-10 w-14 shrink-0 rounded-lg bg-line object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-medium text-sm text-text" title={name}>
+                            <p className="line-clamp-2 break-words font-medium text-sm text-text" title={name}>
                               {name}
                             </p>
                             <span className="text-xs text-muted capitalize">
@@ -415,7 +427,7 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
                                 >
                                   −
                                 </button>
-                                <span className="font-semibold tabular-nums">
+                                <span className="whitespace-nowrap font-semibold tabular-nums">
                                   {item.reps_low === item.reps_high ? item.reps_low : `${item.reps_low}–${item.reps_high}`}
                                 </span>
                                 <button
@@ -503,21 +515,20 @@ export default function Routine() {
   const activeProgram = profile.data?.profile.program;
   const isCustomProgram = activeProgram === 'custom';
 
-  async function applyTemplate(templateKey: 'full_body' | 'upper_lower' | 'six_day' | 'arnold_six_day') {
+  async function applyTemplate(template: Template) {
+    if ([...dayMap.values()].some((d) => d.exercises.length > 0) && !window.confirm(`Replace your current routine with "${template.name}"?`)) return;
     setApplyingTemplate(true);
     try {
-      const template = PROGRAMS[templateKey];
       for (let w = 0; w < 7; w++) {
         const tDay = template.days[w];
         if (!tDay || tDay.exercises.length === 0) {
           await api(`/routine/${w}`, { method: 'DELETE' });
         } else {
-          const exercises: RoutineExerciseItem[] = tDay.exercises.map(parseTemplateExercise);
           await api<RoutineDayRow>(`/routine/${w}`, {
             method: 'PUT',
             body: {
               title: tDay.title,
-              exercises,
+              exercises: tDay.exercises,
             },
           });
         }
@@ -655,6 +666,8 @@ export default function Routine() {
         })}
       </section>
 
+      <CoachingGuide />
+
       {/* Template Chooser Dialog */}
       {showTemplates && (
         <dialog
@@ -691,7 +704,7 @@ export default function Routine() {
                     <button
                       type="button"
                       disabled={applyingTemplate}
-                      onClick={() => applyTemplate(tpl.key)}
+                      onClick={() => applyTemplate(tpl)}
                       className="btn-primary text-xs py-1.5 px-3 min-h-[32px]"
                     >
                       {applyingTemplate ? 'Copying…' : 'Use template'}

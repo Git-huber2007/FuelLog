@@ -133,6 +133,27 @@ export function buildCustomExercise(item: RoutineExerciseItem): Exercise {
   };
 }
 
+const item = (key: string, sets: number, reps_low: number, reps_high = reps_low): RoutineExerciseItem => ({ key, sets, reps_low, reps_high });
+// Cardio rows log distance and time, so their reps only record the 20-minute target.
+const CARDIO = item('Walking_Treadmill', 1, 20);
+const ROPE_PUSHDOWN = item('Triceps_Pushdown_-_Rope_Attachment', 3, 10, 15);
+const OVERHEAD_EXT = item('Cable_Rope_Overhead_Triceps_Extension', 2, 10, 15);
+
+/** A six-day split built from library exercises, copied into the editable custom routine. Indexed by weekday: 0 = Sunday. */
+export const LEAN_SIX_DAY_TEMPLATE = {
+  name: 'Lean athletic · 6 days',
+  summary: 'Back & biceps twice, chest & triceps twice, shoulders & abs, Saturday legs, 20 min cardio daily. Sunday rest.',
+  days: [
+    { title: '', exercises: [] },
+    { title: 'Back + Biceps', exercises: [item('Wide-Grip_Lat_Pulldown', 3, 8, 12), item('Dumbbell_Incline_Row', 3, 8, 12), item('Seated_Cable_Rows', 2, 10, 12), item('Barbell_Curl', 3, 10, 12), item('Hammer_Curls', 2, 10, 12), CARDIO] },
+    { title: 'Chest + Triceps', exercises: [item('Dumbbell_Bench_Press', 3, 8, 12), item('Incline_Dumbbell_Press', 3, 8, 12), item('Cable_Crossover', 2, 12, 15), ROPE_PUSHDOWN, OVERHEAD_EXT, CARDIO] },
+    { title: 'Shoulders + Abs', exercises: [item('Dumbbell_Shoulder_Press', 3, 8, 12), item('Side_Lateral_Raise', 4, 12, 15), item('Reverse_Machine_Flyes', 3, 12, 15), item('Dumbbell_Shrug', 2, 10, 15), item('Plank', 3, 30, 60), CARDIO] },
+    { title: 'Back + Biceps', exercises: [item('Wide-Grip_Lat_Pulldown', 3, 8, 12), item('One-Arm_Dumbbell_Row', 3, 8, 12), item('Straight-Arm_Pulldown', 2, 12, 15), item('Preacher_Curl', 3, 10, 12), item('Incline_Dumbbell_Curl', 2, 10, 12), CARDIO] },
+    { title: 'Chest + Shoulders + Triceps', exercises: [item('Leverage_Incline_Chest_Press', 3, 8, 12), item('Leverage_Chest_Press', 3, 8, 12), item('Side_Lateral_Raise', 3, 12, 15), ROPE_PUSHDOWN, OVERHEAD_EXT, CARDIO] },
+    { title: 'Legs', exercises: [item('Leg_Press', 3, 8, 12), item('Romanian_Deadlift', 3, 8, 12), item('Seated_Leg_Curl', 3, 10, 15), item('Leg_Extensions', 3, 10, 15), item('Standing_Calf_Raises', 3, 12, 15), item('Recumbent_Bike', 1, 20)] },
+  ] as { title: string; exercises: RoutineExerciseItem[] }[],
+};
+
 /** Start and finish photos. The fixed split's photos ship with the app; library photos come from the proxy endpoint. */
 export const exercisePhotos = (key: string): [start: string, finish: string] =>
   EXERCISE_KEYS.has(key) ? [`/exercises/${key}-0.jpg`, `/exercises/${key}-1.jpg`] : [`/api/exercises/${key}/0.jpg`, `/api/exercises/${key}/1.jpg`];
