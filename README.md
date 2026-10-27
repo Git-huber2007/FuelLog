@@ -1,6 +1,6 @@
 # FuelLog
 
-A mobile-first calorie, macro and gym tracker for people who have just started lifting. Log food in a few seconds (recent foods, saved meals, search, barcode, AI text or photo), track a fixed Monday-to-Saturday split, and let your calorie target follow your real 7-day weight trend.
+A mobile-first calorie, macro and gym tracker for people who have just started lifting. Log food in a few seconds (recent foods, saved meals, search, barcode, AI text or photo), track a fixed Monday-to-Saturday split or custom routines with dynamic sets, and let your calorie target follow your real 7-day weight trend.
 
 It runs as one Node web service that serves both the API and the built React app, with Supabase for the database, sign-in and photo storage. It installs to a phone home screen as a PWA.
 
