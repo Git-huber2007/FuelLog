@@ -1,6 +1,6 @@
 import { Router, type Request } from 'express';
 import {
-  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, IdParams, isNewPR, lookupExerciseKind, MeasureInput, SetInput, WeightInput,
+  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, ExerciseSetParams, IdParams, isNewPR, lookupExerciseKind, MeasureInput, SetInput, WeightInput,
   type DayResponse, type FoodLog, type LogSource, type RecentFood, type WorkoutSet,
 } from '@fuellog/shared';
 import { h, HttpError, unwrap } from '../middleware/errors';
@@ -127,6 +127,47 @@ daysRouter.delete('/days/:date/exercises/:key', validate({ params: ExerciseParam
 // Puts a skipped planned exercise back on the day.
 daysRouter.put('/days/:date/exercises/:key', validate({ params: ExerciseParams }), notFuture, h(async (req, res) => {
   await setSkipped(req, false);
+  res.status(204).end();
+}));
+
+// Removes a single set from an exercise on a day and renumbers any higher sets so they stay contiguous.
+daysRouter.delete('/days/:date/exercises/:key/sets/:setNumber', validate({ params: ExerciseSetParams }), notFuture, h(async (req, res) => {
+  const { date: d, key } = req.params;
+  const setNumber = Number(req.params.setNumber);
+
+  unwrap(
+    await req.sb
+      .from('workout_sets')
+      .delete()
+      .eq('user_id', req.userId)
+      .eq('log_date', d)
+      .eq('exercise_key', key)
+      .eq('set_number', setNumber)
+  );
+
+  const higherSets = unwrap<{ set_number: number }[]>(
+    await req.sb
+      .from('workout_sets')
+      .select('set_number')
+      .eq('user_id', req.userId)
+      .eq('log_date', d)
+      .eq('exercise_key', key)
+      .gt('set_number', setNumber)
+      .order('set_number', { ascending: true })
+  );
+
+  for (const s of higherSets) {
+    unwrap(
+      await req.sb
+        .from('workout_sets')
+        .update({ set_number: s.set_number - 1 })
+        .eq('user_id', req.userId)
+        .eq('log_date', d)
+        .eq('exercise_key', key)
+        .eq('set_number', s.set_number)
+    );
+  }
+
   res.status(204).end();
 }));
 

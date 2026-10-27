@@ -87,6 +87,11 @@ export const DateParams       = z.object({ date: DateParam });
 export const IdParams         = z.object({ id: z.string().uuid() });
 export const ExerciseParams   = z.object({ date: DateParam, key: z.string().max(60).refine(isKnownExercise, 'Unknown exercise') });
 export const ExerciseKeyParam  = z.object({ key: z.string().max(60).refine(isKnownExercise, 'Unknown exercise') });
+export const ExerciseSetParams = z.object({
+  date: DateParam,
+  key: z.string().max(60).refine(isKnownExercise, 'Unknown exercise'),
+  setNumber: z.coerce.number().int().min(1).max(10),
+});
 export const BarcodeParams    =z.object({ code: BarcodeParam });
 export const FoodQuery        = z.object({ q: z.string().trim().max(80).default('') });
 export const LogSavedMealBody = z.object({ date: DateParam, meal: Meal });

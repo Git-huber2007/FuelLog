@@ -818,6 +818,106 @@ describe('Server Route Tests', () => {
     assert.equal(bodyNoPR.is_pr, false, 'Inferior performance must return is_pr = false');
   });
 
+  it('DELETE /api/days/:date/exercises/:key/sets/:setNumber removes the set and renumbers higher sets down', async () => {
+    let sets = [
+      { user_id: 'test-user-123', log_date: '2026-10-12', exercise_key: 'mon-bench-press', set_number: 1, weight_kg: 80, reps: 8, incline_pct: null },
+      { user_id: 'test-user-123', log_date: '2026-10-12', exercise_key: 'mon-bench-press', set_number: 2, weight_kg: 85, reps: 6, incline_pct: null },
+      { user_id: 'test-user-123', log_date: '2026-10-12', exercise_key: 'mon-bench-press', set_number: 3, weight_kg: 90, reps: 4, incline_pct: null },
+    ];
+
+    setClientFactory(() =>
+      createStubClient((table) => {
+        if (table === 'workout_sets') {
+          return {
+            delete() {
+              const filters: Record<string, unknown> = {};
+              const chain = {
+                eq(col: string, val: unknown) {
+                  filters[col] = val;
+                  return chain;
+                },
+                then(resolve: (val: unknown) => unknown) {
+                  sets = sets.filter(
+                    (s) =>
+                      !(
+                        s.user_id === filters.user_id &&
+                        s.log_date === filters.log_date &&
+                        s.exercise_key === filters.exercise_key &&
+                        s.set_number === filters.set_number
+                      ),
+                  );
+                  return Promise.resolve({ error: null }).then(resolve);
+                },
+              };
+              return chain;
+            },
+            select(cols: string) {
+              const filters: Record<string, unknown> = {};
+              let gtSet = 0;
+              const chain = {
+                eq(col: string, val: unknown) {
+                  filters[col] = val;
+                  return chain;
+                },
+                gt(col: string, val: number) {
+                  gtSet = val;
+                  return chain;
+                },
+                order() {
+                  return chain;
+                },
+                then(resolve: (val: unknown) => unknown) {
+                  const filtered = sets.filter(
+                    (s) =>
+                      s.user_id === filters.user_id &&
+                      s.log_date === filters.log_date &&
+                      s.exercise_key === filters.exercise_key &&
+                      s.set_number > gtSet,
+                  );
+                  return Promise.resolve({ data: filtered, error: null }).then(resolve);
+                },
+              };
+              return chain;
+            },
+            update(payload: { set_number: number }) {
+              const filters: Record<string, unknown> = {};
+              const chain = {
+                eq(col: string, val: unknown) {
+                  filters[col] = val;
+                  return chain;
+                },
+                then(resolve: (val: unknown) => unknown) {
+                  const target = sets.find(
+                    (s) =>
+                      s.user_id === filters.user_id &&
+                      s.log_date === filters.log_date &&
+                      s.exercise_key === filters.exercise_key &&
+                      s.set_number === filters.set_number,
+                  );
+                  if (target) target.set_number = payload.set_number;
+                  return Promise.resolve({ error: null }).then(resolve);
+                },
+              };
+              return chain;
+            },
+          };
+        }
+        return createStubQuery({ data: [], error: null });
+      }),
+    );
+
+    const res = await fetch(`${baseUrl}/api/days/2026-10-12/exercises/mon-bench-press/sets/2`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer test-token' },
+    });
+    assert.equal(res.status, 204);
+    assert.equal(sets.length, 2);
+    assert.equal(sets[0].set_number, 1);
+    assert.equal(sets[0].weight_kg, 80);
+    assert.equal(sets[1].set_number, 2, 'Higher set 3 must be renumbered to 2');
+    assert.equal(sets[1].weight_kg, 90);
+  });
+
   it('GET /api/exercises/:key/history returns time-series chart points, PR milestones, and recent sessions', async () => {
     const historyRows = [
       { log_date: '2026-09-01', exercise_key: 'mon-bench-press', set_number: 1, weight_kg: 60, reps: 10, incline_pct: null },

@@ -28,6 +28,8 @@ interface Props {
   incline?: boolean;
   /** Set by the card when the exercise is being removed, so a late save cannot put it back. */
   removed?: { current: boolean };
+  /** Optional callback to remove this specific set. */
+  onRemove?: (setNumber: number) => void;
 }
 
 /** One prescribed set with Hevy-style logging, auto-fill, PR badge, and auto-focus selection. */
@@ -43,6 +45,7 @@ export function SetRow({
   single,
   incline,
   removed,
+  onRemove,
 }: Props) {
   const id = useId();
   const qc = useQueryClient();
@@ -207,7 +210,30 @@ export function SetRow({
     >
       {!single && (
         <div className="flex flex-col items-center justify-center w-7 min-[380px]:w-9 shrink-0">
-          <span className="text-sm font-bold text-muted">{setNumber}</span>
+          {onRemove ? (
+            <button
+              type="button"
+              onClick={() => onRemove(setNumber)}
+              className="group/num flex h-7 w-7 min-[380px]:h-8 min-[380px]:w-8 items-center justify-center rounded-lg text-sm font-bold text-muted hover:bg-danger/10 hover:text-danger active:scale-95 transition-all"
+              title={`Remove set ${setNumber}`}
+              aria-label={`Remove set ${setNumber}`}
+            >
+              <span className="group-hover/num:hidden">{setNumber}</span>
+              <svg
+                viewBox="0 0 24 24"
+                className="hidden h-3.5 w-3.5 stroke-current group-hover/num:block"
+                fill="none"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          ) : (
+            <span className="text-sm font-bold text-muted">{setNumber}</span>
+          )}
           {isPr && (
             <span
               className="mt-0.5 rounded px-1 min-[380px]:px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase tracking-wider bg-gold/15 text-gold border border-gold/40 motion-safe:animate-rise-in motion-reduce:transition-none motion-reduce:animate-none"

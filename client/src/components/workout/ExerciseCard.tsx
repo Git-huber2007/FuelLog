@@ -1,6 +1,6 @@
-import { exercisePhotos, restFor, similarExercises, supportsIncline, type WorkoutExercise } from '@fuellog/shared';
+import { exercisePhotos, restFor, similarExercises, supportsIncline, type WorkoutExercise, type WorkoutResponse } from '@fuellog/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/apiClient';
 import { useToast } from '../ui/Toast';
@@ -32,15 +32,19 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
         ? 'sec'
         : 'reps';
 
+  const [customSets, setCustomSets] = useState<number | null>(null);
+  const maxLogged = exercise.logged.length > 0 ? Math.max(...exercise.logged.map((s) => s.set_number)) : 0;
+  const count = Math.min(10, Math.max(customSets ?? exercise.sets, maxLogged, 1));
+
   const colClass = isSingle
-    ? exercise.sets === 1
+    ? count === 1
       ? 'grid-cols-[3.75rem_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_2.75rem]'
       : 'grid-cols-[1.75rem_3.75rem_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_2.75rem]'
     : incline
-      ? exercise.sets === 1
+      ? count === 1
         ? 'grid-cols-[3.5rem_1fr_1fr_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_1fr_1fr_2.75rem]'
         : 'grid-cols-[1.5rem_3.5rem_1fr_1fr_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_1fr_1fr_2.75rem]'
-      : exercise.sets === 1
+      : count === 1
         ? 'grid-cols-[3.75rem_1fr_1fr_2.75rem] min-[380px]:grid-cols-[4.5rem_1fr_1fr_2.75rem]'
         : 'grid-cols-[1.75rem_3.75rem_1fr_1fr_2.75rem] min-[380px]:grid-cols-[2.25rem_4.5rem_1fr_1fr_2.75rem]';
 
@@ -66,6 +70,53 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
   const rest = tip?.[0] ?? restFor(exercise);
   const alternative = cardio ? '' : tip?.[2] ?? similarExercises(exercise.key, new Set()).slice(0, 2).map((e) => e.name).join(' or ');
   const removed = useRef(false);
+
+  const removeSet = useMutation({
+    mutationFn: async (targetSetNumber: number) => {
+      if (exercise.logged.some((s) => s.set_number === targetSetNumber)) {
+        await api<void>(`/days/${date}/exercises/${encodeURIComponent(exercise.key)}/sets/${targetSetNumber}`, {
+          method: 'DELETE',
+        });
+      }
+    },
+    onSuccess: (_, targetSetNumber) => {
+      qc.setQueryData<WorkoutResponse>(['workout', date], (w) => {
+        if (!w) return w;
+        return {
+          ...w,
+          exercises: w.exercises.map((e) => {
+            if (e.key !== exercise.key) return e;
+            const newLogged = e.logged
+              .filter((s) => s.set_number !== targetSetNumber)
+              .map((s) => (s.set_number > targetSetNumber ? { ...s, set_number: s.set_number - 1 } : s));
+            return {
+              ...e,
+              logged: newLogged,
+            };
+          }),
+        };
+      });
+      qc.invalidateQueries({ queryKey: ['progress'] });
+    },
+    onError: (error) => toast(error.message, 'error'),
+  });
+
+  const handleRemoveSet = (targetSetNumber: number, forceConfirm = false) => {
+    if (count <= 1) return;
+    const targetSet = exercise.logged.find((s) => s.set_number === targetSetNumber);
+    const isLogged = Boolean(targetSet && targetSet.reps > 0);
+    if (isLogged || forceConfirm) {
+      if (!window.confirm(`Delete set ${targetSetNumber} for ${exercise.name}?`)) return;
+    }
+    setCustomSets(Math.max(1, count - 1));
+    removeSet.mutate(targetSetNumber);
+  };
+
+  const handleAddSet = () => {
+    if (count >= 10) return;
+    setCustomSets(count + 1);
+  };
+
   const remove = useMutation({
     mutationFn: () => {
       removed.current = true; // stops a pending set save from re-creating the exercise after the delete
@@ -145,7 +196,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
         className={`grid items-center gap-1.5 min-[380px]:gap-2 px-1.5 min-[380px]:px-2.5 text-xs font-semibold text-muted ${colClass}`}
         aria-hidden="true"
       >
-        {exercise.sets !== 1 && <span className="text-center uppercase tracking-[0.08em]">Set</span>}
+        {count !== 1 && <span className="text-center uppercase tracking-[0.08em]">Set</span>}
         <span className="text-center uppercase tracking-[0.08em]">Prev</span>
         {isSingle ? (
           <span className="text-center uppercase tracking-[0.08em]">{repsHeader}</span>
@@ -162,7 +213,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
       </div>
 
       <ul className="space-y-1.5">
-        {Array.from({ length: exercise.sets }, (_, i) => {
+        {Array.from({ length: count }, (_, i) => {
           const prevSet = exercise.last?.sets.find((s) => s.set_number === i + 1);
           return (
             <SetRow
@@ -173,15 +224,49 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
               setNumber={i + 1}
               kind={exercise.kind}
               targetReps={targetReps}
-              single={exercise.sets === 1}
+              single={count === 1}
               incline={incline}
               removed={removed}
               previous={prevSet}
               initial={exercise.logged.find((s) => s.set_number === i + 1)}
+              onRemove={count > 1 ? (setNum) => handleRemoveSet(setNum, true) : undefined}
             />
           );
         })}
       </ul>
+
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          className="btn min-h-[40px] flex-1 text-sm font-semibold border-line/60 hover:border-accent hover:text-accent active:scale-[0.98] transition-all"
+          onClick={handleAddSet}
+          disabled={count >= 10 || removeSet.isPending}
+          aria-label={`Add set to ${exercise.name}`}
+        >
+          <span className="flex items-center justify-center gap-1.5">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add set
+          </span>
+        </button>
+        {count > 1 && (
+          <button
+            type="button"
+            className="btn min-h-[40px] flex-1 text-sm font-semibold text-muted hover:text-danger hover:border-danger/40 active:scale-[0.98] transition-all"
+            onClick={() => handleRemoveSet(count, false)}
+            disabled={removeSet.isPending}
+            aria-label={`Remove last set from ${exercise.name}`}
+          >
+            <span className="flex items-center justify-center gap-1.5">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M5 12h14" />
+              </svg>
+              Remove set
+            </span>
+          </button>
+        )}
+      </div>
 
       {incline && (
         <p className="text-sm text-muted">

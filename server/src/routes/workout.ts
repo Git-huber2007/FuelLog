@@ -72,8 +72,10 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
           ...s,
           is_pr: isNewPR(s, mine, exercise.kind, exercise.topReps, profile.weight_kg ?? 70),
         }));
+      const maxSetNumber = logged.reduce((max, s) => Math.max(max, s.set_number), 0);
       return {
         ...exercise,
+        sets: Math.max(exercise.sets, maxSetNumber),
         logged,
         last: lastSets.length ? { date: lastSets[0].log_date, sets: lastSets } : null,
         overload: overloadHint(lastSets, exercise),
