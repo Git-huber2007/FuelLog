@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   addDays, adjustmentAdvice, asExercise, buildCustomExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, deriveExerciseKind, EXERCISE_KEYS, exerciseMuscle, EXERCISE_KINDS,
-  exercisePhotos, LEAN_SIX_DAY_TEMPLATE, LIBRARY, libraryExercise, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
+  exercisePhotos, LEAN_SIX_DAY_TEMPLATE, LIBRARY, libraryExercise, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, similarExercises, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
   stepsKcal, streak, supportsIncline, weekdayOf, workoutKcal, type ExerciseKind, type MuscleGroup, type Weigh,
 } from '../index';
 
@@ -387,6 +387,21 @@ describe('custom routines', () => {
     // When custom day is null/omitted -> Rest day
     const rest = splitFor('2026-10-12', 'custom', null);
     expect(rest).toEqual({ title: 'Rest', muscles: [], exercises: [] });
+  });
+
+  it('similarExercises suggests same-muscle stand-ins, one per equipment, skipping excluded keys', () => {
+    const forLegPress = similarExercises('sat-squat-or-leg-press', new Set());
+    expect(forLegPress.map((e) => e.name)).toContain('Leg Press');
+    expect(forLegPress.every((e) => e.muscle === 'Quads')).toBe(true);
+    expect(new Set(forLegPress.map((e) => e.equipment)).size).toBe(forLegPress.length);
+
+    const forPulldown = similarExercises('Wide-Grip_Lat_Pulldown', new Set(['Close-Grip_Front_Lat_Pulldown']));
+    expect(forPulldown).toHaveLength(3);
+    expect(forPulldown.map((e) => e.id)).not.toContain('Wide-Grip_Lat_Pulldown');
+    expect(forPulldown.map((e) => e.id)).not.toContain('Close-Grip_Front_Lat_Pulldown');
+    expect(forPulldown.every((e) => e.muscle === 'Back' && e.level !== 'expert')).toBe(true);
+
+    expect(similarExercises('no-such-key', new Set())).toEqual([]);
   });
 
   it('lean six-day template uses only library exercises and valid routine days', () => {

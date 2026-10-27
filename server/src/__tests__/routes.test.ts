@@ -538,6 +538,44 @@ describe('Server Route Tests', () => {
     assert.equal(dataWed.exercises.length, 0);
   });
 
+  it('skipping a planned exercise hides it from the workout, lists it as skipped, and restore puts it back', async () => {
+    const saturday = '2026-10-17';
+    let skipped: string[] = ['sat-calf-raise'];
+    const upserts: unknown[] = [];
+    setClientFactory(() =>
+      createStubClient((table) => {
+        if (table === 'profiles') return createStubQuery({ data: { id: 'test-user-123', program: 'six_day' }, error: null });
+        if (table === 'daily_checks') {
+          const q = createStubQuery({ data: { skipped_exercises: skipped }, error: null });
+          q.upsert = ((row: { skipped_exercises: string[] }) => {
+            upserts.push(row);
+            skipped = row.skipped_exercises;
+            return createStubQuery({ data: null, error: null });
+          }) as unknown as StubQuery['upsert'];
+          return q;
+        }
+        return createStubQuery({ data: [], error: null });
+      }),
+    );
+    const headers = { Authorization: 'Bearer test-token' };
+
+    const res = await fetch(`${baseUrl}/api/workout/${saturday}`, { headers });
+    const data = (await res.json()) as { exercises: { key: string }[]; skipped: { key: string; name: string }[] };
+    assert.ok(!data.exercises.some((e) => e.key === 'sat-calf-raise'));
+    assert.deepEqual(data.skipped, [{ key: 'sat-calf-raise', name: 'Calf raise' }]);
+
+    assert.equal((await fetch(`${baseUrl}/api/days/${saturday}/exercises/sat-leg-curl?skip=1`, { method: 'DELETE', headers })).status, 204);
+    assert.deepEqual(skipped, ['sat-calf-raise', 'sat-leg-curl']);
+
+    assert.equal((await fetch(`${baseUrl}/api/days/${saturday}/exercises/sat-calf-raise`, { method: 'PUT', headers })).status, 204);
+    assert.deepEqual(skipped, ['sat-leg-curl']);
+
+    // Removing an extra without ?skip leaves the skipped list untouched.
+    upserts.length = 0;
+    assert.equal((await fetch(`${baseUrl}/api/days/${saturday}/exercises/Plank`, { method: 'DELETE', headers })).status, 204);
+    assert.equal(upserts.length, 0);
+  });
+
   it('PUT /api/routine/:weekday validates body with RoutineDayInput (rejects unknown keys and >15 exercises)', async () => {
     setClientFactory(() =>
       createStubClient((table) => {

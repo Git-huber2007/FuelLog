@@ -105,6 +105,33 @@ export function exerciseMuscles(key: string): MuscleGroup[] {
   return [];
 }
 
+// Crude stems ("Flyes" → "fly", "Raises" → "rais"), deduplicated so a repeated word does not count twice.
+const words = (s: string) => [...new Set(s.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 2 && w !== 'with').map((w) => w.replace(/s$/, '').replace(/e$/, '')))];
+const overlap = (a: string[], b: Set<string>) => a.filter((w) => b.has(w)).length;
+
+/**
+ * Up to n library exercises for the same muscle as `key`, closest by name first and one per equipment,
+ * so a skipped exercise has a stand-in even when its machine is taken.
+ */
+export function similarExercises(key: string, exclude: ReadonlySet<string>, n = 3): LibraryExercise[] {
+  const target = new Set(words(exerciseName(key)));
+  // A built-in split exercise has no library muscle, so it borrows the one of its closest-named library exercise.
+  const muscle = BY_ID.get(key)?.muscle
+    ?? LIBRARY.reduce<{ e?: LibraryExercise; s: number }>((best, e) => {
+      const s = overlap(words(e.name), target) - words(e.name).length / 100;
+      return s > best.s ? { e, s } : best;
+    }, { s: 0.5 }).e?.muscle;
+  if (!muscle) return [];
+  const equipment = new Set<string | null>();
+  return LIBRARY
+    .filter((e) => e.muscle === muscle && e.type === 'strength' && e.level !== 'expert' && e.id !== key && !exclude.has(e.id))
+    .map((e) => ({ e, s: overlap(words(e.name), target) }))
+    .sort((a, b) => b.s - a.s)
+    .map(({ e }) => e)
+    .filter((e) => !equipment.has(e.equipment) && Boolean(equipment.add(e.equipment)))
+    .slice(0, n);
+}
+
 /**
  * Builds an Exercise object for a custom routine entry using split/library metadata,
  * preserving kind, photo paths, detail labels, and formatting the prescription string.

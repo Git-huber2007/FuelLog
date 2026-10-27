@@ -64,7 +64,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
   const remove = useMutation({
     mutationFn: () => {
       removed.current = true; // stops a pending set save from re-creating the exercise after the delete
-      return api<void>(`/days/${date}/exercises/${encodeURIComponent(exercise.key)}`, { method: 'DELETE' });
+      return api<void>(`/days/${date}/exercises/${encodeURIComponent(exercise.key)}${exercise.extra ? '' : '?skip=1'}`, { method: 'DELETE' });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['progress'] });
@@ -165,16 +165,17 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
         </p>
       )}
 
-      {exercise.extra && (
-        <button
-          type="button"
-          className="btn min-h-[44px] w-full text-muted hover:text-danger hover:border-danger/40 active:scale-[0.98] transition-all"
-          disabled={remove.isPending}
-          onClick={() => remove.mutate()}
-        >
-          {remove.isPending ? 'Removing…' : 'Remove from this workout'}
-        </button>
-      )}
+      <button
+        type="button"
+        className="btn min-h-[44px] w-full text-muted hover:text-danger hover:border-danger/40 active:scale-[0.98] transition-all"
+        disabled={remove.isPending}
+        onClick={() => {
+          if (exercise.logged.some((s) => s.reps > 0) && !window.confirm(`Delete the sets you logged for ${exercise.name} today?`)) return;
+          remove.mutate();
+        }}
+      >
+        {remove.isPending ? 'Removing…' : exercise.extra ? 'Remove from this workout' : 'Skip today'}
+      </button>
     </section>
   );
 }

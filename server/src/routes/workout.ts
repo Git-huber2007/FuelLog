@@ -12,11 +12,14 @@ const COLUMNS = 'log_date,exercise_key,set_number,weight_kg,reps,incline_pct';
 
 workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (req, res) => {
   const { date } = req.params;
-  const [profile, today, customRow] = await Promise.all([
+  const [profile, today, customRow, check] = await Promise.all([
     loadProfile(req.sb, req.userId),
     req.sb.from('workout_sets').select(COLUMNS).eq('log_date', date).order('set_number').then(unwrap<WorkoutSet[]>),
     req.sb.from('routine_days').select('weekday,title,exercises').eq('weekday', weekdayOf(date)).maybeSingle().then(unwrap<RoutineDayRow | null>),
+    // '*' so the workout still loads on a database where the skipped-exercises migration has not been run yet.
+    req.sb.from('daily_checks').select('*').eq('log_date', date).maybeSingle().then(unwrap<{ skipped_exercises?: string[] } | null>),
   ]);
+  const skippedKeys = new Set(check?.skipped_exercises ?? []);
 
   let customPlan: SplitDay | null = null;
   if (profile.program === 'custom' && customRow && customRow.exercises.length > 0) {
@@ -39,7 +42,7 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
     .map(asExercise)
     .sort((a, b) => a.name.localeCompare(b.name));
   const exercises: (Exercise & { extra: boolean })[] = [
-    ...plan.exercises.map((e) => ({ ...e, extra: false })),
+    ...plan.exercises.filter((e) => !skippedKeys.has(e.key)).map((e) => ({ ...e, extra: false })),
     ...extras.map((e) => ({ ...e, extra: true })),
   ];
 
@@ -54,6 +57,7 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
     date,
     title: plan.title,
     muscles: plan.muscles,
+    skipped: plan.exercises.filter((e) => skippedKeys.has(e.key)).map(({ key, name }) => ({ key, name })),
     program: profile.program,
     programName: PROGRAMS[profile.program].name,
     exercises: exercises.map((exercise) => {

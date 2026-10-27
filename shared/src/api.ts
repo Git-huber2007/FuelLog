@@ -86,6 +86,8 @@ export interface WorkoutResponse {
   title: string;
   muscles: MuscleGroup[];
   exercises: WorkoutExercise[];
+  /** Planned exercises skipped for this day, so they can be put back. */
+  skipped: { key: string; name: string }[];
   program: ProgramKey;
   programName: string;
 }

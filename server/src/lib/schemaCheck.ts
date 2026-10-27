@@ -11,7 +11,7 @@ import { env } from '../env';
 export const REQUIRED_SCHEMA: ReadonlyArray<{ table: string; columns: string }> = [
   { table: 'profiles', columns: 'level,program' },
   { table: 'workout_sets', columns: 'incline_pct' },
-  { table: 'daily_checks', columns: 'steps' },
+  { table: 'daily_checks', columns: 'steps,skipped_exercises' },
 ];
 
 let anonSb: SupabaseClient | undefined;

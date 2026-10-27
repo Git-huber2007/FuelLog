@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import {
   addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, IdParams, isNewPR, lookupExerciseKind, MeasureInput, SetInput, WeightInput,
   type DayResponse, type FoodLog, type LogSource, type RecentFood, type WorkoutSet,
@@ -107,9 +107,26 @@ daysRouter.put('/days/:date/sets', date, validate({ body: SetInput }), notFuture
   res.json({ ...saved, is_pr });
 }));
 
-// Takes an exercise off a day by removing its sets. Adding one is a PUT of an empty first set.
+// A planned exercise comes from the program, not from set rows, so skipping it for a day is recorded on that day's check row.
+async function setSkipped(req: Request, skip: boolean) {
+  const { date: d, key } = req.params;
+  const row = unwrap<{ skipped_exercises?: string[] } | null>(await req.sb.from('daily_checks').select('*').eq('log_date', d).maybeSingle());
+  const keys = new Set(row?.skipped_exercises ?? []);
+  if (skip) keys.add(key);
+  else keys.delete(key);
+  unwrap(await req.sb.from('daily_checks').upsert({ user_id: req.userId, log_date: d, skipped_exercises: [...keys].slice(-50) }));
+}
+
+// Takes an exercise off a day by removing its sets; ?skip=1 also hides a planned one. Adding one is a PUT of an empty first set.
 daysRouter.delete('/days/:date/exercises/:key', validate({ params: ExerciseParams }), notFuture, h(async (req, res) => {
   unwrap(await req.sb.from('workout_sets').delete().eq('log_date', req.params.date).eq('exercise_key', req.params.key));
+  if (req.query.skip === '1') await setSkipped(req, true);
+  res.status(204).end();
+}));
+
+// Puts a skipped planned exercise back on the day.
+daysRouter.put('/days/:date/exercises/:key', validate({ params: ExerciseParams }), notFuture, h(async (req, res) => {
+  await setSkipped(req, false);
   res.status(204).end();
 }));
 

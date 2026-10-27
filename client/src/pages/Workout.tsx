@@ -7,6 +7,7 @@ import { ExercisePicker } from '../components/workout/ExercisePicker';
 import { MobileWorkoutBar } from '../components/workout/MobileWorkoutBar';
 import { RestDayCard } from '../components/workout/RestDayCard';
 import { RestTimer } from '../components/workout/RestTimer';
+import { SkippedCard } from '../components/workout/SkippedCard';
 import { WorkoutHeader } from '../components/workout/WorkoutHeader';
 import { useProfile } from '../hooks/useProfile';
 import { useSelectedDate } from '../hooks/useSelectedDate';
@@ -22,7 +23,7 @@ export default function Workout() {
   // A failed background refresh keeps the last good data on screen; only a first load with nothing to show is an error page.
   if (!workout.data) return <ErrorState error={workout.error!} onRetry={() => workout.refetch()} />;
 
-  const { title, muscles, exercises, program, programName } = workout.data;
+  const { title, muscles, exercises, program, programName, skipped = [] } = workout.data;
   const restDay = muscles.length === 0;
   const delta = dayDeltaFor(date, program);
   const totalSets = exercises.reduce((n, e) => n + e.sets, 0);
@@ -62,6 +63,8 @@ export default function Workout() {
           {exercises.map((exercise) => (
             <ExerciseCard key={`${date}-${exercise.key}`} date={date} exercise={exercise} />
           ))}
+
+          {skipped.length > 0 && <SkippedCard date={date} skipped={skipped} onDay={new Set([...exercises, ...skipped].map((e) => e.key))} />}
 
           {/* Mobile-only bottom section for Summary and Extras */}
           <div className="md:hidden space-y-5">
@@ -151,7 +154,7 @@ export default function Workout() {
       {picking && (
         <ExercisePicker
           date={date}
-          onDay={new Set(exercises.map((e) => e.key))}
+          onDay={new Set([...exercises, ...skipped].map((e) => e.key))}
           onClose={() => setPicking(false)}
         />
       )}
