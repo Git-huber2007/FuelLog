@@ -851,7 +851,7 @@ describe('Server Route Tests', () => {
               };
               return chain;
             },
-            select(cols: string) {
+            select() {
               const filters: Record<string, unknown> = {};
               let gtSet = 0;
               const chain = {
