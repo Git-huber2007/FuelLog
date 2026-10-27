@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TARGET_PATH = path.resolve(__dirname, '../shared/src/exerciseLibrary.json');
+const INSTRUCTIONS_PATH = path.resolve(__dirname, '../server/src/data/exerciseInstructions.json');
 
 const SOURCE_URL = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/dist/exercises.json';
 
@@ -66,6 +67,11 @@ async function main() {
   const content = '[\n' + rows.map((r) => JSON.stringify(r)).join(',\n') + '\n]\n';
   fs.writeFileSync(TARGET_PATH, content, 'utf8');
   console.log(`Wrote ${rows.length} exercises with equipment to ${TARGET_PATH}`);
+
+  // Step-by-step technique, kept server-side so the client bundle does not carry ~500 kB of text.
+  const instructions = Object.fromEntries(withImages.map((e) => [e.id, e.instructions ?? []]));
+  fs.writeFileSync(INSTRUCTIONS_PATH, JSON.stringify(instructions) + '\n', 'utf8');
+  console.log(`Wrote instructions for ${withImages.length} exercises to ${INSTRUCTIONS_PATH}`);
 }
 
 main().catch((err) => {

@@ -1,9 +1,10 @@
-import { exercisePhotos, supportsIncline, type WorkoutExercise } from '@fuellog/shared';
+import { exercisePhotos, restFor, similarExercises, supportsIncline, type WorkoutExercise } from '@fuellog/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/apiClient';
 import { useToast } from '../ui/Toast';
+import { TIPS } from './coachingTips';
 import { ExerciseDemo } from './ExerciseDemo';
 import { OverloadHint } from './OverloadHint';
 import { SetRow } from './SetRow';
@@ -60,6 +61,10 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
       ? 30
       : 8;
 
+  const tip = TIPS[exercise.key];
+  const cardio = exercise.kind === 'cardio';
+  const rest = tip?.[0] ?? restFor(exercise);
+  const alternative = cardio ? '' : tip?.[2] ?? similarExercises(exercise.key, new Set()).slice(0, 2).map((e) => e.name).join(' or ');
   const removed = useRef(false);
   const remove = useMutation({
     mutationFn: () => {
@@ -82,10 +87,10 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
         <div className="min-w-0">
           <Link
             to={`/exercise/${encodeURIComponent(exercise.key)}`}
-            className="group inline-flex items-center gap-1.5 text-lg leading-snug font-semibold hover:text-accent transition-colors"
+            className="group inline-flex max-w-full items-center gap-1.5 text-lg leading-snug font-semibold hover:text-accent transition-colors"
             title={`View history and charts for ${exercise.name}`}
           >
-            <span className="truncate">{exercise.name}</span>
+            <span className="min-w-0 break-words">{exercise.name}</span>
             <svg
               viewBox="0 0 24 24"
               className="h-4 w-4 shrink-0 text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all"
@@ -106,6 +111,14 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
         </span>
       </div>
 
+      {!cardio && (
+        <div className="rounded-2xl bg-bg p-3 text-sm">
+          {rest && <p className="font-medium text-text">Rest {rest} between sets</p>}
+          {tip && <p className="mt-1 text-muted">{tip[1]}</p>}
+          {alternative && <p className="mt-1 text-xs text-muted">Machine busy or missing? {alternative}.</p>}
+        </div>
+      )}
+
       {/* Open until the first set is logged, then folded so the set rows sit closer together; open is only re-applied when it changes */}
       <details open={!exercise.logged.some((s) => s.reps > 0)} className="group">
         <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-muted hover:text-text [&::-webkit-details-marker]:hidden">
@@ -114,6 +127,17 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
         </summary>
         <ExerciseDemo name={exercise.name} photos={exercisePhotos(exercise.key)} />
       </details>
+      {exercise.instructions?.length ? (
+        <details className="group/steps">
+          <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-muted hover:text-text [&::-webkit-details-marker]:hidden">
+            <svg viewBox="0 0 12 12" className="h-3 w-3 fill-current transition-transform group-open/steps:rotate-90" aria-hidden><path d="M4 2l5 4-5 4z" /></svg>
+            How to do it · {exercise.instructions.length} steps
+          </summary>
+          <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted">
+            {exercise.instructions.map((step, i) => <li key={i}>{step}</li>)}
+          </ol>
+        </details>
+      ) : null}
       <OverloadHint show={exercise.overload} kind={exercise.kind} />
 
       {/* Hevy-style Table Column Headers */}

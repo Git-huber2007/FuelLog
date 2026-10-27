@@ -560,8 +560,10 @@ describe('Server Route Tests', () => {
     const headers = { Authorization: 'Bearer test-token' };
 
     const res = await fetch(`${baseUrl}/api/workout/${saturday}`, { headers });
-    const data = (await res.json()) as { exercises: { key: string }[]; skipped: { key: string; name: string }[] };
+    const data = (await res.json()) as { exercises: { key: string; instructions: string[] }[]; skipped: { key: string; name: string }[] };
     assert.ok(!data.exercises.some((e) => e.key === 'sat-calf-raise'));
+    // Built-in exercises borrow the technique steps of their closest library exercise.
+    assert.ok(data.exercises.every((e) => e.instructions.length > 0));
     assert.deepEqual(data.skipped, [{ key: 'sat-calf-raise', name: 'Calf raise' }]);
 
     assert.equal((await fetch(`${baseUrl}/api/days/${saturday}/exercises/sat-leg-curl?skip=1`, { method: 'DELETE', headers })).status, 204);

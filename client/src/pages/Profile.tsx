@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ProfileForm } from '../components/profile/ProfileForm';
+import { ThemeCard } from '../components/profile/ThemeCard';
 import { ExportButton } from '../components/progress/ExportButton';
 import { useToast } from '../components/ui/Toast';
 import { useProfile } from '../hooks/useProfile';
@@ -93,6 +94,7 @@ export default function Profile() {
         </div>
 
         <div className="space-y-5">
+          <ThemeCard />
           <section className="card space-y-4" aria-label="Account">
             <h2 className="card-title">Account</h2>
             <div className="space-y-0.5">

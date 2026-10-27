@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   addDays, adjustmentAdvice, asExercise, buildCustomExercise, computeTargets, DateParam, dayDeltaFor, daysBetween, defaultMeal, deriveExerciseKind, EXERCISE_KEYS, exerciseMuscle, EXERCISE_KINDS,
-  exercisePhotos, LEAN_SIX_DAY_TEMPLATE, LIBRARY, libraryExercise, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, similarExercises, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
+  exercisePhotos, LEAN_SIX_DAY_TEMPLATE, LIBRARY, libraryExercise, libraryMatch, restFor, nudge, overloadHint, PROGRAM_KEYS, PROGRAMS, recommendedProgram, RoutineDayInput, RoutineExerciseInput, SetInput, similarExercises, SPLIT, SPLIT_EXERCISES_BY_KEY, splitFor,
   stepsKcal, streak, supportsIncline, weekdayOf, workoutKcal, type ExerciseKind, type MuscleGroup, type Weigh,
 } from '../index';
 
@@ -402,6 +402,19 @@ describe('custom routines', () => {
     expect(forPulldown.every((e) => e.muscle === 'Back' && e.level !== 'expert')).toBe(true);
 
     expect(similarExercises('no-such-key', new Set())).toEqual([]);
+  });
+
+  it('libraryMatch maps built-in exercises to their closest library entry, and restFor scales with reps', () => {
+    expect(libraryMatch('Leg_Press')?.id).toBe('Leg_Press');
+    expect(libraryMatch('sat-squat-or-leg-press')?.id).toBe('Leg_Press');
+    expect(libraryMatch('tue-face-pull')?.id).toBe('Face_Pull');
+    expect(SPLIT.flatMap((d) => d.exercises).every((e) => libraryMatch(e.key))).toBe(true);
+
+    expect(restFor({ kind: 'weight_reps', topReps: 6 })).toBe('2 min');
+    expect(restFor({ kind: 'weight_reps', topReps: 12 })).toBe('90 s');
+    expect(restFor({ kind: 'weight_reps', topReps: 15 })).toBe('60 s');
+    expect(restFor({ kind: 'duration', topReps: 60 })).toBe('45 s');
+    expect(restFor({ kind: 'cardio', topReps: 0 })).toBeNull();
   });
 
   it('lean six-day template uses only library exercises and valid routine days', () => {

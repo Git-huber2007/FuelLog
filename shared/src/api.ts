@@ -79,6 +79,8 @@ export interface WorkoutExercise extends Exercise {
   overload: boolean;
   /** Added by the user from the library, on top of the day's fixed plan. */
   extra: boolean;
+  /** Step-by-step technique from free-exercise-db; empty when none is known. */
+  instructions?: string[];
 }
 
 export interface WorkoutResponse {

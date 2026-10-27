@@ -63,6 +63,7 @@
 }
 
 :root.dark, :root[data-theme='dark'] {
+  color-scheme: dark;
   --bg: 14 17 22;
   --card: 22 27 34;
   --field: 31 38 48;
@@ -88,6 +89,7 @@
 }
 
 :root.light, :root[data-theme='light'] {
+  color-scheme: light;
   --bg: 244 245 247;
   --card: 255 255 255;
   --field: 241 243 246;

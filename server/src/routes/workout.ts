@@ -1,11 +1,14 @@
 import { Router } from 'express';
 import {
-  asExercise, buildCustomExercise, DateParams, exerciseMuscles, isNewPR, libraryExercise, overloadHint, PROGRAMS, splitFor, weekdayOf,
+  asExercise, buildCustomExercise, DateParams, exerciseMuscles, isNewPR, libraryExercise, libraryMatch, overloadHint, PROGRAMS, splitFor, weekdayOf,
   type Exercise, type RoutineDayRow, type SplitDay, type WorkoutResponse, type WorkoutSet,
 } from '@fuellog/shared';
 import { h, unwrap } from '../middleware/errors';
 import { validate } from '../middleware/validate';
 import { loadProfile } from './profile';
+import instructionsJson from '../data/exerciseInstructions.json';
+
+const INSTRUCTIONS: Record<string, string[]> = instructionsJson;
 
 export const workoutRouter = Router();
 const COLUMNS = 'log_date,exercise_key,set_number,weight_kg,reps,incline_pct';
@@ -74,6 +77,7 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
         logged,
         last: lastSets.length ? { date: lastSets[0].log_date, sets: lastSets } : null,
         overload: overloadHint(lastSets, exercise),
+        instructions: INSTRUCTIONS[libraryMatch(exercise.key)?.id ?? ''] ?? [],
       };
     }),
   };
