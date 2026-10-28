@@ -427,6 +427,8 @@ describe('custom routines', () => {
     }
     expect(days[6].title).toBe('Legs');
     expect(buildCustomExercise(days[3].exercises[4]).prescription).toBe('3×30–60 s');
+    const abDays = days.filter((d) => d.exercises.some((e) => libraryExercise(e.key)?.muscle === 'Core'));
+    expect(abDays.map((d) => d.title)).toEqual(['Back + Biceps + Abs', 'Shoulders + Abs', 'Chest + Shoulders + Triceps + Abs']);
   });
 });
 

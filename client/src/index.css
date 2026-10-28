@@ -278,7 +278,7 @@
     @apply flex w-full items-center gap-1 rounded-xl bg-field p-1 text-sm;
   }
   .segmented-option {
-    @apply flex min-h-[40px] flex-1 cursor-pointer select-none items-center justify-center rounded-lg px-3 py-1.5 text-center text-sm font-semibold text-muted transition-[background-color,color,box-shadow] duration-150 ease-spring hover:text-text has-[:checked]:bg-raised has-[:checked]:text-text has-[:checked]:shadow-[0_1px_3px_rgb(0_0_0/0.18)] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent;
+    @apply flex min-h-[40px] min-w-0 flex-1 cursor-pointer select-none items-center justify-center rounded-lg px-3 py-1.5 text-center text-sm font-semibold max-[379px]:px-1 max-[379px]:text-xs text-muted transition-[background-color,color,box-shadow] duration-150 ease-spring hover:text-text has-[:checked]:bg-raised has-[:checked]:text-text has-[:checked]:shadow-[0_1px_3px_rgb(0_0_0/0.18)] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent;
   }
   /* A dialog sheet: centered modal on desktop, bottom sheet on phones */
   .sheet {

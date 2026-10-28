@@ -28,14 +28,17 @@ export function Scoreboard({ eaten, target, burned = 0, streak, rings }: {
         <span className="cond text-lg font-bold uppercase text-board-muted">kcal</span>
       </p>
       {rings && (
-        <Rings
-          size={76}
-          rings={[
-            { value: target ? eaten / target : 0, className: eaten > target * 1.1 ? 'stroke-board-alert' : 'stroke-digit' },
-            { value: rings.proteinTarget ? rings.protein / rings.proteinTarget : 0, className: 'stroke-protein' },
-            { value: rings.trained ? 1 : 0, className: 'stroke-carbs' },
-          ]}
-        />
+        // Below 360px the 76px rings push past the card beside the big figure, so they scale down there.
+        <span className="shrink-0 max-[359px]:[&>svg]:size-12">
+          <Rings
+            size={76}
+            rings={[
+              { value: target ? eaten / target : 0, className: eaten > target * 1.1 ? 'stroke-board-alert' : 'stroke-digit' },
+              { value: rings.proteinTarget ? rings.protein / rings.proteinTarget : 0, className: 'stroke-protein' },
+              { value: rings.trained ? 1 : 0, className: 'stroke-carbs' },
+            ]}
+          />
+        </span>
       )}
       </div>
       <dl className="mt-4 grid grid-cols-3 divide-x divide-board-line border-t border-board-line pt-3">

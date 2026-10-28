@@ -25,5 +25,11 @@ export const TIPS: Record<string, [rest: string, cue: string, alt: string]> = {
   'Romanian_Deadlift': ['2 min', 'Soft knees, push the hips back with a flat back and the bar close to your legs. Lower until the hamstrings stretch, stand by driving the hips forward.', 'Dumbbell Romanian deadlift'],
   'Seated_Leg_Curl': ['75 s', 'Knees in line with the machine pivot, thigh pad snug. Curl fully, pause, return slowly.', 'Lying leg curl or swiss-ball leg curl'],
   'Leg_Extensions': ['75 s', 'Knees in line with the pivot, pad on the lower shin. Extend fully, squeeze 1 s, lower slowly.', 'Bulgarian split squat'],
+  'Knee_Hip_Raise_On_Parallel_Bars': ['60 s', 'Forearms on the pads, back against the rest, legs hanging. Curl the knees up toward your chest by tilting the pelvis, lower slowly without swinging.', 'Lying leg raise on a flat bench'],
+  'Pallof_Press': ['45 s per side', 'Stand side-on to a chest-high cable, handle at your sternum. Press straight out and hold 2 s without letting the cable twist you, then bring it back.', 'Band Pallof press'],
+  'Cable_Crunch': ['60 s', 'Kneel facing the stack, rope beside your head. Crunch the ribs toward the hips by rounding the spine; the hips stay still and the arms do not pull.', 'Weighted floor crunch or ab crunch machine'],
+  'Reverse_Crunch': ['45 s', 'Lie flat, knees bent at 90°. Roll the hips off the floor toward your chest using the lower abs, lower slowly; no swinging the legs.', 'Lying leg raise on a flat bench'],
+  'Ab_Roller': ['60 s', 'Kneel, wheel under the shoulders, abs braced and glutes squeezed. Roll out only as far as you can keep the lower back from sagging, then pull back with the abs.', 'Plank or barbell rollout'],
+  'Russian_Twist': ['45 s', 'Sit with knees bent, lean back to about 45° with a straight back. Rotate the shoulders side to side, counting each side as one rep; feet down is easier.', 'Cable Russian twist or plate twist'],
   'Standing_Calf_Raises': ['60 s', 'Balls of the feet on the edge, knees straight. Full stretch at the bottom, pause 1–2 s at the top.', 'Single-leg dumbbell calf raise on a step'],
 };
