@@ -2,6 +2,7 @@ import { dayDeltaFor, weekdayOf, workoutKcal } from '@fuellog/shared';
 import { useState } from 'react';
 import { ErrorState } from '../components/ui/EmptyState';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
+import { DayPlanSwap } from '../components/workout/DayPlanSwap';
 import { ExerciseCard } from '../components/workout/ExerciseCard';
 import { ExercisePicker } from '../components/workout/ExercisePicker';
 import { MobileWorkoutBar } from '../components/workout/MobileWorkoutBar';
@@ -23,7 +24,7 @@ export default function Workout() {
   // A failed background refresh keeps the last good data on screen; only a first load with nothing to show is an error page.
   if (!workout.data) return <ErrorState error={workout.error!} onRetry={() => workout.refetch()} />;
 
-  const { title, muscles, exercises, program, programName, skipped = [] } = workout.data;
+  const { title, muscles, exercises, program, programName, skipped = [], planWeekday = weekdayOf(date), dayOptions = [] } = workout.data;
   const restDay = muscles.length === 0;
   const delta = dayDeltaFor(date, program);
   const totalSets = exercises.reduce((n, e) => n + e.sets, 0);
@@ -58,6 +59,8 @@ export default function Workout() {
               totalSets={totalSets}
             />
           )}
+
+          <DayPlanSwap date={date} planWeekday={planWeekday} options={dayOptions} />
 
           {/* Sequential exercises in a single column */}
           {exercises.map((exercise) => (

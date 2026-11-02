@@ -1,6 +1,6 @@
 import { Router, type Request } from 'express';
 import {
-  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, ExerciseSetParams, IdParams, isNewPR, lookupExerciseKind, MeasureInput, SetInput, WeightInput,
+  addDays, AddFoodBody, CheckInput, DateParams, dayDeltaFor, ExerciseParams, ExerciseSetParams, IdParams, isNewPR, lookupExerciseKind, MeasureInput, PlanDayInput, SetInput, WeightInput,
   type DayResponse, type FoodLog, type LogSource, type RecentFood, type WorkoutSet,
 } from '@fuellog/shared';
 import { h, HttpError, unwrap } from '../middleware/errors';
@@ -168,6 +168,13 @@ daysRouter.delete('/days/:date/exercises/:key/sets/:setNumber', validate({ param
     );
   }
 
+  res.status(204).end();
+}));
+
+// Trains another weekday's plan on this date. Stored on the day's check row, so the program and the other days are untouched.
+daysRouter.put('/days/:date/plan-day', date, validate({ body: PlanDayInput }), notFuture, h(async (req, res) => {
+  const { weekday } = req.body as PlanDayInput;
+  unwrap(await req.sb.from('daily_checks').upsert({ user_id: req.userId, log_date: req.params.date, plan_weekday: weekday }));
   res.status(204).end();
 }));
 

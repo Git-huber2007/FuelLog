@@ -92,6 +92,10 @@ export interface WorkoutResponse {
   skipped: { key: string; name: string }[];
   program: ProgramKey;
   programName: string;
+  /** The weekday whose plan is on this day: the date's own, unless the user swapped it. */
+  planWeekday: number;
+  /** Days of the program this one can be swapped to, the date's own weekday first. */
+  dayOptions: { weekday: number; title: string }[];
 }
 
 /** One serving of a recently logged food, ready to log again. */

@@ -15,14 +15,33 @@ const COLUMNS = 'log_date,exercise_key,set_number,weight_kg,reps,incline_pct';
 
 workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (req, res) => {
   const { date } = req.params;
-  const [profile, today, customRow, check] = await Promise.all([
+  const [profile, today, routineRows, check] = await Promise.all([
     loadProfile(req.sb, req.userId),
     req.sb.from('workout_sets').select(COLUMNS).eq('log_date', date).order('set_number').then(unwrap<WorkoutSet[]>),
-    req.sb.from('routine_days').select('weekday,title,exercises').eq('weekday', weekdayOf(date)).maybeSingle().then(unwrap<RoutineDayRow | null>),
-    // '*' so the workout still loads on a database where the skipped-exercises migration has not been run yet.
-    req.sb.from('daily_checks').select('*').eq('log_date', date).maybeSingle().then(unwrap<{ skipped_exercises?: string[] } | null>),
+    // Every weekday, not just this one: the day may be running another weekday's plan, and the swap list needs their titles.
+    req.sb.from('routine_days').select('weekday,title,exercises').then(unwrap<RoutineDayRow[]>),
+    // '*' so the workout still loads on a database where the skipped-exercises or plan-weekday migration has not been run yet.
+    req.sb.from('daily_checks').select('*').eq('log_date', date).maybeSingle().then(unwrap<{ skipped_exercises?: string[]; plan_weekday?: number | null } | null>),
   ]);
   const skippedKeys = new Set(check?.skipped_exercises ?? []);
+  const scheduled = weekdayOf(date);
+  const planWeekday = check?.plan_weekday ?? scheduled;
+  const customRow = routineRows.find((r) => r.weekday === planWeekday) ?? null;
+
+  // A day the plan can be swapped to; null for a rest day, which is never offered.
+  const dayTitle = (weekday: number): string | null => {
+    if (profile.program !== 'custom') {
+      const d = PROGRAMS[profile.program].days[weekday];
+      return d.exercises.length ? d.title : null;
+    }
+    const row = routineRows.find((r) => r.weekday === weekday);
+    return row?.exercises.length ? row.title || 'Custom workout' : null;
+  };
+  const dayOptions = [{ weekday: scheduled, title: dayTitle(scheduled) ?? 'Rest' }];
+  for (let weekday = 0; weekday < 7; weekday++) {
+    const title = weekday === scheduled ? null : dayTitle(weekday);
+    if (title) dayOptions.push({ weekday, title });
+  }
 
   let customPlan: SplitDay | null = null;
   if (profile.program === 'custom' && customRow && customRow.exercises.length > 0) {
@@ -35,7 +54,7 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
     };
   }
 
-  const plan = splitFor(date, profile.program, customPlan);
+  const plan = splitFor(date, profile.program, customPlan, planWeekday);
   const planKeys = new Set(plan.exercises.map((e) => e.key));
 
   // An exercise the user added from the library is on this day because it has a set row here, even an empty one.
@@ -63,6 +82,8 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
     skipped: plan.exercises.filter((e) => skippedKeys.has(e.key)).map(({ key, name }) => ({ key, name })),
     program: profile.program,
     programName: PROGRAMS[profile.program].name,
+    planWeekday,
+    dayOptions,
     exercises: exercises.map((exercise) => {
       const mine = done.filter((s) => s.exercise_key === exercise.key);
       const lastSets = mine.filter((s) => s.log_date === mine[0].log_date);

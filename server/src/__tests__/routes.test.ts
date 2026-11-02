@@ -230,6 +230,35 @@ describe('Server Route Tests', () => {
     assert.ok(sixDayData.exercises.length > 0);
   });
 
+  it("GET /api/workout/:date runs the swapped weekday's plan when the day has plan_weekday", async () => {
+    const tuesday = '2026-10-13'; // weekday 2: Pull on six_day
+
+    setClientFactory(() =>
+      createStubClient((table) => {
+        if (table === 'profiles') {
+          return createStubQuery({ data: { id: 'test-user-123', program: 'six_day' }, error: null });
+        }
+        if (table === 'daily_checks') {
+          return createStubQuery({ data: { log_date: tuesday, plan_weekday: 6 }, error: null }); // Saturday: Legs
+        }
+        return createStubQuery({ data: [], error: null });
+      }),
+    );
+
+    const res = await fetch(`${baseUrl}/api/workout/${tuesday}`, {
+      headers: { Authorization: 'Bearer test-token' },
+    });
+    assert.equal(res.status, 200);
+    const data = (await res.json()) as { title: string; planWeekday: number; muscles: string[]; dayOptions: { weekday: number; title: string }[] };
+    assert.equal(data.title, 'Legs');
+    assert.equal(data.planWeekday, 6);
+    assert.ok(data.muscles.includes('quads'));
+    // The date's own weekday leads the swap list, so clearing the swap is always an option.
+    assert.equal(data.dayOptions[0].weekday, 2);
+    assert.equal(data.dayOptions[0].title, 'Pull · back width');
+    assert.ok(!data.dayOptions.some((o) => o.weekday === 0)); // Sunday is a rest day
+  });
+
   it('PUT /api/days/:date/check accepts steps and rejects 100001', async () => {
     setClientFactory(() =>
       createStubClient((table) => {
@@ -484,29 +513,10 @@ describe('Server Route Tests', () => {
           return createStubQuery({ data: [], error: null });
         }
         if (table === 'routine_days') {
-          return {
-            select() {
-              return {
-                eq(_col: string, val: number) {
-                  return {
-                    maybeSingle() {
-                      if (val === 2) {
-                        return Promise.resolve({
-                          data: {
-                            weekday: 2,
-                            title: 'My Custom Leg Day',
-                            exercises: [{ key: 'sat-squat-or-leg-press', sets: 4, reps_low: 6, reps_high: 8 }],
-                          },
-                          error: null,
-                        });
-                      }
-                      return Promise.resolve({ data: null, error: null });
-                    },
-                  };
-                },
-              };
-            },
-          };
+          return createStubQuery({
+            data: [{ weekday: 2, title: 'My Custom Leg Day', exercises: [{ key: 'sat-squat-or-leg-press', sets: 4, reps_low: 6, reps_high: 8 }] }],
+            error: null,
+          });
         }
         return createStubQuery({ data: [], error: null });
       }),

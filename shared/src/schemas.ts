@@ -92,6 +92,8 @@ export const ExerciseSetParams = z.object({
   key: z.string().max(60).refine(isKnownExercise, 'Unknown exercise'),
   setNumber: z.coerce.number().int().min(1).max(10),
 });
+// null puts the day back on its own weekday's plan.
+export const PlanDayInput     = z.object({ weekday: z.number().int().min(0).max(6).nullable() });
 export const BarcodeParams    =z.object({ code: BarcodeParam });
 export const FoodQuery        = z.object({ q: z.string().trim().max(80).default('') });
 export const LogSavedMealBody = z.object({ date: DateParam, meal: Meal });
@@ -130,6 +132,7 @@ export type LogEntryInput = z.input<typeof LogEntryInput>;
 export type AddFoodBody = z.infer<typeof AddFoodBody>;
 export type CheckInput = z.infer<typeof CheckInput>;
 export type MeasureInput = z.infer<typeof MeasureInput>;
+export type PlanDayInput = z.infer<typeof PlanDayInput>;
 export type SetInput = z.infer<typeof SetInput>;
 export type AiItems = z.infer<typeof AiItems>;
 export type CoachResult = z.infer<typeof CoachResult>;

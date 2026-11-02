@@ -209,5 +209,5 @@ export const PROGRAMS: Record<ProgramKey, Program> = {
 export const recommendedProgram = (level: 'beginner' | 'intermediate' | 'expert'): ProgramKey =>
   level === 'beginner' ? 'full_body' : level === 'intermediate' ? 'upper_lower' : 'six_day';
 
-export const splitFor = (iso: string, program: ProgramKey = 'six_day', customDay?: SplitDay | null): SplitDay =>
-  program === 'custom' ? (customDay ?? { title: 'Rest', muscles: [], exercises: [] }) : PROGRAMS[program].days[weekdayOf(iso)];
+export const splitFor = (iso: string, program: ProgramKey = 'six_day', customDay?: SplitDay | null, weekday: number = weekdayOf(iso)): SplitDay =>
+  program === 'custom' ? (customDay ?? { title: 'Rest', muscles: [], exercises: [] }) : PROGRAMS[program].days[weekday];
