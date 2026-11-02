@@ -22,8 +22,6 @@ export function DayPlanSwap({ date, planWeekday, options }: Props) {
     onError: (error) => toast(error.message, 'error'),
   });
 
-  if (options.length < 2) return null;
-
   return (
     <section className="card space-y-2" aria-labelledby="swap-day-title">
       <h2 id="swap-day-title" className="card-title">Train a different day</h2>
@@ -32,7 +30,7 @@ export function DayPlanSwap({ date, planWeekday, options }: Props) {
         id="swap-day"
         className="input"
         value={planWeekday}
-        disabled={swap.isPending}
+        disabled={swap.isPending || options.length < 2}
         aria-describedby="swap-day-help"
         onChange={(e) => swap.mutate(Number(e.target.value))}
       >
@@ -43,7 +41,9 @@ export function DayPlanSwap({ date, planWeekday, options }: Props) {
         ))}
       </select>
       <p id="swap-day-help" className="text-xs text-muted">
-        Changes this day only. Your program and every other day stay as they are, and logged sets keep their own exercise.
+        {options.length < 2
+          ? 'Add exercises to more days of your routine to swap between them.'
+          : "Changes this day only. Your program and every other day stay as they are, and logged sets keep their own exercise."}
       </p>
     </section>
   );
