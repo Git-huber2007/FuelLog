@@ -113,7 +113,9 @@ async function setSkipped(req: Request, skip: boolean) {
   // One statement, so two quick taps (or two devices) cannot lose each other's change.
   const { error } = await req.sb.rpc('set_exercise_skipped', { p_date: d, p_key: key, p_skip: skip });
   if (!error) return;
-  if (error.code !== '42883') throw error; // anything but "function does not exist"
+  // 42883 is Postgres undefined_function; PGRST202/404 is PostgREST schema cache miss when migration 0013 has not been run.
+  const isMissingRpc = error.code === '42883' || error.code === 'PGRST202' || (error as { status?: number }).status === 404;
+  if (!isMissingRpc) throw error;
 
   // Fallback for a database where 0013 has not been applied yet: read-modify-write, which can lose a concurrent change.
   const row = unwrap<{ skipped_exercises?: string[] } | null>(await req.sb.from('daily_checks').select('*').eq('log_date', d).maybeSingle());
@@ -125,7 +127,7 @@ async function setSkipped(req: Request, skip: boolean) {
 
 // Takes an exercise off a day by removing its sets; ?skip=1 also hides a planned one. Adding one is a PUT of an empty first set.
 daysRouter.delete('/days/:date/exercises/:key', validate({ params: ExerciseParams }), notFuture, h(async (req, res) => {
-  unwrap(await req.sb.from('workout_sets').delete().eq('log_date', req.params.date).eq('exercise_key', req.params.key));
+  unwrap(await req.sb.from('workout_sets').delete().eq('user_id', req.userId).eq('log_date', req.params.date).eq('exercise_key', req.params.key));
   if (req.query.skip === '1') await setSkipped(req, true);
   res.status(204).end();
 }));

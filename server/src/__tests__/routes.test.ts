@@ -309,34 +309,36 @@ describe('Server Route Tests', () => {
     assert.deepEqual(calls, [{ fn: 'set_exercise_skipped', params: { p_date: '2026-10-12', p_key: 'mon-bench-press', p_skip: true } }]);
   });
 
-  it('skipping still works on a database where migration 0013 has not been applied', async () => {
-    const upserts: unknown[] = [];
-    setClientFactory(() =>
-      createStubClient(
-        (table) => {
-          if (table === 'daily_checks') {
-            return {
-              select: () => createStubQuery({ data: { skipped_exercises: ['tue-face-pull'] }, error: null }),
-              upsert: (row: unknown) => { upserts.push(row); return createStubQuery({ data: null, error: null }); },
-              delete: () => createStubQuery({ data: [], error: null }),
-              eq: () => createStubQuery({ data: [], error: null }),
-            };
-          }
-          return createStubQuery({ data: [], error: null });
-        },
-        undefined,
-        () => Promise.resolve({ data: null, error: { code: '42883', message: 'function public.set_exercise_skipped does not exist' } }),
-      ),
-    );
+  it('skipping still works on a database where migration 0013 has not been applied (handles PostgREST PGRST202 and Postgres 42883)', async () => {
+    for (const errorCode of ['42883', 'PGRST202']) {
+      const upserts: unknown[] = [];
+      setClientFactory(() =>
+        createStubClient(
+          (table) => {
+            if (table === 'daily_checks') {
+              return {
+                select: () => createStubQuery({ data: { skipped_exercises: ['tue-face-pull'] }, error: null }),
+                upsert: (row: unknown) => { upserts.push(row); return createStubQuery({ data: null, error: null }); },
+                delete: () => createStubQuery({ data: [], error: null }),
+                eq: () => createStubQuery({ data: [], error: null }),
+              };
+            }
+            return createStubQuery({ data: [], error: null });
+          },
+          undefined,
+          () => Promise.resolve({ data: null, error: { code: errorCode, message: 'function public.set_exercise_skipped does not exist' } }),
+        ),
+      );
 
-    const res = await fetch(`${baseUrl}/api/days/2026-10-12/exercises/mon-bench-press?skip=1`, {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer test-token' },
-    });
-    assert.equal(res.status, 204);
-    assert.equal(upserts.length, 1, 'it must fall back to the read-modify-write path');
-    const row = upserts[0] as { skipped_exercises: string[] };
-    assert.deepEqual(row.skipped_exercises.sort(), ['mon-bench-press', 'tue-face-pull']);
+      const res = await fetch(`${baseUrl}/api/days/2026-10-12/exercises/mon-bench-press?skip=1`, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer test-token' },
+      });
+      assert.equal(res.status, 204);
+      assert.equal(upserts.length, 1, `it must fall back to the read-modify-write path for ${errorCode}`);
+      const row = upserts[0] as { skipped_exercises: string[] };
+      assert.deepEqual(row.skipped_exercises.sort(), ['mon-bench-press', 'tue-face-pull']);
+    }
   });
 
   it('PUT /api/days/:date/check accepts steps and rejects 100001', async () => {
