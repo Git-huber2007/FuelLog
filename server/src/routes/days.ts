@@ -110,6 +110,12 @@ daysRouter.put('/days/:date/sets', date, validate({ body: SetInput }), notFuture
 // A planned exercise comes from the program, not from set rows, so skipping it for a day is recorded on that day's check row.
 async function setSkipped(req: Request, skip: boolean) {
   const { date: d, key } = req.params;
+  // One statement, so two quick taps (or two devices) cannot lose each other's change.
+  const { error } = await req.sb.rpc('set_exercise_skipped', { p_date: d, p_key: key, p_skip: skip });
+  if (!error) return;
+  if (error.code !== '42883') throw error; // anything but "function does not exist"
+
+  // Fallback for a database where 0013 has not been applied yet: read-modify-write, which can lose a concurrent change.
   const row = unwrap<{ skipped_exercises?: string[] } | null>(await req.sb.from('daily_checks').select('*').eq('log_date', d).maybeSingle());
   const keys = new Set(row?.skipped_exercises ?? []);
   if (skip) keys.add(key);

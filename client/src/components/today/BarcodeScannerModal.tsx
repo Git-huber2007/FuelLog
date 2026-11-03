@@ -153,7 +153,7 @@ export function BarcodeScannerModal({ onClose, onFood, onUnknown }: Props) {
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
           <h2 id={`${id}-title`} className="text-lg font-semibold">Scan a barcode</h2>
-          <button type="button" className="icon-btn" aria-label="Close" onClick={onClose}>
+          <button type="button" className="icon-btn" aria-label="Close" onClick={() => dialog.current?.close()}>
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M6 18L18 6M6 6l12 12" />
             </svg>

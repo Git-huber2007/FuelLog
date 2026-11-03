@@ -36,6 +36,7 @@ interface StubQuery {
   in: () => StubQuery;
   order: () => StubQuery;
   limit: () => StubQuery;
+  range: () => StubQuery;
   single: () => Promise<unknown>;
   maybeSingle: () => Promise<unknown>;
 }
@@ -59,10 +60,22 @@ function createStubQuery(resolveValue: unknown): StubQuery {
     in: () => query,
     order: () => query,
     limit: () => query,
+    range: () => query,
     single: () => Promise.resolve(resolveValue),
     maybeSingle: () => Promise.resolve(resolveValue),
   };
   return query;
+}
+
+// A thenable that answers every builder call with itself, so a stub survives extra .order()/.range() links.
+function resolves<T>(data: T): StubQuery {
+  const p = Promise.resolve({ data, error: null }) as unknown as Record<string, unknown>;
+  for (const m of ['select', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'in', 'not', 'order', 'limit', 'range']) {
+    p[m] = () => resolves(data);
+  }
+  p.single = () => Promise.resolve({ data, error: null });
+  p.maybeSingle = () => Promise.resolve({ data, error: null });
+  return p as unknown as StubQuery;
 }
 
 function createStubClient(
@@ -257,6 +270,73 @@ describe('Server Route Tests', () => {
     assert.equal(data.dayOptions[0].weekday, 2);
     assert.equal(data.dayOptions[0].title, 'Pull · back width');
     assert.ok(!data.dayOptions.some((o) => o.weekday === 0)); // Sunday is a rest day
+  });
+
+  it('GET /api/progress leaves rows with no water out of the weekly average', async () => {
+    // Skipping an exercise or swapping a day creates a daily_checks row with water_ml defaulting to 0.
+    setClientFactory(() =>
+      createStubClient((table) => {
+        if (table === 'profiles') {
+          return createStubQuery({ data: { id: 'test-user-123', program: 'six_day', level: 'intermediate', sex: 'male', age: 30, height_cm: 180, weight_kg: 80, activity: 'moderate', goal: 'cut', onboarded: true }, error: null });
+        }
+        if (table === 'daily_checks') {
+          return createStubQuery({ data: [{ sleep_hours: 7, water_ml: 2000, steps: 9000 }, { sleep_hours: null, water_ml: 0, steps: 0 }], error: null });
+        }
+        return createStubQuery({ data: [], error: null });
+      }),
+    );
+
+    const res = await fetch(`${baseUrl}/api/progress`, { headers: { Authorization: 'Bearer test-token' } });
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { summary: { avgWater: number | null } };
+    assert.equal(body.summary.avgWater, 2000, 'the zero-water row must not halve the average');
+  });
+
+  it('DELETE an exercise with ?skip=1 goes through the atomic RPC', async () => {
+    const calls: Array<{ fn: string; params: unknown }> = [];
+    setClientFactory(() =>
+      createStubClient(undefined, undefined, (fn, params) => {
+        calls.push({ fn, params });
+        return Promise.resolve({ data: null, error: null });
+      }),
+    );
+
+    const res = await fetch(`${baseUrl}/api/days/2026-10-12/exercises/mon-bench-press?skip=1`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer test-token' },
+    });
+    assert.equal(res.status, 204);
+    assert.deepEqual(calls, [{ fn: 'set_exercise_skipped', params: { p_date: '2026-10-12', p_key: 'mon-bench-press', p_skip: true } }]);
+  });
+
+  it('skipping still works on a database where migration 0013 has not been applied', async () => {
+    const upserts: unknown[] = [];
+    setClientFactory(() =>
+      createStubClient(
+        (table) => {
+          if (table === 'daily_checks') {
+            return {
+              select: () => createStubQuery({ data: { skipped_exercises: ['tue-face-pull'] }, error: null }),
+              upsert: (row: unknown) => { upserts.push(row); return createStubQuery({ data: null, error: null }); },
+              delete: () => createStubQuery({ data: [], error: null }),
+              eq: () => createStubQuery({ data: [], error: null }),
+            };
+          }
+          return createStubQuery({ data: [], error: null });
+        },
+        undefined,
+        () => Promise.resolve({ data: null, error: { code: '42883', message: 'function public.set_exercise_skipped does not exist' } }),
+      ),
+    );
+
+    const res = await fetch(`${baseUrl}/api/days/2026-10-12/exercises/mon-bench-press?skip=1`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer test-token' },
+    });
+    assert.equal(res.status, 204);
+    assert.equal(upserts.length, 1, 'it must fall back to the read-modify-write path');
+    const row = upserts[0] as { skipped_exercises: string[] };
+    assert.deepEqual(row.skipped_exercises.sort(), ['mon-bench-press', 'tue-face-pull']);
   });
 
   it('PUT /api/days/:date/check accepts steps and rejects 100001', async () => {
@@ -565,6 +645,14 @@ describe('Server Route Tests', () => {
           return q;
         }
         return createStubQuery({ data: [], error: null });
+      },
+      undefined,
+      (fn, params) => {
+        if (fn !== 'set_exercise_skipped') return Promise.resolve({ data: null, error: null });
+        const { p_key, p_skip } = params as { p_key: string; p_skip: boolean };
+        skipped = p_skip ? [...new Set([...skipped, p_key])] : skipped.filter((k) => k !== p_key);
+        upserts.push({ skipped_exercises: skipped });
+        return Promise.resolve({ data: null, error: null });
       }),
     );
     const headers = { Authorization: 'Bearer test-token' };
@@ -1003,30 +1091,7 @@ describe('Server Route Tests', () => {
           return createStubQuery({ data: [], error: null });
         }
         if (table === 'food_logs') {
-          return {
-            select() {
-              return {
-                gte() {
-                  return {
-                    lte() {
-                      return Promise.resolve({ data: [{ log_date: T, name: 'Paneer', kcal: 300, protein_g: 20 }, { log_date: T, name: 'Rice', kcal: 400, protein_g: 8 }], error: null });
-                    },
-                  };
-                },
-                lte() {
-                  return {
-                    order() {
-                      return {
-                        limit() {
-                          return Promise.resolve({ data: [], error: null });
-                        },
-                      };
-                    },
-                  };
-                },
-              };
-            },
-          };
+          return resolves([{ log_date: T, name: 'Paneer', kcal: 300, protein_g: 20 }, { log_date: T, name: 'Rice', kcal: 400, protein_g: 8 }]);
         }
         if (table === 'daily_checks') {
           return {
@@ -1078,15 +1143,7 @@ describe('Server Route Tests', () => {
           };
         }
         if (table === 'measurements') {
-          return {
-            select() {
-              return {
-                order() {
-                  return Promise.resolve({ data: [], error: null });
-                },
-              };
-            },
-          };
+          return resolves([]);
         }
         return createStubQuery({ data: [], error: null });
       }),

@@ -38,12 +38,19 @@ export default function Progress() {
       </div>
     );
   }
-  if (progress.isError) return <ErrorState error={progress.error} onRetry={() => progress.refetch()} />;
+  // A failed background refresh keeps the last good data on screen; only a first load with nothing to show is an error page.
+  if (!progress.data) return <ErrorState error={progress.error} onRetry={() => progress.refetch()} />;
 
   const { weights, calories, summary, measurements, advice, topLifts, muscleSets, topFoods } = progress.data;
   const todayWeight = weights.find((w) => w.log_date === today)?.weight_kg;
 
   return (
+    <>
+      {progress.isError && (
+        <p role="alert" className="field-error mb-4">
+          Could not refresh this page. Showing the last loaded version.
+        </p>
+      )}
     <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5 items-start space-y-5 md:space-y-0">
       <div className="space-y-5">
         {/* The weight trend owns this page, so it leads */}
@@ -104,5 +111,6 @@ export default function Progress() {
         </section>
       </div>
     </div>
+    </>
   );
 }

@@ -48,6 +48,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={show}>
       {children}
       <div
+        role="status"
+        aria-live="polite"
         className={`pointer-events-none fixed inset-x-0 ${
           hasTabBar ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] lg:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(1.5rem+env(safe-area-inset-bottom))]'
         } z-50 flex justify-center px-4`}

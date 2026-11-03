@@ -7,11 +7,19 @@ import {
 } from '@fuellog/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
+import { dayKey } from '../../hooks/useDay';
 import { useDebouncedMutation } from '../../hooks/useDebouncedMutation';
 import { startRestTimer } from '../../hooks/useRestTimer';
 import { api } from '../../lib/apiClient';
 import { numberOrNull } from '../../lib/entries';
 import { useToast } from '../ui/Toast';
+
+/** Why a set failed validation, keyed by the SetInput field that rejected it. */
+const SET_ERRORS: Record<string, string> = {
+  weight_kg: 'Weight must be between 0 and 500 kg.',
+  reps: 'Reps must be a whole number, up to 3600.',
+  incline_pct: 'Incline must be between −15% and 40%.',
+};
 
 interface Props {
   date: string;
@@ -48,6 +56,7 @@ export function SetRow({
   onRemove,
 }: Props) {
   const id = useId();
+  const errId = `${id}-err`;
   const qc = useQueryClient();
   const toast = useToast();
   const isSingle = kind === 'bodyweight_reps' || kind === 'duration';
@@ -55,7 +64,7 @@ export function SetRow({
   const [weight, setWeight] = useState(initial?.weight_kg ? String(initial.weight_kg) : '');
   const [reps, setReps] = useState(initial?.reps ? String(initial.reps) : '');
   const [grade, setGrade] = useState(initial?.incline_pct ? String(initial.incline_pct) : '');
-  const [invalid, setInvalid] = useState(false);
+  const [invalid, setInvalid] = useState<{ field: string; message: string } | null>(null);
   const [isPr, setIsPr] = useState(Boolean(initial?.is_pr));
 
   useEffect(() => {
@@ -101,6 +110,8 @@ export function SetRow({
       },
     );
     qc.invalidateQueries({ queryKey: ['progress'] });
+    // Today reads day.sets for the burn estimate and the trained ring.
+    qc.invalidateQueries({ queryKey: dayKey(date) });
   });
 
   function change(nextWeight: string, nextReps: string, nextGrade = grade) {
@@ -116,8 +127,15 @@ export function SetRow({
       reps: repsVal,
       ...(incline && { incline_pct: numberOrNull(nextGrade) }),
     });
-    setInvalid(!parsed.success);
-    if (parsed.success) run(parsed.data);
+    if (parsed.success) {
+      setInvalid(null);
+      run(parsed.data);
+      return;
+    }
+    // Name the field that failed, so only that input reddens and the row can say why.
+    const issue = parsed.error.issues[0];
+    const field = String(issue?.path[0] ?? '');
+    setInvalid({ field, message: SET_ERRORS[field] ?? 'Check this value.' });
   }
 
   function handleCheck() {
@@ -214,8 +232,7 @@ export function SetRow({
             <button
               type="button"
               onClick={() => onRemove(setNumber)}
-              className="group/num flex h-7 w-7 min-[380px]:h-8 min-[380px]:w-8 items-center justify-center rounded-lg text-sm font-bold text-muted hover:bg-danger/10 hover:text-danger active:scale-95 transition-all"
-              title={`Remove set ${setNumber}`}
+              className="group/num flex h-11 w-7 min-h-[44px] min-[380px]:w-9 items-center justify-center rounded-lg text-sm font-bold text-muted hover:bg-danger/10 hover:text-danger active:scale-95 transition-all"
               aria-label={`Remove set ${setNumber}`}
             >
               <span className="group-hover/num:hidden">{setNumber}</span>
@@ -246,10 +263,9 @@ export function SetRow({
         </div>
       )}
 
-      {/* Previous hint pill with tap-to-copy (touch target >= 44px, tabIndex -1 so keyboard Tab moves kg -> reps -> ✓) */}
+      {/* Previous hint pill with tap-to-copy (touch target >= 44px, in the tab order ahead of kg -> reps -> ✓) */}
       <button
         type="button"
-        tabIndex={-1}
         disabled={!previous || prevHint === '—'}
         onClick={copyPrevious}
         className="h-11 min-h-[44px] min-w-0 px-0.5 min-[380px]:px-1 text-center text-[11px] min-[380px]:text-xs font-semibold text-muted rounded-xl bg-bg border border-line/60 hover:border-accent/60 hover:text-text active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40 truncate transition-transform"
@@ -268,14 +284,15 @@ export function SetRow({
           <input
             id={`${id}-r`}
             aria-label={repsSrLabel}
-            className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+            className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-base font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
             inputMode="numeric"
             autoComplete="off"
             placeholder={repsPlaceholder}
             value={reps}
             onFocus={handleInputFocus}
             onChange={(e) => change('', e.target.value)}
-            aria-invalid={invalid}
+            aria-invalid={invalid?.field === 'reps'}
+            aria-describedby={invalid ? errId : undefined}
           />
         </div>
       ) : (
@@ -287,14 +304,15 @@ export function SetRow({
             <input
               id={`${id}-w`}
               aria-label={weightSrLabel}
-              className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+              className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-base font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
               inputMode="decimal"
               autoComplete="off"
               placeholder={weightPlaceholder}
               value={weight}
               onFocus={handleInputFocus}
               onChange={(e) => change(e.target.value, reps)}
-              aria-invalid={invalid}
+              aria-invalid={invalid?.field === 'weight_kg'}
+              aria-describedby={invalid ? errId : undefined}
             />
           </div>
           <div>
@@ -304,14 +322,15 @@ export function SetRow({
             <input
               id={`${id}-r`}
               aria-label={repsSrLabel}
-              className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+              className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-base font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
               inputMode="numeric"
               autoComplete="off"
               placeholder={repsPlaceholder}
               value={reps}
               onFocus={handleInputFocus}
               onChange={(e) => change(weight, e.target.value)}
-              aria-invalid={invalid}
+              aria-invalid={invalid?.field === 'reps'}
+              aria-describedby={invalid ? errId : undefined}
             />
           </div>
         </>
@@ -325,13 +344,16 @@ export function SetRow({
           <input
             id={`${id}-g`}
             aria-label={`${name} incline in percent`}
-            className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-sm font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
+            inputMode="text"
+            pattern="-?[0-9]*[.,]?[0-9]*"
+            className="input h-11 min-h-[44px] px-1 min-[380px]:px-2 text-center text-base font-semibold tabular-nums rounded-xl transition-[border-color,box-shadow]"
             autoComplete="off"
             placeholder="0"
             value={grade}
             onFocus={handleInputFocus}
             onChange={(e) => change(weight, reps, e.target.value)}
-            aria-invalid={invalid}
+            aria-invalid={invalid?.field === 'incline_pct'}
+            aria-describedby={invalid ? errId : undefined}
           />
         </div>
       )}
@@ -383,6 +405,12 @@ export function SetRow({
                 : ''}
         </span>
       </div>
+
+      {invalid && (
+        <p id={errId} className="col-span-full px-1 field-error" role="alert">
+          {invalid.message}
+        </p>
+      )}
     </li>
   );
 }

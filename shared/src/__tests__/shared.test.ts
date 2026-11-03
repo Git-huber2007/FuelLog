@@ -440,3 +440,21 @@ describe('exerciseMuscle', () => {
     expect(exerciseMuscle('nope')).toBeNull();
   });
 });
+
+describe('splitFor with a swapped weekday', () => {
+  it('runs the chosen weekday plan instead of the date own weekday', () => {
+    const tuesday = '2026-10-13'; // weekday 2
+    expect(splitFor(tuesday, 'six_day').title).toBe('Pull · back width');
+    expect(splitFor(tuesday, 'six_day', null, 6).title).toBe('Legs');
+    expect(splitFor(tuesday, 'six_day', null, 0).exercises).toHaveLength(0); // swapped onto Sunday rest
+  });
+
+  it('leaves the date own weekday in charge when no swap is given', () => {
+    expect(splitFor('2026-10-17', 'six_day').title).toBe(splitFor('2026-10-17', 'six_day', null, 6).title);
+  });
+
+  it('ignores the swapped weekday for a custom routine, which supplies its own day', () => {
+    const custom = { title: 'My day', muscles: [] as MuscleGroup[], exercises: [] };
+    expect(splitFor('2026-10-13', 'custom', custom, 6).title).toBe('My day');
+  });
+});

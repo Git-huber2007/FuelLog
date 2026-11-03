@@ -61,6 +61,8 @@ export default defineConfig({
         // Cache the app shell only. API calls always go to the network.
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
+        // The barcode decoder is ~400 kB and dynamically imported by one button, so it is fetched on use, not on install.
+        globIgnores: ['**/vendor-zxing-*.js'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/(cdn\.jsdelivr\.net|raw\.githubusercontent\.com|cdn\.statically\.io)\/.*/i,
@@ -77,7 +79,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /^\/api\/.*/i,
+            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkOnly',
           },
         ],

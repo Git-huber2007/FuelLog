@@ -6,7 +6,8 @@ interface Props {
 export function LoadingSkeleton({ cards = 3, variant = 'default' }: Props) {
   if (variant === 'hero') {
     return (
-      <div role="status" aria-label="Loading" className="space-y-5">
+      <div role="status" className="space-y-5">
+        <span className="sr-only">Loading…</span>
         <div className="board h-[12.5rem] rounded-2xl animate-pulse" />
         <div className="card grid grid-cols-2 gap-x-5 gap-y-4">
           {[1, 2, 3, 4].map((i) => (
@@ -22,7 +23,8 @@ export function LoadingSkeleton({ cards = 3, variant = 'default' }: Props) {
 
   if (variant === 'bare') {
     return (
-      <div role="status" aria-label="Loading" className="space-y-3">
+      <div role="status" className="space-y-3">
+        <span className="sr-only">Loading…</span>
         <div className="h-4 w-1/3 rounded bg-line/50 animate-pulse" />
         <div className="h-4 w-full rounded bg-line/40 animate-pulse" />
         <div className="h-4 w-2/3 rounded bg-line/30 animate-pulse" />
@@ -31,7 +33,8 @@ export function LoadingSkeleton({ cards = 3, variant = 'default' }: Props) {
   }
 
   return (
-    <div role="status" aria-label="Loading" className="space-y-4">
+    <div role="status" className="space-y-4">
+      <span className="sr-only">Loading…</span>
       {Array.from({ length: cards }, (_, i) => (
         <div key={i} className="card space-y-3">
           <div className="h-4 w-1/3 rounded bg-line/50 animate-pulse" />

@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/apiClient';
+import { dayKey } from '../../hooks/useDay';
 import { useToast } from '../ui/Toast';
 import { TIPS } from './coachingTips';
 import { ExerciseDemo } from './ExerciseDemo';
@@ -70,6 +71,8 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
   const rest = tip?.[0] ?? restFor(exercise);
   const alternative = cardio ? '' : tip?.[2] ?? similarExercises(exercise.key, new Set()).slice(0, 2).map((e) => e.name).join(' or ');
   const removed = useRef(false);
+  // SetRow seeds its inputs from `initial` once, so after a removal renumbers the sets every row must remount.
+  const [rev, setRev] = useState(0);
 
   const removeSet = useMutation({
     mutationFn: async (targetSetNumber: number) => {
@@ -96,7 +99,10 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
           }),
         };
       });
+      setRev((n) => n + 1);
       qc.invalidateQueries({ queryKey: ['progress'] });
+      // Today reads day.sets for the burn estimate and the trained ring.
+      qc.invalidateQueries({ queryKey: dayKey(date) });
     },
     onError: (error) => toast(error.message, 'error'),
   });
@@ -217,7 +223,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
           const prevSet = exercise.last?.sets.find((s) => s.set_number === i + 1);
           return (
             <SetRow
-              key={i}
+              key={`${rev}-${i}`}
               date={date}
               exerciseKey={exercise.key}
               exerciseName={exercise.name}
@@ -238,7 +244,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
       <div className="flex items-center gap-2 pt-1">
         <button
           type="button"
-          className="btn min-h-[40px] flex-1 text-sm font-semibold border-line/60 hover:border-accent hover:text-accent active:scale-[0.98] transition-all"
+          className="btn min-h-[44px] flex-1 text-sm font-semibold hover:border-accent hover:text-accent active:scale-[0.98] transition-all"
           onClick={handleAddSet}
           disabled={count >= 10 || removeSet.isPending}
           aria-label={`Add set to ${exercise.name}`}
@@ -253,7 +259,7 @@ export function ExerciseCard({ date, exercise }: { date: string; exercise: Worko
         {count > 1 && (
           <button
             type="button"
-            className="btn min-h-[40px] flex-1 text-sm font-semibold text-muted hover:text-danger hover:border-danger/40 active:scale-[0.98] transition-all"
+            className="btn min-h-[44px] flex-1 text-sm font-semibold text-muted hover:text-danger hover:border-danger/40 active:scale-[0.98] transition-all"
             onClick={() => handleRemoveSet(count, false)}
             disabled={removeSet.isPending}
             aria-label={`Remove last set from ${exercise.name}`}

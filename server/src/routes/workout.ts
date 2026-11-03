@@ -70,10 +70,10 @@ workoutRouter.get('/workout/:date', validate({ params: DateParams }), h(async (r
 
   // An exercise recurs about weekly at up to 25 sets a session, so 500 rows reaches back months.
   const earlier = exercises.length
-    ? await req.sb.from('workout_sets').select(COLUMNS).in('exercise_key', exercises.map((e) => e.key)).lt('log_date', date)
+    ? await req.sb.from('workout_sets').select(COLUMNS).in('exercise_key', exercises.map((e) => e.key)).lt('log_date', date).gt('reps', 0)
       .order('log_date', { ascending: false }).order('set_number').limit(500).then(unwrap<WorkoutSet[]>)
     : [];
-  const done = earlier.filter((s) => s.reps > 0);
+  const done = earlier;
 
   const body: WorkoutResponse = {
     date,

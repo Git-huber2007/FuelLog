@@ -1,5 +1,6 @@
 import { weekdayOf } from '@fuellog/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/apiClient';
 import { useToast } from '../ui/Toast';
 
@@ -14,6 +15,11 @@ export function DayPlanSwap({ date, planWeekday, options }: Props) {
   const qc = useQueryClient();
   const toast = useToast();
   const scheduled = weekdayOf(date);
+  // Arrowing a closed <select> fires change per option on Windows, so the write waits for the user to settle.
+  const [choice, setChoice] = useState(planWeekday);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => setChoice(planWeekday), [planWeekday]);
+  useEffect(() => () => clearTimeout(timer.current), []);
   const swap = useMutation({
     // The scheduled weekday clears the swap, so the day goes back to following the program.
     mutationFn: (weekday: number) =>
@@ -29,10 +35,20 @@ export function DayPlanSwap({ date, planWeekday, options }: Props) {
       <select
         id="swap-day"
         className="input"
-        value={planWeekday}
-        disabled={swap.isPending || options.length < 2}
+        value={choice}
+        disabled={options.length < 2}
         aria-describedby="swap-day-help"
-        onChange={(e) => swap.mutate(Number(e.target.value))}
+        onChange={(e) => {
+          const weekday = Number(e.target.value);
+          setChoice(weekday);
+          clearTimeout(timer.current);
+          timer.current = setTimeout(() => swap.mutate(weekday), 500);
+        }}
+        onBlur={() => {
+          if (choice === planWeekday) return;
+          clearTimeout(timer.current);
+          swap.mutate(choice);
+        }}
       >
         {options.map(({ weekday, title }) => (
           <option key={weekday} value={weekday}>

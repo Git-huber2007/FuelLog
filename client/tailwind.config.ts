@@ -3,6 +3,7 @@ import type { Config } from 'tailwindcss';
 const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
 
 export default {
+  darkMode: ['class', '[data-theme="dark"]'],
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {

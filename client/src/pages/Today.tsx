@@ -36,7 +36,8 @@ export default function Today() {
       </div>
     );
   }
-  if (day.isError) return <ErrorState error={day.error} onRetry={() => day.refetch()} />;
+  // A failed background refresh keeps the last good data on screen; only a first load with nothing to show is an error page.
+  if (!day.data) return <ErrorState error={day.error} onRetry={() => day.refetch()} />;
 
   const { targets, logs, check } = day.data;
   const totals = sumMacros(logs);
@@ -55,7 +56,13 @@ export default function Today() {
   });
 
   return (
-    // Below md the column wrappers dissolve (contents), so the daily check can drop under the food cards on a phone
+    <>
+      {day.isError && (
+        <p role="alert" className="field-error mb-4">
+          Could not refresh this page. Showing the last loaded version.
+        </p>
+      )}
+    {/* Below md the column wrappers dissolve (contents), so the daily check can drop under the food cards on a phone */}
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 items-start">
       <div className="contents md:block md:space-y-5">
         <div className="contents md:block md:space-y-1">
@@ -80,5 +87,6 @@ export default function Today() {
         <EatenList date={date} logs={logs} />
       </div>
     </div>
+    </>
   );
 }

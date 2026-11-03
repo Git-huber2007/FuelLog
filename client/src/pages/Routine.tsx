@@ -211,12 +211,13 @@ function DayEditor({ weekday, initialTitle, initialExercises, onClose }: DayEdit
                 <h2 id={`${id}-dialog-title`} className="text-lg font-semibold">
                   {weekdayInfo.name}
                 </h2>
-                {status === 'saving' && (
-                  <span className="text-xs text-muted animate-pulse">Saving…</span>
-                )}
-                {status === 'saved' && (
-                  <span className="text-xs text-accent font-medium">Saved</span>
-                )}
+                {/* One always-mounted region whose text changes, so the save state is actually announced. */}
+                <span
+                  role="status"
+                  className={`text-xs ${status === 'saving' ? 'text-muted animate-pulse' : 'text-accent font-medium'}`}
+                >
+                  {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : ''}
+                </span>
                 {status === 'error' && (
                   <button type="button" onClick={retry} className="text-xs text-danger underline">
                     Failed to save. Retry?
@@ -495,6 +496,11 @@ export default function Routine() {
   const saveProfile = useSaveProfile();
   const [editingWeekday, setEditingWeekday] = useState<number | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const templatesRef = useRef<HTMLDialogElement>(null);
+  // showModal() is what gives the focus trap, Escape and focus restore; a bare `open` attribute gives none of them.
+  useEffect(() => {
+    if (showTemplates) templatesRef.current?.showModal();
+  }, [showTemplates]);
   const [applyingTemplate, setApplyingTemplate] = useState(false);
 
   const { data: routineDays, isPending, error, refetch } = useQuery<RoutineDayRow[]>({
@@ -536,7 +542,7 @@ export default function Routine() {
       await qc.invalidateQueries({ queryKey: ['routine'] });
       await qc.invalidateQueries({ queryKey: ['workout'] });
       toast(`Template "${template.name}" copied to your routine`);
-      setShowTemplates(false);
+      templatesRef.current?.close();
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Could not apply template', 'error');
     } finally {
@@ -671,20 +677,21 @@ export default function Routine() {
       {/* Template Chooser Dialog */}
       {showTemplates && (
         <dialog
-          open
+          ref={templatesRef}
           className="sheet p-0"
+          aria-labelledby="templates-title"
           onClose={() => setShowTemplates(false)}
         >
           <div className="p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <h2 className="text-lg font-semibold">Start from template</h2>
+                <h2 id="templates-title" className="text-lg font-semibold">Start from template</h2>
                 <p className="text-xs text-muted">Copies a built-in split into your custom routine days.</p>
               </div>
               <button
                 type="button"
                 className="icon-btn"
-                onClick={() => setShowTemplates(false)}
+                onClick={() => templatesRef.current?.close()}
                 aria-label="Close"
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

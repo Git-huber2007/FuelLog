@@ -17,7 +17,7 @@ export function ErrorState({ error, onRetry }: { error: Error; onRetry: () => vo
     <div className="rounded-2xl bg-bg px-4 py-4 space-y-2">
       <p className="font-medium text-danger">Couldn&apos;t load this</p>
       <p className="text-sm text-muted">Check your connection or try again in a moment.</p>
-      {error.message && <p className="text-xs text-muted/70 break-all">{error.message}</p>}
+      {error.message && <p className="text-xs text-muted break-all">{error.message}</p>}
       <div className="pt-1">
         <button type="button" className="btn text-sm" onClick={onRetry}>Try again</button>
       </div>

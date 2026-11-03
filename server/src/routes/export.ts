@@ -1,16 +1,7 @@
 import { Router } from 'express';
 import { h, unwrap } from '../middleware/errors';
+import { all } from '../lib/paging';
 
-const PAGE = 1000; // Supabase returns at most 1000 rows per request
-
-async function all<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { code?: string } | null }>): Promise<T[]> {
-  const rows: T[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const batch = unwrap(await page(from, from + PAGE - 1));
-    rows.push(...batch);
-    if (batch.length < PAGE) return rows;
-  }
-}
 
 type Day = { kcal: number; protein: number; carbs: number; fat: number; fibre: number; water?: number; sleep?: number | null; steps?: number; weight?: number };
 
@@ -73,17 +64,19 @@ exportRouter.get('/export.csv', h(async (req, res) => {
 
 exportRouter.get('/export.json', h(async (req, res) => {
   const { sb, userId } = req;
-  const [profile, foodLogs, customFoods, savedMeals, checks, weights, measurements, workoutSets, photoRows] = await Promise.all([
+  const [profile, foodLogs, customFoods, savedMeals, checks, weights, measurements, workoutSets, photoRows, routineDays] = await Promise.all([
     sb.from('profiles').select('*').eq('id', userId).maybeSingle().then(unwrap),
-    all((from, to) => sb.from('food_logs').select('*').order('log_date').order('created_at').range(from, to)),
-    all((from, to) => sb.from('foods').select('*').eq('owner_id', userId).order('created_at').range(from, to)),
-    all((from, to) => sb.from('saved_meals').select('*').order('created_at').range(from, to)),
+    all((from, to) => sb.from('food_logs').select('*').order('log_date').order('created_at').order('id').range(from, to)),
+    all((from, to) => sb.from('foods').select('*').eq('owner_id', userId).order('created_at').order('id').range(from, to)),
+    all((from, to) => sb.from('saved_meals').select('*').order('created_at').order('id').range(from, to)),
     all((from, to) => sb.from('daily_checks').select('*').order('log_date').range(from, to)),
     all((from, to) => sb.from('weight_logs').select('*').order('log_date').range(from, to)),
     all((from, to) => sb.from('measurements').select('*').order('log_date').range(from, to)),
-    all((from, to) => sb.from('workout_sets').select('*').order('log_date').order('set_number').range(from, to)),
+    all((from, to) => sb.from('workout_sets').select('*').order('log_date').order('exercise_key').order('set_number').range(from, to)),
     all<{ id: string; log_date: string; storage_path: string; created_at: string }>((from, to) =>
-      sb.from('progress_photos').select('*').order('log_date').range(from, to)),
+      sb.from('progress_photos').select('*').order('log_date').order('id').range(from, to)),
+    // A custom routine is the one thing a backup could not rebuild from the other tables.
+    sb.from('routine_days').select('*').order('weekday').then(unwrap),
   ]);
 
   const signed = photoRows.length ? await sb.storage.from('progress-photos').createSignedUrls(photoRows.map((p) => p.storage_path), 3600) : null;
@@ -100,6 +93,7 @@ exportRouter.get('/export.json', h(async (req, res) => {
     weights,
     measurements,
     workout_sets: workoutSets,
+    routine_days: routineDays,
     photos,
   };
 

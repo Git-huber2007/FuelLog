@@ -4,6 +4,7 @@ import {
   addDays, adjustmentAdvice, bestSet, calculateKindMetric, dayDeltaFor, exerciseMuscle, exerciseName, formatPreviousHint, lookupExerciseKind, streak,
   type MeasureDelta, type Measurements, type MuscleGroup, type Profile, type ProgressResponse, type TopLiftSummary, type WorkoutSet,
 } from '@fuellog/shared';
+import { all } from '../lib/paging';
 import { h, unwrap } from '../middleware/errors';
 import { loadProfile, loadWeights, requireTargets } from './profile';
 
@@ -19,13 +20,15 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
   const [profile, weights, logs, checks, sets, measurements, logDates, allWorkoutSets] = await Promise.all([
     loadProfile(sb, userId),
     loadWeights(sb, today),
-    sb.from('food_logs').select('log_date,name,kcal,protein_g').gte('log_date', from35).lte('log_date', today)
-      .then(unwrap<{ log_date: string; name: string; kcal: number; protein_g: number }[]>),
+    all<{ log_date: string; name: string; kcal: number; protein_g: number }>((from, to) =>
+      sb.from('food_logs').select('log_date,name,kcal,protein_g').gte('log_date', from35).lte('log_date', today)
+        .order('log_date').order('id').range(from, to)),
     sb.from('daily_checks').select('sleep_hours,water_ml,steps').gte('log_date', from7).lte('log_date', today)
       .then(unwrap<{ sleep_hours: number | null; water_ml: number; steps?: number | null }[]>),
     sb.from('workout_sets').select('log_date').gte('log_date', from7).lte('log_date', today).gt('reps', 0)
       .then(unwrap<{ log_date: string }[]>),
-    sb.from('measurements').select('log_date,waist_cm,chest_cm,arm_cm').order('log_date').then(unwrap<Measurements[]>),
+    all<Measurements>((from, to) =>
+      sb.from('measurements').select('log_date,waist_cm,chest_cm,arm_cm').order('log_date').range(from, to)),
     // shortcut: streaks are counted over the newest 1000 log rows (about 100 days); page this query if longer streaks matter
     sb.from('food_logs').select('log_date').lte('log_date', today).order('log_date', { ascending: false }).limit(1000)
       .then(unwrap<{ log_date: string }[]>),
@@ -153,7 +156,7 @@ export async function buildProgress(sb: SupabaseClient, userId: string, today: s
       proteinHitDays: week.filter((d) => d.eaten!.protein >= PROTEIN_HIT * d.targets.protein_g).length,
       workouts: new Set(sets.map((s) => s.log_date)).size,
       avgSleep: round(mean(checks.map((c) => c.sleep_hours).filter((v): v is number => v !== null)), 1),
-      avgWater: round(mean(checks.map((c) => c.water_ml))),
+      avgWater: round(mean(checks.map((c) => c.water_ml).filter((v) => v > 0))),
       avgSteps: round(mean(checks.map((c) => c.steps).filter((v): v is number => typeof v === 'number' && v > 0))),
     },
     measurements: { waist_cm: delta('waist_cm'), chest_cm: delta('chest_cm'), arm_cm: delta('arm_cm') },

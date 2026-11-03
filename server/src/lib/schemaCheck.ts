@@ -12,6 +12,8 @@ export const REQUIRED_SCHEMA: ReadonlyArray<{ table: string; columns: string }> 
   { table: 'profiles', columns: 'level,program' },
   { table: 'workout_sets', columns: 'incline_pct' },
   { table: 'daily_checks', columns: 'steps,skipped_exercises,plan_weekday' },
+  // The workout route reads this table for every program, so a missing 0009 is a 500, not a degraded page.
+  { table: 'routine_days', columns: 'weekday' },
 ];
 
 let anonSb: SupabaseClient | undefined;
